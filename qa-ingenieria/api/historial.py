@@ -35,10 +35,12 @@ def init() -> None:
                 campos TEXT
             )"""
         )
-        # Migración para bases existentes: agrega `campos` si falta.
+        # Migración para bases existentes: agrega `campos` / `requisitos` si faltan.
         cols = {r["name"] for r in c.execute("PRAGMA table_info(validaciones)").fetchall()}
         if "campos" not in cols:
             c.execute("ALTER TABLE validaciones ADD COLUMN campos TEXT")
+        if "requisitos" not in cols:  # {req_id: estado} de la revisión (para el aprendedor)
+            c.execute("ALTER TABLE validaciones ADD COLUMN requisitos TEXT")
         # Feedback humano POR REGLA (revisión de contenido): la etiqueta fina que alimenta la matriz.
         c.execute(
             """CREATE TABLE IF NOT EXISTS requisito_feedback (
@@ -65,6 +67,48 @@ def registrar_validacion(thread_id: str, doc: str, tipo_doc: str, status: str,
         )
         c.commit()
         return int(cur.lastrowid)
+
+
+def set_requisitos(thread_id: str, requisitos: dict[str, str]) -> None:
+    """Guarda el resultado POR requisito {req_id: estado} de la revisión de un caso (para el aprendedor)."""
+    if not requisitos:
+        return
+    with closing(_conn()) as c:
+        c.execute("UPDATE validaciones SET requisitos=? WHERE thread_id=?",
+                  (json.dumps(requisitos, ensure_ascii=False), thread_id))
+        c.commit()
+
+
+def corpus_requisitos(tipo_doc: str, limit: int = 5000) -> list[dict[str, Any]]:
+    """Por familia: [{admitido: bool, requisitos: {req_id: estado}}] — base de la matriz de aprendizaje."""
+    with closing(_conn()) as c:
+        rows = c.execute(
+            "SELECT veredicto, decision, requisitos FROM validaciones WHERE tipo_doc=? ORDER BY id DESC LIMIT ?",
+            (tipo_doc, limit),
+        ).fetchall()
+    out: list[dict[str, Any]] = []
+    for r in rows:
+        d = dict(r)
+        try:
+            reqs = json.loads(d.get("requisitos") or "{}")
+        except Exception:
+            reqs = {}
+        if reqs:
+            out.append({"admitido": _admitido(d), "requisitos": reqs})
+    return out
+
+
+def feedback_agg(tipo_doc: str) -> dict[str, dict[str, int]]:
+    """Conteo de juicios humanos por regla de una familia: {req_id: {de_acuerdo, no_aplica, regla_mal}}."""
+    with closing(_conn()) as c:
+        rows = c.execute(
+            "SELECT req_id, juicio, COUNT(*) n FROM requisito_feedback WHERE tipo_doc=? GROUP BY req_id, juicio",
+            (tipo_doc,),
+        ).fetchall()
+    out: dict[str, dict[str, int]] = {}
+    for r in rows:
+        out.setdefault(r["req_id"], {})[r["juicio"]] = int(r["n"])
+    return out
 
 
 def registrar_decision(thread_id: str, decision: str) -> None:

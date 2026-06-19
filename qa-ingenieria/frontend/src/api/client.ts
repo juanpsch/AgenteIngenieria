@@ -68,6 +68,13 @@ export interface CatalogoRequisito {
   req_id: string; id: string; tipo: string; descripcion?: string; severidad?: string;
   norma_id: string; norma_nombre?: string; norma_ref?: string; disciplinas?: string[] | null;
 }
+export interface SugerenciaReq {
+  req_id: string; descripcion: string; norma_ref?: string; severidad?: string;
+  motivo: string; evidencia: string; n?: number; total?: number;
+}
+export interface SugerenciasRequisitos {
+  agregar: SugerenciaReq[]; quitar: SugerenciaReq[]; prior_disciplina: SugerenciaReq[];
+}
 export interface RevisionBlock {
   verdicto: VerdictoRevision | null;
   severidad_max: string | null;
@@ -184,6 +191,7 @@ export const api = {
   catalogoRequisitos: () => req<CatalogoRequisito[]>("GET", "/normas/catalogo"),
   putRequisitos: (id: string, requisitos: string[]) =>
     req<{ ok: boolean; requisitos_resueltos: string[] }>("PUT", `/tipos/${id}/requisitos`, { requisitos }),
+  sugerenciasRequisitos: (id: string) => req<SugerenciasRequisitos>("GET", `/tipos/${id}/requisitos/sugerencias`),
   requisitoFeedback: (threadId: string, requisito_id: string, juicio: Juicio, notas?: string) =>
     req<{ ok: boolean }>("POST", `/casos/${threadId}/requisito-feedback`, { requisito_id, juicio, notas }),
   promover: (id: string, threadId: string, promote: boolean) => req<any>("POST", `/tipos/${id}/referencias/promover`, { thread_id: threadId, promote }),

@@ -182,6 +182,7 @@ def validar(
     historial.registrar_validacion(tid, file.filename, tipo_doc, result.get("status"),
                                    resp["veredicto"], resp.get("score"), "api", _now(),
                                    campos=resp.get("campos"))
+    _registrar_requisitos(tid, result.get("hallazgos"))  # si la revisión corrió en el mismo invoke
     return resp
 
 
@@ -396,6 +397,13 @@ def decision(thread_id: str, body: DecisionIn):
     return {"status": status, "veredicto": veredicto_ui(status or ""), "decision": body.decision}
 
 
+def _registrar_requisitos(thread_id: str, hallazgos: list | None) -> None:
+    """Persiste {req_id: estado} de la revisión en el corpus (para el aprendedor)."""
+    reqs = {h["req_id"]: h.get("estado") for h in (hallazgos or []) if h.get("req_id")}
+    if reqs:
+        historial.set_requisitos(thread_id, reqs)
+
+
 def _correr_revision(thread_id: str, st: dict) -> dict:
     """Corre extractor+revisor sobre un caso ya admitido (EN_REVISION) y persiste el resultado."""
     upd1 = extractor_node(st)
@@ -403,6 +411,7 @@ def _correr_revision(thread_id: str, st: dict) -> dict:
     upd2 = revisor_node(st1)
     cfg = {"configurable": {"thread_id": thread_id}}
     get_compiled_graph().update_state(cfg, {**upd1, **upd2})
+    _registrar_requisitos(thread_id, upd2.get("hallazgos"))
     return {**st1, **upd2}
 
 
@@ -442,6 +451,14 @@ def caso_pagina(thread_id: str, page: int = 1):
 def normas_catalogo():
     """Catálogo plano de requisitos chequeables (la biblioteca asignable a las familias)."""
     return normas.catalogo_requisitos()
+
+
+@app.get("/api/tipos/{tid}/requisitos/sugerencias")
+def requisitos_sugerencias(tid: str):
+    """Sugerencias del aprendedor para la familia (agregar/quitar/prior), desde el corpus etiquetado."""
+    from api import aprendizaje
+
+    return aprendizaje.sugerir_requisitos(tid)
 
 
 @app.post("/api/casos/{thread_id}/requisito-feedback")

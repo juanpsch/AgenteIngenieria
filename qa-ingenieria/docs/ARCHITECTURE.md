@@ -214,6 +214,7 @@ Base `/api`. Endpoints (ver `api/main.py`):
 | `POST` | `/api/casos/{thread_id}/requisito-feedback` | Juicio humano POR REGLA (`de_acuerdo`/`no_aplica`/`regla_mal`) — retroalimenta a la regla, no solo al doc. |
 | `GET` | `/api/normas/catalogo` | Catálogo plano de **requisitos chequeables** (biblioteca asignable a las familias). |
 | `PUT` | `/api/tipos/{id}/requisitos` | Asigna el set de requisitos de revisión a la familia (`revision.requisitos`). |
+| `GET` | `/api/tipos/{id}/requisitos/sugerencias` | Sugerencias del **aprendedor** (agregar/quitar/prior) desde el corpus etiquetado. |
 | `POST` | `/api/casos/{thread_id}/revision/decision` | Veredicto humano de la revisión (`aprobado`/`aprobado_con_notas`/`observado`/`rechazado`/`escalar_senior` + `notas`). |
 | `POST` | `/api/tipos/{id}/referencias/promover` | Promueve el doc del caso a referencia (gate humano; **409** si el caso no fue aprobado). |
 | `GET`/`PUT`/`DELETE` | `/api/entregas-tipo[/{id}]` | Catálogo de tipos de entrega. |

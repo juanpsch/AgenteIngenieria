@@ -146,9 +146,10 @@ con la etiqueta por regla). La grilla se arma del `revision.hallazgos` (que ya t
 4. **Paso 4 — UI de asignación ✅ hecho:** `RequisitosEditor` en el detalle del template (catálogo por
    norma, checkboxes, "sugeridos por disciplina" vía `aplica_a`) + `PUT /api/tipos/{id}/requisitos`
    (`tools/tipos.set_revision_requisitos`, lista explícita = fuente de verdad).
-5. **Paso 5 — Aprendedor:** `sugerir_requisitos(familia)` desde la matriz (§5) sobre el corpus etiquetado
-   (n/N en aprobados, celdas B/C/D, prior por disciplina) + UI de "sugerencias para esta familia" (igual
-   que el feedback de regex).
+5. **Paso 5 — Aprendedor ✅ hecho:** `api/aprendizaje.sugerir_requisitos(familia)` (matriz §5: agregar si
+   los aprobados lo cumplen, quitar si falla en aprobados / feedback `no_aplica`, prior por disciplina) +
+   `GET /api/tipos/{id}/requisitos/sugerencias` + panel "Sugerencias del aprendizaje" en `RequisitosEditor`.
+   El corpus se extendió: `validaciones.requisitos` ({req_id: estado}) + tabla `requisito_feedback`.
 6. (Después) ejes **jurisdicción** y **proyecto/cliente** como filtros/perfiles del sugeridor.
 
 ## 8. En una frase

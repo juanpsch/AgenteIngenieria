@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { api, type CatalogoRequisito } from "../api/client";
+import { api, type CatalogoRequisito, type SugerenciaReq, type SugerenciasRequisitos } from "../api/client";
 import { errMsg } from "../design/tokens";
 
 const SEV_CLS: Record<string, string> = { bloqueante: "mat-red", mayor: "mat-amber", menor: "mat-neutral", observacion: "mat-ok" };
@@ -11,10 +11,18 @@ export function RequisitosEditor({ tipoDoc, disciplinas, resueltosIniciales, onS
 }) {
   const [cat, setCat] = useState<CatalogoRequisito[]>([]);
   const [asig, setAsig] = useState<Set<string>>(new Set(resueltosIniciales || []));
+  const [sug, setSug] = useState<SugerenciasRequisitos | null>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
 
   useEffect(() => { api.catalogoRequisitos().then(setCat).catch(() => {}); }, []);
+  useEffect(() => { api.sugerenciasRequisitos(tipoDoc).then(setSug).catch(() => {}); }, [tipoDoc]);
+
+  // aplica una sugerencia (la saca de la lista y muta el set asignado)
+  function aplicar(grupo: "agregar" | "quitar" | "prior_disciplina", s: SugerenciaReq) {
+    setAsig((a) => { const n = new Set(a); grupo === "quitar" ? n.delete(s.req_id) : n.add(s.req_id); return n; });
+    setSug((prev) => prev ? { ...prev, [grupo]: prev[grupo].filter((x) => x.req_id !== s.req_id) } : prev);
+  }
 
   const disc = useMemo(() => new Set((disciplinas || []).map((d) => d.toLowerCase())), [disciplinas]);
   const sugerido = (q: CatalogoRequisito) => {
@@ -50,6 +58,28 @@ export function RequisitosEditor({ tipoDoc, disciplinas, resueltosIniciales, onS
         Tildá qué requisitos exige esta familia (de una o varias normas). Los <b>sugeridos</b> salen de la
         disciplina del template; el aprendizaje refinará esto con los casos aprobados.
       </div>
+
+      {sug && (sug.agregar.length + sug.quitar.length + sug.prior_disciplina.length > 0) && (
+        <div style={{ border: "1px solid var(--teal)", background: "var(--teal-wash)", borderRadius: 8, padding: 10, marginBottom: 8 }}>
+          <div style={{ fontWeight: 600, fontSize: 12.5, marginBottom: 4 }}>Sugerencias del aprendizaje</div>
+          {([["agregar", "Agregar"], ["quitar", "Quitar"], ["prior_disciplina", "Por disciplina"]] as const).map(([k, lbl]) =>
+            sug[k].length ? (
+              <div key={k} style={{ marginTop: 4 }}>
+                <span className="faint" style={{ fontSize: 10.5 }}>{lbl}:</span>
+                {sug[k].map((s) => (
+                  <div key={s.req_id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "3px 0", fontSize: 12 }}>
+                    <button className={`btn ${k === "quitar" ? "btn-red-o" : "btn-green"}`} style={{ padding: "2px 8px", fontSize: 11 }}
+                      onClick={() => aplicar(k, s)}>{k === "quitar" ? "− quitar" : "+ agregar"}</button>
+                    <span style={{ flex: 1, minWidth: 0 }}>{s.descripcion} <span className="faint">· {s.evidencia}</span></span>
+                    {s.norma_ref && <span className="chip mat-neutral" style={{ fontSize: 9.5 }}>{s.norma_ref}</span>}
+                  </div>
+                ))}
+              </div>
+            ) : null,
+          )}
+          <div className="faint" style={{ fontSize: 10.5, marginTop: 6 }}>Aplicar solo ajusta la selección; recordá <b>Guardar</b> abajo.</div>
+        </div>
+      )}
 
       {Object.keys(porNorma).sort().map((norma) => (
         <div key={norma} style={{ borderTop: "1px solid var(--line)", paddingTop: 8, marginTop: 8 }}>
