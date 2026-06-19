@@ -149,6 +149,32 @@ def set_patron_regla(tipo_doc: str, campo: str, patron: str) -> dict[str, Any] |
     return cargar_tipos().get(tipo_doc)
 
 
+def set_revision_requisitos(tipo_doc: str, requisitos: list[str],
+                            normas: list[str] | None = None, excluir: list[str] | None = None) -> dict[str, Any] | None:
+    """Asigna el set de requisitos de revisión de una familia (`revision.requisitos`). La lista
+    explícita es la fuente de verdad de la UI: si no se pasan `normas`/`excluir`, se limpian los atajos
+    redundantes (el set ya viene resuelto). Conserva el resto del bloque `revision`. Reescribe el YAML."""
+    import copy
+
+    base = cargar_tipos().get(tipo_doc)
+    if base is None:
+        return None
+    tipo = copy.deepcopy(base)
+    rev = dict(tipo.get("revision") or {})
+    rev["requisitos"] = list(requisitos or [])
+    if normas is not None:
+        rev["normas"] = list(normas)
+    else:
+        rev.pop("normas", None)
+    if excluir is not None:
+        rev["excluir"] = list(excluir)
+    else:
+        rev.pop("excluir", None)
+    tipo["revision"] = rev
+    guardar_template(tipo_doc, to_yaml(tipo))
+    return cargar_tipos().get(tipo_doc)
+
+
 def reglas_de(tipo: dict[str, Any]) -> list[dict[str, Any]]:
     """Reglas deterministas del template: las derivadas de zonas con `campo` + `cajetin.reglas`.
     Cada una: {campo, patron?, tipo?, requerido, zona?}."""

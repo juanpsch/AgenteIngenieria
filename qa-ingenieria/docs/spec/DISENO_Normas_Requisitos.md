@@ -143,8 +143,9 @@ con la etiqueta por regla). La grilla se arma del `revision.hallazgos` (que ya t
 3. **Paso 3 — UI grilla + feedback por regla (§6b) ✅ hecho:** `GrillaRequisitos` (árbol Norma→Dimensión→
    requisito, plegable) con `mi juicio` (3 acciones) + `POST /casos/{id}/requisito-feedback` (persistido en
    `api/historial` tabla `requisito_feedback`; `req_id` viaja en cada hallazgo).
-4. **Paso 4 — UI de asignación:** en el detalle del template, sugeridos (auto) + agregar/quitar desde el
-   catálogo + guardar (`revision.requisitos`).
+4. **Paso 4 — UI de asignación ✅ hecho:** `RequisitosEditor` en el detalle del template (catálogo por
+   norma, checkboxes, "sugeridos por disciplina" vía `aplica_a`) + `PUT /api/tipos/{id}/requisitos`
+   (`tools/tipos.set_revision_requisitos`, lista explícita = fuente de verdad).
 5. **Paso 5 — Aprendedor:** `sugerir_requisitos(familia)` desde la matriz (§5) sobre el corpus etiquetado
    (n/N en aprobados, celdas B/C/D, prior por disciplina) + UI de "sugerencias para esta familia" (igual
    que el feedback de regex).

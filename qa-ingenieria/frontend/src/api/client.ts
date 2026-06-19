@@ -182,6 +182,8 @@ export const api = {
   revisionDecision: (threadId: string, decision: VerdictoRevision | "escalar_senior", notas?: string) =>
     req<{ verdicto: string; resuelta: boolean }>("POST", `/casos/${threadId}/revision/decision`, { decision, notas }),
   catalogoRequisitos: () => req<CatalogoRequisito[]>("GET", "/normas/catalogo"),
+  putRequisitos: (id: string, requisitos: string[]) =>
+    req<{ ok: boolean; requisitos_resueltos: string[] }>("PUT", `/tipos/${id}/requisitos`, { requisitos }),
   requisitoFeedback: (threadId: string, requisito_id: string, juicio: Juicio, notas?: string) =>
     req<{ ok: boolean }>("POST", `/casos/${threadId}/requisito-feedback`, { requisito_id, juicio, notas }),
   promover: (id: string, threadId: string, promote: boolean) => req<any>("POST", `/tipos/${id}/referencias/promover`, { thread_id: threadId, promote }),

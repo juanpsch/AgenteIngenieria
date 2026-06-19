@@ -213,6 +213,7 @@ Base `/api`. Endpoints (ver `api/main.py`):
 | `GET` | `/api/casos/{thread_id}/pagina/{page}` | Render PNG de la página N del documento del caso, **on-demand** (la previsualización no viaja en el payload; el visor pide cada hoja). |
 | `POST` | `/api/casos/{thread_id}/requisito-feedback` | Juicio humano POR REGLA (`de_acuerdo`/`no_aplica`/`regla_mal`) — retroalimenta a la regla, no solo al doc. |
 | `GET` | `/api/normas/catalogo` | Catálogo plano de **requisitos chequeables** (biblioteca asignable a las familias). |
+| `PUT` | `/api/tipos/{id}/requisitos` | Asigna el set de requisitos de revisión a la familia (`revision.requisitos`). |
 | `POST` | `/api/casos/{thread_id}/revision/decision` | Veredicto humano de la revisión (`aprobado`/`aprobado_con_notas`/`observado`/`rechazado`/`escalar_senior` + `notas`). |
 | `POST` | `/api/tipos/{id}/referencias/promover` | Promueve el doc del caso a referencia (gate humano; **409** si el caso no fue aprobado). |
 | `GET`/`PUT`/`DELETE` | `/api/entregas-tipo[/{id}]` | Catálogo de tipos de entrega. |

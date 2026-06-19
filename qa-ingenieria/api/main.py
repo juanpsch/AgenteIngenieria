@@ -23,7 +23,7 @@ from ai_agents.tipo_extractor import proponer_template, proponer_template_multi
 from api import historial
 from api.schemas import (
     AplicarReglaIn, DecisionIn, DisciplinaIn, EntregaTipoIn, PromoverIn, RequisitoFeedbackIn,
-    RevisionDecisionIn, SugerirVarianteIn, TemplateIn, ZonasIn,
+    RequisitosIn, RevisionDecisionIn, SugerirVarianteIn, TemplateIn, ZonasIn,
 )
 from graph.graph import get_compiled_graph
 from graph.nodes import extractor_node, revisor_node
@@ -34,7 +34,10 @@ from tools.email import build_trigger_state
 from tools.sheets import (
     eliminar_tipo_entrega, entregas_detalle, guardar_tipo_entrega, _catalogo,
 )
-from tools.tipos import cargar_tipos, eliminar_tipo, guardar_template, guardar_zonas, set_patron_regla, to_yaml
+from tools.tipos import (
+    cargar_tipos, eliminar_tipo, guardar_template, guardar_zonas, set_patron_regla,
+    set_revision_requisitos, to_yaml,
+)
 
 UP = Path("sandbox/uploads")
 
@@ -200,8 +203,9 @@ def get_tipo(tid: str):
     t = cargar_tipos().get(tid)
     if not t:
         raise HTTPException(404, "tipo no encontrado")
+    resueltos = [r.get("req_id") for r in normas.resolver_requisitos(t.get("revision") or {}) if r.get("req_id")]
     return {**t, "yaml": to_yaml(t), "refs_count": refs.refs_count(tid), "maturity": refs.maturity(tid),
-            "referencias": refs.listar_referencias(tid)}
+            "referencias": refs.listar_referencias(tid), "requisitos_resueltos": resueltos}
 
 
 @app.post("/api/tipos/capturar")
@@ -272,6 +276,16 @@ def put_zonas(tid: str, body: ZonasIn):
         raise HTTPException(404, "tipo no encontrado")
     n = refs.reembeber_todas(tid)
     return {"ok": True, "zonas": t.get("zonas", []), "refs_reembebidas": n, "maturity": refs.maturity(tid)}
+
+
+@app.put("/api/tipos/{tid}/requisitos")
+def put_requisitos(tid: str, body: RequisitosIn):
+    """Asigna el set de requisitos de revisión a una familia (`revision.requisitos`)."""
+    t = set_revision_requisitos(tid, body.requisitos, normas=body.normas, excluir=body.excluir)
+    if t is None:
+        raise HTTPException(404, "tipo no encontrado")
+    resueltos = [r.get("req_id") for r in normas.resolver_requisitos(t.get("revision") or {}) if r.get("req_id")]
+    return {"ok": True, "requisitos_resueltos": resueltos}
 
 
 @app.get("/api/tipos/{tid}/zona-sugerida")

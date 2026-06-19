@@ -4,6 +4,11 @@ organismo: Asociación Electrotécnica Argentina (AEA)
 region: Argentina
 version: "2006/2017"
 
+# --- Ámbito: a qué disciplinas/jurisdicción aplica (para sugerir por contexto) ---
+aplica_a:
+  disciplinas: [electrica]
+  jurisdiccion: [AR]
+
 # --- Detección: cómo se reconoce que un documento sigue esta norma (el vínculo doc↔norma) ---
 deteccion:
   anclas:

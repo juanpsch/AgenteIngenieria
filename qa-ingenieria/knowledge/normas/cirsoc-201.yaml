@@ -4,6 +4,10 @@ organismo: CIRSOC / INTI
 region: Argentina
 version: "1982/2005"
 
+aplica_a:
+  disciplinas: [estructural]
+  jurisdiccion: [AR]
+
 deteccion:
   anclas:
     - 'CIRSOC\s*201'

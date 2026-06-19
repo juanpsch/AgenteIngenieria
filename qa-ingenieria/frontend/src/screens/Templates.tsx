@@ -3,6 +3,7 @@ import { api, type Tipo, type Cobertura } from "../api/client";
 import { MaturityBadge, Dropzone } from "../components/ui";
 import { PreviewModal } from "../components/PreviewModal";
 import { ZonaEditor } from "../components/ZonaEditor";
+import { RequisitosEditor } from "../components/RequisitosEditor";
 import { useActivity } from "../components/Activity";
 import { errMsg } from "../design/tokens";
 import { Plus, Trash2, ArrowLeft, Eye, Upload } from "lucide-react";
@@ -131,6 +132,13 @@ function Detalle({ d, onBack, reload }: { d: any; onBack: () => void; reload: ()
         tipoDoc={d.tipo_doc}
         referencias={d.referencias || []}
         zonasIniciales={d.zonas || []}
+        onSaved={() => reload()}
+      />
+
+      <RequisitosEditor
+        tipoDoc={d.tipo_doc}
+        disciplinas={d.disciplinas || []}
+        resueltosIniciales={d.requisitos_resueltos || []}
         onSaved={() => reload()}
       />
 

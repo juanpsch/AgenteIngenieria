@@ -41,6 +41,13 @@ class RequisitoFeedbackIn(BaseModel):
     notas: str | None = None
 
 
+class RequisitosIn(BaseModel):
+    # asignación de requisitos de revisión a una familia (lista explícita = fuente de verdad)
+    requisitos: list[str]
+    normas: list[str] | None = None
+    excluir: list[str] | None = None
+
+
 class PromoverIn(BaseModel):
     thread_id: str
     promote: bool = True
