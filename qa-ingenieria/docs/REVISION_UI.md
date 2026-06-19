@@ -64,6 +64,11 @@ hoja donde ocurren, coloreados por estado. Navegás **todas** las páginas (no s
 al vuelo (no viaja en la respuesta). Es la misma observabilidad del gate, ahora sobre el contenido:
 **se ve dónde cumple y dónde no.**
 
+El visor además tiene un **buscador** que busca el texto en **todo el documento**: salta a la página y
+**resalta** la coincidencia (la miniatura marca con un punto naranja las páginas con hits). Y un botón
+**"abrir doc"** que abre el PDF original en una pestaña (visor nativo del navegador: Ctrl+F, zoom, scroll)
+— útil para chequear rápido o para escaneos sin capa de texto donde la búsqueda interna no aplica.
+
 ## `no_verificable` — qué significa (importante)
 
 El sistema **nunca inventa un "cumple"**. Si no puede medir algo, lo marca **no verificable**, por ejemplo:

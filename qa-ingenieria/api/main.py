@@ -490,6 +490,30 @@ def requisito_feedback(thread_id: str, body: RequisitoFeedbackIn):
     return {"ok": True, "requisito_id": body.requisito_id, "juicio": body.juicio}
 
 
+def _doc_path_caso(thread_id: str) -> str | None:
+    docs_ = (_state_de(thread_id) or {}).get("documentos") or []
+    return docs_[-1].get("path") if docs_ else None
+
+
+@app.get("/api/casos/{thread_id}/buscar")
+def caso_buscar(thread_id: str, q: str = ""):
+    """Busca `q` en TODO el documento del caso → páginas + bboxes para resaltar en el previsualizador."""
+    p = _doc_path_caso(thread_id)
+    return docs.buscar_texto(p, q) if p else []
+
+
+@app.get("/api/casos/{thread_id}/archivo")
+def caso_archivo(thread_id: str):
+    """Sirve el documento original del caso INLINE (abrirlo en pestaña/visor nativo: búsqueda, zoom)."""
+    p = _doc_path_caso(thread_id)
+    if not p or not Path(p).exists():
+        raise HTTPException(404, "documento del caso no encontrado")
+    ext = Path(p).suffix.lower().lstrip(".")
+    media = "application/pdf" if ext == "pdf" else f"image/{ext}"
+    return Response(content=Path(p).read_bytes(), media_type=media,
+                    headers={"Content-Disposition": f'inline; filename="{Path(p).name}"'})
+
+
 @app.post("/api/casos/{thread_id}/revision/decision")
 def revision_decision(thread_id: str, body: RevisionDecisionIn):
     """Veredicto humano sobre la revisión de contenido (o escalar a senior)."""

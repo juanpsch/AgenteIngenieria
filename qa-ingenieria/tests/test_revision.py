@@ -108,6 +108,19 @@ def test_paginas_utiles_recorta_blancos_al_final():
     assert docs.paginas_utiles(p) == 10
 
 
+def test_buscar_texto_degrada_y_encuentra():
+    import os
+    import pytest
+    from tools import docs
+    assert docs.buscar_texto("no_existe.pdf", "x") == []      # archivo inexistente
+    p = "tests/fixtures/docs/aea_memoria_unrn.pdf"
+    if not os.path.exists(p):
+        pytest.skip("fixture no descargado")
+    assert docs.buscar_texto(p, "") == []                     # query vacía
+    r = docs.buscar_texto(p, "tensión")
+    assert r and all("pagina" in m and m["rects"] for m in r)  # páginas + bboxes
+
+
 def test_indices_muestra_robusto():
     # k=1 no debe romper (división por cero) y cubre casos chicos/grandes
     from ai_agents.revisor import _indices_muestra

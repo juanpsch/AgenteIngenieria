@@ -190,6 +190,9 @@ export const api = {
   decision: (threadId: string, decision: "approved" | "rejected") => req<any>("POST", `/casos/${threadId}/decision`, { decision }),
   revisarCaso: (threadId: string) => req<ValidarResp & { decision: string | null }>("POST", `/casos/${threadId}/revisar`),
   casoPaginaUrl: (threadId: string, page = 1) => `/api/casos/${threadId}/pagina/${page}`,  // preview on-demand (no payload)
+  casoArchivoUrl: (threadId: string) => `/api/casos/${threadId}/archivo`,  // doc original inline (visor nativo)
+  buscarEnCaso: (threadId: string, q: string) =>
+    req<{ pagina: number; rects: BBox[] }[]>("GET", `/casos/${threadId}/buscar?q=${encodeURIComponent(q)}`),
   revisionDecision: (threadId: string, decision: VerdictoRevision | "escalar_senior", notas?: string) =>
     req<{ verdicto: string; resuelta: boolean }>("POST", `/casos/${threadId}/revision/decision`, { decision, notas }),
   catalogoRequisitos: () => req<CatalogoRequisito[]>("GET", "/normas/catalogo"),

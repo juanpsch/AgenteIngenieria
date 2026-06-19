@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
+import { ChevronLeft, ChevronRight, ZoomIn, Search, ExternalLink } from "lucide-react";
 import { api, type BBox, type CheckState, type ZonaResultado } from "../api/client";
-import { C } from "../design/tokens";
+import { C, errMsg } from "../design/tokens";
 
 const COLOR: Record<CheckState, { b: string; bg: string; ink: string }> = {
   pass: { b: C.green, bg: "rgba(31,138,91,.14)", ink: C.greenInk },
@@ -44,12 +44,44 @@ export function PaginasViewer({ threadId, nPaginas, imagenes, zonas, cajetinBbox
 }) {
   const [pg, setPg] = useState(0);
   const [zoom, setZoom] = useState(false);
+  const [q, setQ] = useState("");
+  const [matches, setMatches] = useState<{ pagina: number; rects: BBox[] }[]>([]);
+  const [hit, setHit] = useState(0);
+  const [buscando, setBuscando] = useState(false);
+  const [errBusq, setErrBusq] = useState("");
   const n = nPaginas || imagenes?.length || 0;
   const page = Math.min(pg, Math.max(0, n - 1));
   const src = (i: number): string | null =>
     threadId ? api.casoPaginaUrl(threadId, i + 1) : (imagenes?.[i] ?? null);
   const img = n ? src(page) : null;
   const zonasPg = (zonas || []).filter((z) => (z.pagina || 1) === page + 1 && z.bbox);
+  const hlRects = (matches.find((m) => m.pagina === page + 1)?.rects) || [];
+  const pagsConHit = new Set(matches.map((m) => m.pagina - 1));
+
+  async function buscar() {
+    if (!threadId || !q.trim()) { setMatches([]); return; }
+    setBuscando(true); setErrBusq("");
+    try {
+      const m = await api.buscarEnCaso(threadId, q.trim());
+      setMatches(m); setHit(0);
+      if (m.length) setPg(m[0].pagina - 1);
+      else setErrBusq("sin coincidencias");
+    } catch (e) { setErrBusq(errMsg(e)); }
+    finally { setBuscando(false); }
+  }
+  function irHit(delta: number) {
+    if (!matches.length) return;
+    const i = (hit + delta + matches.length) % matches.length;
+    setHit(i); setPg(matches[i].pagina - 1);
+  }
+
+  const highlight = hlRects.map((r, i) => (
+    <div key={`hl-${i}`} style={{
+      position: "absolute", left: `${r.x * 100}%`, top: `${r.y * 100}%`,
+      width: `${r.w * 100}%`, height: `${r.h * 100}%`,
+      background: "rgba(255,214,0,.35)", border: "1.5px solid #F5A623", borderRadius: 2, boxSizing: "border-box",
+    }} />
+  ));
   const conZona = new Set((zonas || []).filter((z) => z.bbox).map((z) => (z.pagina || 1) - 1));
   const estadosPresentes = Array.from(new Set((zonas || []).map((z) => z.estado)));
 
@@ -60,6 +92,7 @@ export function PaginasViewer({ threadId, nPaginas, imagenes, zonas, cajetinBbox
             onError={(e) => { e.currentTarget.style.display = "none"; }} />
         : <div className="faint" style={{ padding: 24, textAlign: "center" }}>Sin previsualización</div>}
       {zonasPg.map((z, i) => <ZonaBox key={`${z.nombre}-${z.pagina}-${i}`} z={z} />)}
+      {highlight}
       {/* Fallback: si no hay zonas en esta página pero sí el cajetín detectado por visión */}
       {!zonasPg.length && cajetinBbox && page === 0 && (
         <div className="cajetin-box" style={{ left: `${cajetinBbox.x * 100}%`, top: `${cajetinBbox.y * 100}%`, width: `${cajetinBbox.w * 100}%`, height: `${cajetinBbox.h * 100}%` }}>
@@ -82,8 +115,29 @@ export function PaginasViewer({ threadId, nPaginas, imagenes, zonas, cajetinBbox
             </>
           )}
           {img && <button className="btn btn-ghost" style={{ padding: "2px 7px", display: "flex", gap: 4, alignItems: "center" }} onClick={() => setZoom(true)}><ZoomIn size={13} /> ampliar</button>}
+          {threadId && <button className="btn btn-ghost" style={{ padding: "2px 7px", display: "flex", gap: 4, alignItems: "center" }} title="Abrir el documento en una pestaña (búsqueda, zoom nativos)" onClick={() => window.open(api.casoArchivoUrl(threadId), "_blank")}><ExternalLink size={13} /> abrir doc</button>}
         </div>
       </div>
+
+      {/* Buscador en TODO el documento (capa de texto) */}
+      {threadId && (
+        <form onSubmit={(e) => { e.preventDefault(); buscar(); }} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+          <div style={{ position: "relative", flex: 1, maxWidth: 320 }}>
+            <Search size={13} style={{ position: "absolute", left: 8, top: 8, color: "var(--faint)" }} />
+            <input value={q} onChange={(e) => { setQ(e.target.value); setErrBusq(""); }} placeholder="Buscar en el documento…"
+              style={{ width: "100%", padding: "5px 8px 5px 26px", fontSize: 12.5, borderRadius: 6, border: "1px solid var(--border)", boxSizing: "border-box" }} />
+          </div>
+          <button type="submit" className="btn btn-ghost" style={{ padding: "4px 9px" }} disabled={buscando || !q.trim()}>{buscando ? "…" : "Buscar"}</button>
+          {matches.length > 0 && (
+            <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11.5 }}>
+              <button type="button" className="btn btn-ghost" style={{ padding: "2px 6px" }} onClick={() => irHit(-1)}><ChevronLeft size={13} /></button>
+              <span className="faint">{hit + 1}/{matches.length} págs</span>
+              <button type="button" className="btn btn-ghost" style={{ padding: "2px 6px" }} onClick={() => irHit(1)}><ChevronRight size={13} /></button>
+            </span>
+          )}
+          {errBusq && <span className="faint" style={{ fontSize: 11 }}>{errBusq}</span>}
+        </form>
+      )}
 
       <div style={{ cursor: img ? "zoom-in" : "default", border: "1px solid var(--border2)", borderRadius: 6, overflow: "hidden" }} onClick={() => img && setZoom(true)}>
         {lienzo}
@@ -102,6 +156,7 @@ export function PaginasViewer({ threadId, nPaginas, imagenes, zonas, cajetinBbox
               }}>
               {i + 1}
               {conZona.has(i) && <span style={{ position: "absolute", top: 2, right: 2, width: 5, height: 5, borderRadius: "50%", background: C.teal }} />}
+              {pagsConHit.has(i) && <span style={{ position: "absolute", bottom: 2, right: 2, width: 5, height: 5, borderRadius: "50%", background: "#F5A623" }} />}
             </button>
           ))}
         </div>
@@ -137,6 +192,7 @@ export function PaginasViewer({ threadId, nPaginas, imagenes, zonas, cajetinBbox
               <div style={{ position: "relative", display: "inline-block", maxWidth: "100%" }}>
                 <img src={img} alt={`Página ${page + 1}`} style={{ maxWidth: "100%", maxHeight: "78vh", display: "block", borderRadius: 6, border: "1px solid var(--border2)", background: "#fff" }} />
                 {zonasPg.map((z, i) => <ZonaBox key={`${z.nombre}-${z.pagina}-${i}`} z={z} />)}
+                {highlight}
               </div>
             </div>
           </div>

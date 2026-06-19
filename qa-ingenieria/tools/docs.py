@@ -82,6 +82,31 @@ def contar_paginas(path: str) -> int:
         return 0
 
 
+def buscar_texto(path: str, q: str) -> list[dict[str, Any]]:
+    """Busca `q` en TODO el PDF (capa de texto, PyMuPDF). Devuelve [{pagina(1-idx), rects:[{x,y,w,h}]}]
+    con bboxes relativos (0–1) para resaltar. [] si no es PDF, no hay texto, o no se encuentra."""
+    q = (q or "").strip()
+    p = Path(path)
+    if not q or p.suffix.lower().lstrip(".") != "pdf" or not p.exists():
+        return []
+    try:
+        import fitz
+
+        out: list[dict[str, Any]] = []
+        with fitz.open(str(p)) as doc:
+            for i, page in enumerate(doc):
+                w = float(page.rect.width) or 1.0
+                h = float(page.rect.height) or 1.0
+                rects = page.search_for(q) or []
+                if rects:
+                    out.append({"pagina": i + 1, "rects": [
+                        {"x": round(r.x0 / w, 4), "y": round(r.y0 / h, 4),
+                         "w": round((r.x1 - r.x0) / w, 4), "h": round((r.y1 - r.y0) / h, 4)} for r in rects]})
+        return out
+    except Exception:
+        return []
+
+
 def _pagina_vacia(page) -> bool:
     """Página sin contenido: sin texto, sin imágenes y sin vectores. Barato (corta apenas encuentra algo)."""
     try:

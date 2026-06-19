@@ -212,6 +212,8 @@ Base `/api`. Endpoints (ver `api/main.py`):
 | `POST` | `/api/casos/{thread_id}/decision` | Decisión humana de admisión (`approved`/`rejected`). Al aprobar un caso `EN_REVISION` dispara la revisión de contenido. |
 | `POST` | `/api/casos/{thread_id}/revisar` | Dispara la **revisión de contenido** a pedido (cuando el toggle interrumpió). **409** si el caso no está `EN_REVISION`. |
 | `GET` | `/api/casos/{thread_id}/pagina/{page}` | Render PNG de la página N del documento del caso, **on-demand** (la previsualización no viaja en el payload; el visor pide cada hoja). |
+| `GET` | `/api/casos/{thread_id}/buscar?q=` | Busca `q` en TODO el documento (capa de texto) → páginas + bboxes para resaltar en el previsualizador. |
+| `GET` | `/api/casos/{thread_id}/archivo` | Sirve el documento original **inline** (abrirlo en pestaña/visor nativo: búsqueda, zoom). |
 | `POST` | `/api/casos/{thread_id}/requisito-feedback` | Juicio humano POR REGLA (`de_acuerdo`/`no_aplica`/`regla_mal`) — retroalimenta a la regla, no solo al doc. |
 | `GET` | `/api/normas/catalogo` | Catálogo plano de **requisitos chequeables** (biblioteca asignable a las familias). |
 | `PUT` | `/api/tipos/{id}/requisitos` | Asigna el set de requisitos de revisión a la familia (`revision.requisitos`). |
