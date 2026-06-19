@@ -111,8 +111,13 @@ def resolver_requisitos(revision: dict | None) -> list[dict[str, Any]]:
     `revision`:  expand(`normas`) ∪ `requisitos`(por id global) ∪ `reglas`(inline del template) − `excluir`.
 
     Dedup/override por id LOCAL (el `reglas` inline del template pisa al de una norma con el mismo id;
-    `requisitos` pisa al expandido). `excluir` acepta id global "<norma>:<id>" o id local."""
-    revision = revision or {}
+    `requisitos` pisa al expandido). `excluir` acepta id global "<norma>:<id>" o id local.
+    Antes de resolver, expande los `perfiles` referenciados (eje proyecto/cliente)."""
+    try:
+        from tools import perfiles  # import perezoso (evita circular)
+        revision = perfiles.expandir_revision(revision or {})
+    except Exception:
+        revision = revision or {}
     out: dict[str, dict[str, Any]] = {}  # id local -> regla
     for r in reglas_de_normas(revision.get("normas") or []):   # atajo: norma entera
         out[r.get("id")] = r

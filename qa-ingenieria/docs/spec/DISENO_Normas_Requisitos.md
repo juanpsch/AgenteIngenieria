@@ -150,7 +150,9 @@ con la etiqueta por regla). La grilla se arma del `revision.hallazgos` (que ya t
    los aprobados lo cumplen, quitar si falla en aprobados / feedback `no_aplica`, prior por disciplina) +
    `GET /api/tipos/{id}/requisitos/sugerencias` + panel "Sugerencias del aprendizaje" en `RequisitosEditor`.
    El corpus se extendió: `validaciones.requisitos` ({req_id: estado}) + tabla `requisito_feedback`.
-6. (Después) ejes **jurisdicción** y **proyecto/cliente** como filtros/perfiles del sugeridor.
+6. **Paso 6 — perfiles (proyecto/jurisdicción) ✅ hecho:** `knowledge/perfiles/<id>.yaml` (bundle de
+   normas/requisitos), `tools/perfiles` (`expandir_revision` integrado al resolvedor vía `revision.perfiles`),
+   `GET /api/perfiles` y selector "Perfil de cumplimiento" en `RequisitosEditor` (agrega en bloque).
 
 ## 8. En una frase
 **La norma define el requisito; el corpus de aprobados aprende cuáles exige cada familia (señal: que los

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { api, type CatalogoRequisito, type SugerenciaReq, type SugerenciasRequisitos } from "../api/client";
+import { api, type CatalogoRequisito, type Perfil, type SugerenciaReq, type SugerenciasRequisitos } from "../api/client";
 import { errMsg } from "../design/tokens";
 
 const SEV_CLS: Record<string, string> = { bloqueante: "mat-red", mayor: "mat-amber", menor: "mat-neutral", observacion: "mat-ok" };
@@ -12,11 +12,19 @@ export function RequisitosEditor({ tipoDoc, disciplinas, resueltosIniciales, onS
   const [cat, setCat] = useState<CatalogoRequisito[]>([]);
   const [asig, setAsig] = useState<Set<string>>(new Set(resueltosIniciales || []));
   const [sug, setSug] = useState<SugerenciasRequisitos | null>(null);
+  const [perfiles, setPerfiles] = useState<Perfil[]>([]);
+  const [perfilSel, setPerfilSel] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
 
   useEffect(() => { api.catalogoRequisitos().then(setCat).catch(() => {}); }, []);
   useEffect(() => { api.sugerenciasRequisitos(tipoDoc).then(setSug).catch(() => {}); }, [tipoDoc]);
+  useEffect(() => { api.perfiles().then(setPerfiles).catch(() => {}); }, []);
+
+  function agregarPerfil() {
+    const p = perfiles.find((x) => x.id === perfilSel);
+    if (p) setAsig((a) => new Set([...a, ...p.requisitos]));
+  }
 
   // aplica una sugerencia (la saca de la lista y muta el set asignado)
   function aplicar(grupo: "agregar" | "quitar" | "prior_disciplina", s: SugerenciaReq) {
@@ -58,6 +66,17 @@ export function RequisitosEditor({ tipoDoc, disciplinas, resueltosIniciales, onS
         Tildá qué requisitos exige esta familia (de una o varias normas). Los <b>sugeridos</b> salen de la
         disciplina del template; el aprendizaje refinará esto con los casos aprobados.
       </div>
+
+      {perfiles.length > 0 && (
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
+          <span className="faint" style={{ fontSize: 11.5 }}>Perfil de cumplimiento (proyecto):</span>
+          <select className="select" style={{ width: "auto", padding: "4px 8px", fontSize: 12 }} value={perfilSel} onChange={(e) => setPerfilSel(e.target.value)}>
+            <option value="">Elegí un perfil…</option>
+            {perfiles.map((p) => <option key={p.id} value={p.id}>{p.nombre}{p.jurisdiccion ? ` · ${p.jurisdiccion}` : ""} ({p.requisitos.length})</option>)}
+          </select>
+          <button className="btn btn-ghost" style={{ padding: "4px 9px" }} disabled={!perfilSel} onClick={agregarPerfil}>+ agregar requisitos del perfil</button>
+        </div>
+      )}
 
       {sug && (sug.agregar.length + sug.quitar.length + sug.prior_disciplina.length > 0) && (
         <div style={{ border: "1px solid var(--teal)", background: "var(--teal-wash)", borderRadius: 8, padding: 10, marginBottom: 8 }}>

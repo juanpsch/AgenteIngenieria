@@ -1,0 +1,13 @@
+id: edificio-ar
+nombre: Edificio (AR) — eléctrica + estructura
+descripcion: >
+  Perfil de cumplimiento para obra de edificio en Argentina: exige la reglamentación eléctrica (AEA)
+  y la estructural (CIRSOC). Lo referencian las familias/casos del proyecto.
+jurisdiccion: AR
+proyecto: null            # genérico; un perfil puede fijar un proyecto concreto
+
+# Un perfil bundlea normas enteras y/o requisitos sueltos (mismo formato que una familia).
+normas:
+  - aea-90364
+  - cirsoc-201
+requisitos: []
