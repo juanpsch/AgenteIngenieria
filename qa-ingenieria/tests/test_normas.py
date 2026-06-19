@@ -37,6 +37,43 @@ def test_reglas_de_normas_llevan_norma_ref():
     assert any(r["tipo"] == "norma_lookup" for r in rs)
 
 
+def test_catalogo_y_requisito_por_id():
+    cat = normas.catalogo_requisitos()
+    assert cat and all(q.get("req_id") and ":" in q["req_id"] for q in cat)
+    q = normas.requisito_por_id("aea-90364:aea_caida_tension")
+    assert q and q["tipo"] == "norma_lookup" and q["norma_ref"] == "AEA 90364"
+    assert normas.requisito_por_id("inexistente:x") is None
+
+
+def test_resolver_norma_entera():
+    reglas = normas.resolver_requisitos({"normas": ["aea-90364"]})
+    ids = {r["id"] for r in reglas}
+    assert "aea_caida_tension" in ids and "aea_seccion_minima" in ids
+
+
+def test_resolver_granular_mezcla_normas():
+    reglas = normas.resolver_requisitos({"requisitos": ["aea-90364:aea_diferencial_30ma",
+                                                        "cirsoc-201:cirsoc_resistencia_hormigon"]})
+    ids = {r["id"] for r in reglas}
+    assert ids == {"aea_diferencial_30ma", "cirsoc_resistencia_hormigon"}  # un doc, dos normas
+
+
+def test_resolver_excluir_por_id_local_o_global():
+    base = normas.resolver_requisitos({"normas": ["aea-90364"]})
+    assert any(r["id"] == "aea_cuadro_cargas" for r in base)
+    sin1 = normas.resolver_requisitos({"normas": ["aea-90364"], "excluir": ["aea_cuadro_cargas"]})
+    sin2 = normas.resolver_requisitos({"normas": ["aea-90364"], "excluir": ["aea-90364:aea_cuadro_cargas"]})
+    assert not any(r["id"] == "aea_cuadro_cargas" for r in sin1)
+    assert not any(r["id"] == "aea_cuadro_cargas" for r in sin2)
+
+
+def test_resolver_template_inline_pisa_a_norma():
+    reglas = normas.resolver_requisitos({"normas": ["aea-90364"],
+                                         "reglas": [{"id": "aea_caida_tension", "tipo": "presencia", "patron": "x"}]})
+    caida = [r for r in reglas if r["id"] == "aea_caida_tension"]
+    assert len(caida) == 1 and caida[0]["tipo"] == "presencia"  # el template gana
+
+
 def test_ancla_con_regex_invalido_no_rompe():
     # un ancla mal escrita (paréntesis sin cerrar) no debe crashear la detección
     assert normas._ancla_match("(AEA sin cerrar", "texto (AEA sin cerrar aquí") is True

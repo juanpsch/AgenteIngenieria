@@ -141,10 +141,13 @@ def _tier2_reglas(doc: dict, cfg: dict, extracto: dict) -> list[Hallazgo]:
     out: list[Hallazgo] = []
     texto = doc.get("contenido") or ""
     tablas = (extracto or {}).get("tablas") or []
-    normas_ids = cfg.get("normas") or []
 
-    # 1) Detección del vínculo
-    for det in normas.detectar_normas(texto, normas_ids):
+    # Conjunto final de requisitos (atajo `normas` + granular `requisitos` + inline − `excluir`).
+    reglas = normas.resolver_requisitos(cfg)
+
+    # 1) Detección del vínculo: normas esperadas = las listadas + las que están detrás de los requisitos.
+    esperadas = sorted({*(cfg.get("normas") or []), *(r.get("norma_id") for r in reglas if r.get("norma_id"))})
+    for det in normas.detectar_normas(texto, esperadas):
         declarada = det.get("declarada")
         out.append(mk(f"norma_declarada:{det['id']}", "norma", "mayor",
                       "ok" if declarada else "fallo", fuente="reglas",
@@ -154,10 +157,7 @@ def _tier2_reglas(doc: dict, cfg: dict, extracto: dict) -> list[Hallazgo]:
                       sugerencia="" if declarada else f"Citar «{det['nombre']}» en la sección de normas o el cajetín.",
                       norma_ref=det.get("norma_ref")))
 
-    # 2) Aplicación: reglas del template + de las normas (merge por id, el template gana)
-    reglas_tpl = cfg.get("reglas") or []
-    ids_tpl = {r.get("id") for r in reglas_tpl}
-    reglas = list(reglas_tpl) + [r for r in normas.reglas_de_normas(normas_ids) if r.get("id") not in ids_tpl]
+    # 2) Aplicación de los requisitos resueltos (cada hallazgo cita su norma_ref).
     for r in reglas:
         out.append(reglas_revision.evaluar_regla(r, texto, tablas))
     return out

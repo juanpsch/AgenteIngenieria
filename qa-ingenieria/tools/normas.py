@@ -73,7 +73,8 @@ def auto_detectar(texto: str) -> list[str]:
 
 
 def reglas_de_normas(ids: list[str]) -> list[dict[str, Any]]:
-    """Reglas Tier 2 de las normas dadas, cada una anotada con `norma_id` y `norma_ref`."""
+    """Reglas Tier 2 de las normas dadas, cada una anotada con `norma_id`, `norma_ref` y el id global
+    `req_id` = "<norma>:<id>" (la unidad asignable a una familia)."""
     normas = cargar_normas()
     out: list[dict[str, Any]] = []
     for nid in ids or []:
@@ -82,5 +83,44 @@ def reglas_de_normas(ids: list[str]) -> list[dict[str, Any]]:
             continue
         ref = _norma_ref(n)
         for r in n.get("reglas") or []:
-            out.append({**r, "norma_id": nid, "norma_ref": ref})
+            out.append({**r, "norma_id": nid, "norma_ref": ref, "req_id": f"{nid}:{r.get('id')}"})
     return out
+
+
+def catalogo_requisitos() -> list[dict[str, Any]]:
+    """Vista PLANA de todos los requisitos (reglas) de todas las normas: la 'biblioteca' de elementos
+    chequeables. Cada uno con `req_id` global + tags (norma, disciplina). Para asignar a las familias."""
+    normas = cargar_normas()
+    out: list[dict[str, Any]] = []
+    for nid, n in normas.items():
+        ref = _norma_ref(n)
+        disc = (n.get("aplica_a") or {}).get("disciplinas")  # opcional (eje futuro)
+        for r in n.get("reglas") or []:
+            out.append({**r, "norma_id": nid, "norma_nombre": n.get("nombre"), "norma_ref": ref,
+                        "req_id": f"{nid}:{r.get('id')}", "disciplinas": disc})
+    return out
+
+
+def requisito_por_id(req_id: str) -> dict[str, Any] | None:
+    """Busca un requisito por su id global "<norma>:<id>" en el catálogo."""
+    return next((q for q in catalogo_requisitos() if q.get("req_id") == req_id), None)
+
+
+def resolver_requisitos(revision: dict | None) -> list[dict[str, Any]]:
+    """Conjunto FINAL de requisitos (reglas) a evaluar para una familia, a partir de su bloque
+    `revision`:  expand(`normas`) ∪ `requisitos`(por id global) ∪ `reglas`(inline del template) − `excluir`.
+
+    Dedup/override por id LOCAL (el `reglas` inline del template pisa al de una norma con el mismo id;
+    `requisitos` pisa al expandido). `excluir` acepta id global "<norma>:<id>" o id local."""
+    revision = revision or {}
+    out: dict[str, dict[str, Any]] = {}  # id local -> regla
+    for r in reglas_de_normas(revision.get("normas") or []):   # atajo: norma entera
+        out[r.get("id")] = r
+    for rid in revision.get("requisitos") or []:               # granular por id global
+        q = requisito_por_id(rid)
+        if q:
+            out[q.get("id")] = q
+    for r in revision.get("reglas") or []:                     # reglas propias del template
+        out[r.get("id")] = {**r, "req_id": f"template:{r.get('id')}"}
+    excl = {e.split(":", 1)[-1] for e in (revision.get("excluir") or [])}  # por id local o global
+    return [r for k, r in out.items() if k not in excl]
