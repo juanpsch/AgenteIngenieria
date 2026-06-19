@@ -98,6 +98,7 @@ export interface ValidarResp {
   cajetin_bbox: BBox | null;
   resumen: string;
   checks: Check[];
+  campos?: Record<string, unknown>;
   zonas_resultado: ZonaResultado[];
   revision: RevisionBlock | null;
   requisito_feedback: Record<string, { juicio: Juicio; nota: string | null }>;

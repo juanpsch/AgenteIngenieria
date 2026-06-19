@@ -25,6 +25,7 @@ export function Validar() {
   const [decision, setDecision] = useState<null | "approved" | "rejected">(null);
   const [revisarAuto, setRevisarAuto] = useState(true);
   const [revisando, setRevisando] = useState(false);
+  const [decidiendo, setDecidiendo] = useState(false);
   const [promote, setPromote] = useState(true);
   const [promoted, setPromoted] = useState<{ refs_count: number; maturity: string } | null>(null);
   const [err, setErr] = useState("");
@@ -47,7 +48,7 @@ export function Validar() {
       const r = await run("Validar (admisión)", () => api.validar(file, tipoDoc, { revisar: false }), PASOS);
       setRes(r); setStage("result");
       // Paso 2 — Revisión de contenido (todo el doc): corre después, con progreso; ya leés el gate.
-      if (revisarAuto && r.veredicto === "valido") {
+      if (revisarAuto && r.status === "EN_REVISION") {
         setRevisando(true);
         try { setRes(await run("Revisión de contenido", () => api.revisarCaso(r.thread_id), REV_PASOS)); }
         catch (e) { setErr("La admisión salió, pero la revisión de contenido falló: " + errMsg(e)); }
@@ -56,10 +57,17 @@ export function Validar() {
     } catch (e) { setErr(errMsg(e)); setStage("upload"); }
   }
   async function decidir(d: "approved" | "rejected") {
-    if (!res) return;
-    setErr("");
-    try { await api.decision(res.thread_id, d); setDecision(d); }
-    catch (e) { setErr("No se pudo registrar la decisión: " + errMsg(e)); }
+    if (!res || decidiendo) return;
+    setErr(""); setDecidiendo(true);
+    try {
+      await api.decision(res.thread_id, d);
+      setDecision(d);
+      // Aprobar puede disparar la revisión de contenido (ámbar / toggle off): re-leemos para mostrarla.
+      if (d === "approved" && !res.revision) {
+        try { setRes(await api.getCaso(res.thread_id)); } catch { /* el detalle se mantiene */ }
+      }
+    } catch (e) { setErr("No se pudo registrar la decisión: " + errMsg(e)); }
+    finally { setDecidiendo(false); }
   }
   async function revisarAhora() {
     if (!res) return;
@@ -175,8 +183,8 @@ export function Validar() {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
             <div className="muted" style={{ fontSize: 12.5 }}>Revisá la evidencia de arriba. La decisión final la tomás vos.</div>
             <div className="row-actions">
-              <button className="btn btn-red-o" onClick={() => decidir("rejected")}><X size={15} /> Rechazar</button>
-              <button className="btn btn-green" onClick={() => decidir("approved")}><Check size={15} /> Aprobar</button>
+              <button className="btn btn-red-o" disabled={decidiendo} onClick={() => decidir("rejected")}><X size={15} /> Rechazar</button>
+              <button className="btn btn-green" disabled={decidiendo} onClick={() => decidir("approved")}><Check size={15} /> Aprobar</button>
             </div>
           </div>
         )}

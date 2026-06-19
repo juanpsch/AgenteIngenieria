@@ -9,6 +9,7 @@ Correr:  uv run uvicorn api.main:app --reload
 
 from __future__ import annotations
 
+import logging
 import os
 import uuid
 from contextlib import asynccontextmanager
@@ -392,8 +393,12 @@ def decision(thread_id: str, body: DecisionIn):
             if tpl and tpl.get("revision"):
                 try:
                     status = _correr_revision(thread_id, st).get("status", status)
-                except Exception:
-                    pass
+                except Exception as exc:
+                    logging.getLogger("cotejar").warning("revisión al aprobar falló (%s): %s", thread_id, exc)
+    elif body.decision == "rejected" and status == Status.REQUIERE_DECISION.value:
+        # Rechazar un ámbar lo deja NO admisible (refleja la decisión humana en el estado).
+        get_compiled_graph().update_state(cfg, {"status": Status.NO_ADMISIBLE.value})
+        status = Status.NO_ADMISIBLE.value
     return {"status": status, "veredicto": veredicto_ui(status or ""), "decision": body.decision}
 
 

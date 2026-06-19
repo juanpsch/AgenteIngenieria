@@ -52,6 +52,7 @@ def init() -> None:
         c.execute(
             "CREATE UNIQUE INDEX IF NOT EXISTS ix_req_fb ON requisito_feedback(thread_id, req_id)"
         )
+        c.execute("CREATE INDEX IF NOT EXISTS ix_val_thread ON validaciones(thread_id)")
         c.commit()
 
 
@@ -59,6 +60,9 @@ def registrar_validacion(thread_id: str, doc: str, tipo_doc: str, status: str,
                          veredicto: str, score: Optional[float], operador: str, fecha: str,
                          campos: dict[str, Any] | None = None) -> int:
     with closing(_conn()) as c:
+        # Una fila por thread_id: en un reenvío al mismo caso (ida-y-vuelta) se reemplaza la previa,
+        # para no duplicar en métricas ni sesgar el corpus del aprendedor.
+        c.execute("DELETE FROM validaciones WHERE thread_id=?", (thread_id,))
         cur = c.execute(
             """INSERT INTO validaciones (thread_id, doc, tipo_doc, status, veredicto, score, operador, fecha, campos)
                VALUES (?,?,?,?,?,?,?,?,?)""",

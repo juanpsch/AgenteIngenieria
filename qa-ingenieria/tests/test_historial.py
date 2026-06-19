@@ -16,6 +16,16 @@ def test_sin_decision_usa_el_veredicto():
     assert _admitido({"veredicto": "invalido"}) is False
 
 
+def test_validacion_una_fila_por_thread(tmp_path, monkeypatch):
+    import api.historial as hist
+    monkeypatch.setattr(hist, "_DB", tmp_path / "h.sqlite")
+    hist.init()
+    hist.registrar_validacion("t1", "a.pdf", "tipo", "EN_TRIAGE", "valido", 90, "api", "f1")
+    hist.registrar_validacion("t1", "a.pdf", "tipo", "EN_TRIAGE", "invalido", 40, "api", "f2")  # reenvío
+    filas = [r for r in hist.listar() if r["thread_id"] == "t1"]
+    assert len(filas) == 1 and filas[0]["veredicto"] == "invalido"  # una fila, la última
+
+
 def test_requisito_feedback_persistencia_y_upsert(tmp_path, monkeypatch):
     import api.historial as hist
     monkeypatch.setattr(hist, "_DB", tmp_path / "h.sqlite")

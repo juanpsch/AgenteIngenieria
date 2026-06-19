@@ -56,9 +56,10 @@ export function PaginasViewer({ threadId, nPaginas, imagenes, zonas, cajetinBbox
   const lienzo = (
     <div style={{ position: "relative", display: "inline-block", width: "100%", background: "#fff" }}>
       {img
-        ? <img src={img} alt={`Página ${page + 1}`} style={{ width: "100%", display: "block", objectFit: "contain" }} />
+        ? <img src={img} alt={`Página ${page + 1}`} style={{ width: "100%", display: "block", objectFit: "contain" }}
+            onError={(e) => { e.currentTarget.style.display = "none"; }} />
         : <div className="faint" style={{ padding: 24, textAlign: "center" }}>Sin previsualización</div>}
-      {zonasPg.map((z, i) => <ZonaBox key={i} z={z} />)}
+      {zonasPg.map((z, i) => <ZonaBox key={`${z.nombre}-${z.pagina}-${i}`} z={z} />)}
       {/* Fallback: si no hay zonas en esta página pero sí el cajetín detectado por visión */}
       {!zonasPg.length && cajetinBbox && page === 0 && (
         <div className="cajetin-box" style={{ left: `${cajetinBbox.x * 100}%`, top: `${cajetinBbox.y * 100}%`, width: `${cajetinBbox.w * 100}%`, height: `${cajetinBbox.h * 100}%` }}>
@@ -135,7 +136,7 @@ export function PaginasViewer({ threadId, nPaginas, imagenes, zonas, cajetinBbox
             <div style={{ padding: 18, overflow: "auto", background: "var(--bg)", display: "flex", justifyContent: "center" }}>
               <div style={{ position: "relative", display: "inline-block", maxWidth: "100%" }}>
                 <img src={img} alt={`Página ${page + 1}`} style={{ maxWidth: "100%", maxHeight: "78vh", display: "block", borderRadius: 6, border: "1px solid var(--border2)", background: "#fff" }} />
-                {zonasPg.map((z, i) => <ZonaBox key={i} z={z} />)}
+                {zonasPg.map((z, i) => <ZonaBox key={`${z.nombre}-${z.pagina}-${i}`} z={z} />)}
               </div>
             </div>
           </div>

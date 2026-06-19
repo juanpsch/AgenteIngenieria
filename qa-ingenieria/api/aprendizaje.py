@@ -23,7 +23,11 @@ def computar_sugerencias(asignados: set[str], corpus: list[dict], feedback: dict
                          catalogo: list[dict], prior: set[str],
                          min_casos: int = 2, umbral: float = 0.8) -> dict[str, list]:
     """Pura (testeable sin DB). `corpus` = [{admitido, requisitos:{req_id:estado}}]; `feedback` =
-    {req_id:{juicio:n}}; `prior` = req_ids usados por familias de la misma disciplina."""
+    {req_id:{juicio:n}}; `prior` = req_ids usados por familias de la misma disciplina.
+
+    Limitación conocida (diseño §5): hoy solo se mina el lado APROBADOS (celdas A y B) + el feedback
+    explícito. Las celdas C (falla+rechazado, la evidencia más fuerte) y D (hueco de cobertura) aún NO
+    se explotan."""
     cat = {q["req_id"]: q for q in catalogo}
     aprob = [c for c in corpus if c.get("admitido")]
 
@@ -36,6 +40,7 @@ def computar_sugerencias(asignados: set[str], corpus: list[dict], feedback: dict
                 s["tot"] += 1
                 s["ok"] += int(est == "ok")
 
+    falla_aprob = {rid for rid, s in stats.items() if s["tot"] >= min_casos and s["ok"] / s["tot"] <= (1 - umbral)}
     agregar: list[dict] = []
     quitar: list[dict] = []
     ag_ids: set[str] = set()
@@ -62,7 +67,8 @@ def computar_sugerencias(asignados: set[str], corpus: list[dict], feedback: dict
             quitar.append({**_minq(q, rid), "motivo": "feedback_no_aplica",
                            "evidencia": f"{fb['no_aplica']} marcas «no aplica»"})
             qu_ids.add(rid)
-        if fb.get("de_acuerdo", 0) >= min_casos and rid not in asignados and rid not in ag_ids:
+        if (fb.get("de_acuerdo", 0) >= min_casos and rid not in asignados
+                and rid not in ag_ids and rid not in falla_aprob):  # no contradecir la señal de aprobados
             agregar.append({**_minq(q, rid), "motivo": "feedback_de_acuerdo",
                             "evidencia": f"{fb['de_acuerdo']} marcas «de acuerdo»"})
             ag_ids.add(rid)

@@ -41,9 +41,9 @@ export function GrillaRequisitos({ hallazgos, threadId, feedbackInicial }: {
   const toggle = (k: string) => setColapsado((s) => { const n = new Set(s); n.has(k) ? n.delete(k) : n.add(k); return n; });
 
   async function juzgar(reqId: string, j: Juicio) {
-    if (!threadId) return;
+    if (!threadId || fb[reqId] === j) return;   // re-clic del mismo juicio: no-op (no hay borrado)
     setErr("");
-    setFb((p) => ({ ...p, [reqId]: p[reqId] === j ? (undefined as unknown as Juicio) : j }));
+    setFb((p) => ({ ...p, [reqId]: j }));
     try { await api.requisitoFeedback(threadId, reqId, j); }
     catch (e) { setErr(errMsg(e)); }
   }
@@ -81,7 +81,7 @@ export function GrillaRequisitos({ hallazgos, threadId, feedbackInicial }: {
                     <span className="faint" style={{ fontSize: 10.5, marginLeft: "auto" }}>{dr.ok}/{dr.tot}</span>
                   </div>
                   {!colD && hs.map((h, i) => (
-                    <div key={i} className="check" style={{ marginLeft: 16, paddingTop: 6 }}>
+                    <div key={h.req_id ?? h.check_id ?? i} className="check" style={{ marginLeft: 16, paddingTop: 6 }}>
                       <div className={`badge ${EST_BADGE[h.estado]}`} title={h.estado}>{EST_GLYPH[h.estado]}</div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div className="lab" style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>

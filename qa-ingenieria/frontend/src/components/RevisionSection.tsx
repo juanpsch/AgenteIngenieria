@@ -25,7 +25,7 @@ export function RevisionSection({ rev, threadId, nPaginas, imagenes, feedback }:
   const [notas, setNotas] = useState("");
   const [err, setErr] = useState("");
 
-  const v = VERDICTO[rev.verdicto || ""] || VERDICTO.observado;
+  const v = VERDICTO[resuelto || rev.verdicto || ""] || VERDICTO.observado;
   const overlays: ZonaResultado[] = (rev.hallazgos || [])
     .filter((h) => h.ubicacion?.bbox)
     .map((h) => ({ nombre: h.check_id, pagina: h.ubicacion!.pagina, bbox: h.ubicacion!.bbox!, clase: "regla", estado: EST_OVL[h.estado], detalle: h.evidencia }));

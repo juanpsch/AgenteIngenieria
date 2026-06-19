@@ -180,7 +180,7 @@ def _a_hallazgos_vlm(observaciones: list) -> list[Hallazgo]:
         sev = o.get("severidad") if o.get("severidad") in _SEVS else "observacion"
         dim = o.get("dimension") if o.get("dimension") in _DIMS else "norma"
         pag = o.get("pagina")
-        ubic = {"pagina": int(pag)} if isinstance(pag, (int, float)) else None
+        ubic = {"pagina": int(pag)} if isinstance(pag, (int, float)) and not isinstance(pag, bool) and pag >= 1 else None
         out.append(mk(f"vlm:{o.get('id') or i + 1}", dim, sev, "advertencia", fuente="vlm",
                       evidencia=desc[:300], razonamiento=(o.get("razonamiento") or "Observación del revisor (visión)."),
                       sugerencia=(o.get("sugerencia") or ""), ubicacion=ubic, norma_ref=o.get("norma_ref")))
@@ -191,7 +191,7 @@ def _tier3_vlm(doc: dict, cfg: dict) -> list[Hallazgo]:
     """Tier 3 (cualitativo): un VLM observa lo interpretativo con los criterios de la(s) norma(s) +
     `observacion_vlm.instrucciones`. Observaciones no bloqueantes. Degrada con gracia (LLM no disponible
     o `REVISION_VLM=0` → [])."""
-    if (os.getenv("REVISION_VLM", "1") or "1").strip() == "0":
+    if (os.getenv("REVISION_VLM", "1") or "1").strip().lower() in ("0", "false", "no", "off"):
         return []
     instrucciones = ((cfg.get("observacion_vlm") or {}).get("instrucciones") or "").strip()
     norma_ids = sorted({r.get("norma_id") for r in normas.resolver_requisitos(cfg) if r.get("norma_id")}

@@ -41,6 +41,13 @@ def test_feedback_no_aplica_sugiere_quitar():
     assert {x["req_id"] for x in s["quitar"]} == {"aea-90364:seccion"}
 
 
+def test_de_acuerdo_no_contradice_falla_en_aprobados():
+    # 'caida' falla en los aprobados (señal B fuerte) aunque tenga 2 «de acuerdo» -> NO sugerir agregar
+    corpus = _corpus((True, {"aea-90364:caida": "fallo"}), (True, {"aea-90364:caida": "fallo"}))
+    s = computar_sugerencias(set(), corpus, {"aea-90364:caida": {"de_acuerdo": 2}}, CAT, set())
+    assert not any(x["req_id"] == "aea-90364:caida" for x in s["agregar"])
+
+
 def test_prior_por_disciplina_en_frio():
     # sin corpus, el prior sugiere lo usado por otras familias de la disciplina
     s = computar_sugerencias(set(), [], {}, CAT, {"aea-90364:caida"})

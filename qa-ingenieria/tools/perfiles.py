@@ -45,8 +45,8 @@ def expandir_revision(revision: dict | None) -> dict:
         p = perfiles.get(pid) or {}
         normas += p.get("normas") or []
         reqs += p.get("requisitos") or []
-    revision["normas"] = normas
-    revision["requisitos"] = reqs
+    revision["normas"] = list(dict.fromkeys(normas))      # dedup, conserva orden
+    revision["requisitos"] = list(dict.fromkeys(reqs))
     return revision
 
 

@@ -19,13 +19,14 @@ export function Historial() {
   const [yaPromovido, setYaPromovido] = useState(false);
   const [promote, setPromote] = useState(true);
   const [promoted, setPromoted] = useState<{ refs_count: number; maturity: string } | null>(null);
+  const [decidiendo, setDecidiendo] = useState(false);
   const [err, setErr] = useState("");
   const { run } = useActivity();
 
   useEffect(() => { api.historial().then(setH).catch(() => {}); }, []);
 
   async function abrir(threadId: string, docName: string, promovido: boolean) {
-    setErr(""); setDoc(docName); setYaPromovido(promovido); setPromoted(null); setPromote(true);
+    setErr(""); setDoc(docName); setYaPromovido(promovido); setPromoted(null); setPromote(true); setCaso(null);
     try {
       const c = await run(`Abrir análisis: ${docName}`, () => api.getCaso(threadId), ["Reconstruyendo el análisis…"]);
       setCaso(c);
@@ -33,13 +34,14 @@ export function Historial() {
   }
 
   async function decidir(d: "approved" | "rejected") {
-    if (!caso) return;
-    setErr("");
+    if (!caso || decidiendo) return;
+    setErr(""); setDecidiendo(true);
     try {
       await api.decision(caso.thread_id, d);
       // Re-leer: al aprobar un caso admitido se dispara la revisión de contenido.
       setCaso(await run("Aplicar decisión", () => api.getCaso(caso.thread_id), ["Registrando decisión y revisando…"]));
     } catch (e) { setErr("No se pudo registrar la decisión: " + errMsg(e)); }
+    finally { setDecidiendo(false); }
   }
   async function confirmarPromo() {
     if (!caso) return;
@@ -69,8 +71,8 @@ export function Historial() {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
               <div className="muted" style={{ fontSize: 12.5 }}>Este caso no tiene decisión. Revisá la evidencia y decidí.</div>
               <div className="row-actions">
-                <button className="btn btn-red-o" onClick={() => decidir("rejected")}><X size={15} /> Rechazar</button>
-                <button className="btn btn-green" onClick={() => decidir("approved")}><Check size={15} /> Aprobar</button>
+                <button className="btn btn-red-o" disabled={decidiendo} onClick={() => decidir("rejected")}><X size={15} /> Rechazar</button>
+                <button className="btn btn-green" disabled={decidiendo} onClick={() => decidir("approved")}><Check size={15} /> Aprobar</button>
               </div>
             </div>
           )}
