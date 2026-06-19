@@ -96,6 +96,18 @@ def test_extractor_node_da_extracto():
     assert "tablas" in out["revision_extracto"]   # Tier 2 las usa
 
 
+def test_paginas_utiles_recorta_blancos_al_final():
+    import os
+    import pytest
+    from tools import docs
+    p = "tests/fixtures/docs/aea_memoria_unrn.pdf"
+    if not os.path.exists(p):
+        pytest.skip("fixture no descargado (scripts/descargar_fixtures.py)")
+    # el doc tiene 14 páginas pero 11–14 están en blanco -> el preview debe mostrar 10
+    assert docs.contar_paginas(p) == 14
+    assert docs.paginas_utiles(p) == 10
+
+
 def test_indices_muestra_robusto():
     # k=1 no debe romper (división por cero) y cubre casos chicos/grandes
     from ai_agents.revisor import _indices_muestra

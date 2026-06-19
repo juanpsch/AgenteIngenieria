@@ -82,6 +82,39 @@ def contar_paginas(path: str) -> int:
         return 0
 
 
+def _pagina_vacia(page) -> bool:
+    """Página sin contenido: sin texto, sin imágenes y sin vectores. Barato (corta apenas encuentra algo)."""
+    try:
+        if page.get_text("text").strip():
+            return False
+        if page.get_images():
+            return False
+        if page.get_drawings():
+            return False
+        return True
+    except Exception:
+        return False  # ante la duda, NO la consideramos vacía
+
+
+def paginas_utiles(path: str) -> int:
+    """Nº de páginas hasta la ÚLTIMA con contenido (recorta las hojas EN BLANCO del final) para que la
+    previsualización no muestre páginas vacías de más. Escanea desde el final hacia atrás (barato:
+    solo toca las hojas finales). Cae a `contar_paginas` si no es PDF o todo está vacío."""
+    p = Path(path)
+    if p.suffix.lower().lstrip(".") != "pdf" or not p.exists():
+        return contar_paginas(path)
+    try:
+        import fitz
+
+        with fitz.open(str(p)) as doc:
+            for i in range(doc.page_count - 1, -1, -1):
+                if not _pagina_vacia(doc[i]):
+                    return i + 1
+            return int(doc.page_count)  # todas vacías -> no recortar
+    except Exception:
+        return contar_paginas(path)
+
+
 def render_pdf_page(path: str, page: int = 1, dpi: int = 110) -> str | None:
     """Renderiza UNA página puntual (1-indexada) de un PDF a data-URL PNG. None si no existe."""
     p = Path(path)

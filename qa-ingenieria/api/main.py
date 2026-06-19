@@ -108,7 +108,7 @@ def _map_validacion(st: dict) -> dict:
     doc_ult = docs_[-1] if docs_ else {}
     imgs = doc_ult.get("imagenes") or []
     path = doc_ult.get("path")
-    n_paginas = docs.contar_paginas(path) if path else len(imgs)
+    n_paginas = docs.paginas_utiles(path) if path else len(imgs)  # recorta hojas en blanco del final
     return {
         "thread_id": st.get("thread_id"),
         "status": st.get("status"),
