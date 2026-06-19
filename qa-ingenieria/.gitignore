@@ -1,0 +1,27 @@
+# Entorno / deps
+.venv/
+__pycache__/
+*.pyc
+
+# Secretos y config local
+.env
+credentials.json
+*.token
+
+# DB local (checkpointer SQLite de Fase 0 + historial)
+*.sqlite
+*.sqlite3
+*.db
+local_state/
+
+# Documentos de referencia subidos (Cotejar §3.2) — binarios, no se commitean
+knowledge/refs/
+
+# Archivos subidos al sandbox / temporales
+sandbox/uploads/
+uploads_api/
+tmp/
+
+# Documentos de ingeniería reales (confidenciales — no publicar). Los .md de docs/ SÍ se versionan.
+docs/*.pdf
+knowledge/tipos/filesTipos/

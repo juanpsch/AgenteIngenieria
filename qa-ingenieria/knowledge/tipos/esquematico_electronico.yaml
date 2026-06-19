@@ -1,0 +1,89 @@
+tipo_doc: esquematico_electronico
+nombre: Esquemático electrónico
+disciplinas:
+- electrica
+- electronica
+formatos_archivo:
+- pdf
+cajetin:
+  requerido: true
+  campos_requeridos:
+  - proyecto
+  - codigo_documento
+  - revision
+  - autor
+  - pagina_x_de_n
+  - formato
+  logo_empresa: true
+  reglas:
+  - campo: codigo_documento
+    patron: ECA-BRD-[0-9]+
+    requerido: true
+  - campo: pagina_x_de_n
+    patron: Page [0-9]+ de [0-9]+
+    requerido: false
+secciones_requeridas:
+- indice_de_hojas
+- historial_revisiones
+columnas_requeridas: []
+caracteristicas:
+- Cajetín completo en cada hoja con numeración "Página X de N"
+- Primera hoja con índice de hojas e historial de revisiones
+- Diagramas con símbolos eléctricos y referencias de componentes (U/C/R)
+nomenclatura: <CODIGO>-<NNNN>/<AAAA> V<xx>R<yy>
+bloqueante:
+- archivo fuera de formatos_archivo
+- no es un esquemático (no tiene diagramas de circuito)
+- falta el cajetín o no identifica el documento
+senales_reconocimiento: 'Paquete multi-hoja de diagramas de circuito con cajetín por
+  hoja (proyecto, código, revisión, autor, página X de N) e índice de hojas en la
+  primera.
+
+  '
+criterios_aceptacion: 'PDF con cajetín que identifique el documento, índice de hojas
+  e historial de revisiones, y diagramas eléctricos.
+
+  '
+no_corresponde: 'Planos mecánicos, listas de materiales, memorias de cálculo, hojas
+  de datos o presupuestos.
+
+  '
+zonas:
+- nombre: Identidad
+  pagina: 1
+  bbox:
+    x: 0.0
+    y: 0.0
+    w: 1.0
+    h: 0.22
+  identidad: true
+- nombre: Codigo
+  pagina: 1
+  bbox:
+    x: 0.55
+    y: 0.0
+    w: 0.45
+    h: 0.22
+  campo: codigo
+  tipo: filename
+  ancla_inicio: ECA-BRD
+  requerido: true
+revision:
+  norma_ref: IPC / IRAM (lo que aplique al esquemático)
+  legibilidad:
+    blur_var_min: 80
+    ocr_conf_min: 0.6
+  contenido_requerido:
+  - id: indice_hojas
+    detectar: índice de hojas
+    severidad_si_falta: mayor
+  - id: historial_revisiones
+    detectar: historial de revisiones
+    severidad_si_falta: mayor
+  - id: cajetin_pagina
+    detectar: Page
+    severidad_si_falta: mayor
+  observacion_vlm:
+    instrucciones: >
+      Revisá como un ingeniero junior: símbolos de circuito legibles, referencias de
+      componentes (U/C/R) presentes, coherencia general y aspecto de borrador vs final.

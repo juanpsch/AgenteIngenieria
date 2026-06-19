@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:'IBM Plex Sans',system-ui,sans-serif;background:#EAEEEE;color:#16242A;-webkit-font-smoothing:antialiased}
+  ::selection{background:#0E6E78;color:#fff}
+  @keyframes ct-spin{to{transform:rotate(360deg)}}
+  @keyframes ct-fade{from{transform:translateY(6px)}to{transform:none}}
+  @keyframes ct-bar{0%{transform:translateX(-120%)}100%{transform:translateX(320%)}}
+  .ct-scroll::-webkit-scrollbar{width:9px;height:9px}
+  .ct-scroll::-webkit-scrollbar-thumb{background:#c4cdce;border-radius:6px}
+  .ct-scroll::-webkit-scrollbar-track{background:transparent}
+</style>
+</helmet>
+
+<div style="display:flex;height:100vh;width:100%;overflow:hidden;font-size:13px;line-height:1.45">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside style="width:236px;flex:none;background:#0A363C;color:#CFE0E1;display:flex;flex-direction:column;border-right:1px solid #06292e">
+    <div style="padding:20px 18px 16px;display:flex;align-items:center;gap:11px;border-bottom:1px solid rgba(255,255,255,.07)">
+      <div style="width:34px;height:34px;flex:none;border-radius:8px;background:#0E6E78;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M5 12.5l4.2 4.2L19 7" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.5 5.5h9" stroke="#7FC6CC" stroke-width="2.2" stroke-linecap="round"/></svg>
+      </div>
+      <div>
+        <div style="font-weight:700;font-size:16px;letter-spacing:-.2px;color:#fff">Cotejar</div>
+        <div style="font-size:10.5px;color:#6FA2A7;letter-spacing:.3px">GATE DE ADMISIÓN</div>
+      </div>
+    </div>
+
+    <nav style="padding:14px 12px;display:flex;flex-direction:column;gap:3px;flex:1">
+      <div style="font-size:10px;font-weight:600;letter-spacing:.8px;color:#5C8C91;padding:6px 10px 4px">FLUJO</div>
+      <button onClick="{{ goValidar }}" style="{{ navValidar }}">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.4-3 7.6-7 9-4-1.4-7-4.6-7-9V6l7-3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 12l2.2 2.2L15.5 9.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Validar documento</span>
+      </button>
+      <div style="font-size:10px;font-weight:600;letter-spacing:.8px;color:#5C8C91;padding:12px 10px 4px">ADMINISTRACIÓN</div>
+      <button onClick="{{ goTemplates }}" style="{{ navTemplates }}">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 3l9 4.5-9 4.5-9-4.5L12 3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M3 12l9 4.5 9-4.5M3 16.5L12 21l9-4.5" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+        <span>Templates de referencia</span>
+      </button>
+      <button onClick="{{ goHistorial }}" style="{{ navHistorial }}">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.2" stroke="currentColor" stroke-width="1.7"/><path d="M12 7.5V12l3 1.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Historial y auditoría</span>
+      </button>
+    </nav>
+
+    <div style="padding:14px 16px;border-top:1px solid rgba(255,255,255,.07)">
+      <div style="background:rgba(255,255,255,.05);border-radius:9px;padding:10px 12px;margin-bottom:12px">
+        <div style="font-size:10.5px;color:#6FA2A7;letter-spacing:.3px;margin-bottom:5px">PENDIENTES DE REVISIÓN</div>
+        <div style="display:flex;align-items:baseline;gap:6px"><span style="font-family:'IBM Plex Mono';font-size:20px;font-weight:600;color:#F0C674">23</span><span style="font-size:11px;color:#9FBFC2">requieren decisión</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:30px;height:30px;border-radius:50%;background:#13525a;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;color:#9FD0D4">MR</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;color:#EAF3F3;font-weight:500">M. Rossi</div>
+          <div style="font-size:10.5px;color:#6FA2A7">Mesa de admisión</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main class="ct-scroll" style="flex:1;overflow-y:auto;background:#EAEEEE">
+
+    <!-- ========================= VALIDAR ========================= -->
+    <sc-if value="{{ isValidar }}" hint-placeholder-val="{{ true }}">
+    <div>
+      <header style="position:sticky;top:0;z-index:5;background:rgba(234,238,238,.9);backdrop-filter:blur(8px);border-bottom:1px solid #D7DEDF;padding:18px 32px;display:flex;align-items:flex-end;justify-content:space-between">
+        <div>
+          <h1 style="margin:0;font-size:20px;font-weight:700;letter-spacing:-.4px">Validar documento</h1>
+          <p style="margin:3px 0 0;color:#5C6B71;font-size:12.5px">Cotejá un documento entregado contra su template de referencia.</p>
+        </div>
+        <sc-if value="{{ stageResult }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ resetValidation }}" style="display:flex;align-items:center;gap:7px;background:#fff;border:1px solid #CBD4D5;color:#0E6E78;font-weight:600;font-size:12.5px;padding:9px 15px;border-radius:8px;cursor:pointer">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 108-8" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><path d="M4 4v4h4" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Nueva validación
+          </button>
+        </sc-if>
+      </header>
+
+      <div style="max-width:1180px;margin:0 auto;padding:28px 32px 64px">
+
+        <!-- UPLOAD -->
+        <sc-if value="{{ stageUpload }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:22px;align-items:start;animation:ct-fade .3s ease">
+          <section style="background:#fff;border:1px solid #DDE3E4;border-radius:14px;padding:26px">
+            <div style="font-size:11px;font-weight:600;letter-spacing:.6px;color:#0E6E78;margin-bottom:14px">PASO 1 · DOCUMENTO A VALIDAR</div>
+            <label style="display:block;cursor:pointer">
+              <input type="file" style="display:none" onChange="{{ onFile }}">
+              <div style="{{ dropStyle }}">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5" stroke="#0E6E78" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15v3.5A1.5 1.5 0 005.5 20h13a1.5 1.5 0 001.5-1.5V15" stroke="#9FB9BB" stroke-width="1.7" stroke-linecap="round"/></svg>
+                <div style="margin-top:12px;font-weight:600;font-size:14px;color:#16242A">{{ fileLabel }}</div>
+                <div style="margin-top:4px;color:#7C8A8F;font-size:12px">Arrastrá un PDF o imagen, o hacé clic para buscar · máx. 50 MB</div>
+              </div>
+            </label>
+
+            <div style="font-size:11px;font-weight:600;letter-spacing:.6px;color:#0E6E78;margin:24px 0 10px">PASO 2 · TEMPLATE DE REFERENCIA</div>
+            <div style="position:relative">
+              <select onChange="{{ onSelectTemplate }}" style="width:100%;appearance:none;background:#F7F9F9;border:1px solid #CBD4D5;border-radius:9px;padding:12px 38px 12px 13px;font-family:inherit;font-size:13px;color:#16242A;cursor:pointer">
+                <option value="">Seleccioná contra qué tipo validar…</option>
+                <option value="Plano estructural tipo X — ABC">Plano estructural tipo X — ABC · Calibrado</option>
+                <option value="Memoria de cálculo MC-02 — ABC">Memoria de cálculo MC-02 — ABC · Calibrando</option>
+                <option value="Plano de instalación eléctrica — Delta Ing.">Plano de instalación eléctrica — Delta Ing. · Solo reglas</option>
+                <option value="Plano arquitectónico tipo A — Delta Ing.">Plano arquitectónico tipo A — Delta Ing. · Calibrado</option>
+              </select>
+              <svg style="position:absolute;right:13px;top:50%;transform:translateY(-50%);pointer-events:none" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#5C6B71" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <p style="margin:9px 2px 0;font-size:11.5px;color:#8A989E">El template define el rótulo característico y los campos obligatorios. Su <b style="color:#5C6B71;font-weight:600">madurez</b> determina si la similitud visual es un check duro o sólo informativa.</p>
+
+            <button onClick="{{ startValidation }}" disabled="{{ validateDisabled }}" style="{{ validateBtnStyle }}">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.4-3 7.6-7 9-4-1.4-7-4.6-7-9V6l7-3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 12l2.2 2.2L15.5 9.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Validar documento
+            </button>
+          </section>
+
+          <aside style="background:#fff;border:1px solid #DDE3E4;border-radius:14px;padding:22px">
+            <div style="font-size:11px;font-weight:600;letter-spacing:.6px;color:#5C6B71;margin-bottom:14px">CÓMO FUNCIONA EL GATE</div>
+            <div style="display:flex;flex-direction:column;gap:15px">
+              <div style="display:flex;gap:12px">
+                <div style="width:26px;height:26px;flex:none;border-radius:7px;background:#E6F0F1;color:#0E6E78;display:flex;align-items:center;justify-content:center;font-weight:700">1</div>
+                <div><div style="font-weight:600;font-size:13px">Identidad / pertenencia</div><div style="color:#7C8A8F;font-size:12px;margin-top:2px">¿El documento es del tipo y empresa esperados? Se coteja rótulo, logo/sello y formato del cajetín.</div></div>
+              </div>
+              <div style="display:flex;gap:12px">
+                <div style="width:26px;height:26px;flex:none;border-radius:7px;background:#E6F0F1;color:#0E6E78;display:flex;align-items:center;justify-content:center;font-weight:700">2</div>
+                <div><div style="font-weight:600;font-size:13px">Completitud / conformidad</div><div style="color:#7C8A8F;font-size:12px;margin-top:2px">¿Están todos los campos obligatorios presentes y bien formados?</div></div>
+              </div>
+              <div style="display:flex;gap:12px">
+                <div style="width:26px;height:26px;flex:none;border-radius:7px;background:#E6F0F1;color:#0E6E78;display:flex;align-items:center;justify-content:center;font-weight:700">3</div>
+                <div><div style="font-weight:600;font-size:13px">Veredicto en 3 estados</div><div style="color:#7C8A8F;font-size:12px;margin-top:2px">Válido, Inválido o Revisión manual — este último requiere decisión humana.</div></div>
+              </div>
+            </div>
+            <div style="margin-top:18px;padding-top:15px;border-top:1px dashed #DDE3E4;display:flex;gap:8px">
+              <div style="flex:1;text-align:center"><div style="font-family:'IBM Plex Mono';font-weight:600;font-size:17px;color:#1F8A5B">{{ apprText }}</div><div style="font-size:10px;color:#8A989E;margin-top:2px">umbral aprob.</div></div>
+              <div style="flex:1;text-align:center"><div style="font-family:'IBM Plex Mono';font-weight:600;font-size:17px;color:#C2860E">{{ revText }}</div><div style="font-size:10px;color:#8A989E;margin-top:2px">umbral revisión</div></div>
+              <div style="flex:1;text-align:center"><div style="font-family:'IBM Plex Mono';font-weight:600;font-size:17px;color:#16242A">~6s</div><div style="font-size:10px;color:#8A989E;margin-top:2px">prom. análisis</div></div>
+            </div>
+          </aside>
+        </div>
+        </sc-if>
+
+        <!-- PROCESSING -->
+        <sc-if value="{{ stageProcessing }}" hint-placeholder-val="{{ false }}">
+        <div style="max-width:640px;margin:30px auto 0;background:#fff;border:1px solid #DDE3E4;border-radius:14px;padding:34px 34px 30px;animation:ct-fade .3s ease">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:6px">
+            <div style="width:30px;height:30px;border:3px solid #D7E4E5;border-top-color:#0E6E78;border-radius:50%;animation:ct-spin .8s linear infinite"></div>
+            <div>
+              <div style="font-weight:700;font-size:16px">Validando documento…</div>
+              <div style="color:#7C8A8F;font-size:12.5px">{{ procFileName }} · contra {{ selectedTemplate }}</div>
+            </div>
+          </div>
+          <div style="height:6px;background:#EDF1F1;border-radius:4px;overflow:hidden;margin:18px 0 24px;position:relative">
+            <div style="position:absolute;top:0;bottom:0;left:0;width:30%;background:linear-gradient(90deg,transparent,#0E6E78,transparent);animation:ct-bar 1.1s ease-in-out infinite"></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:13px">
+            <sc-for list="{{ procSteps }}" as="step" hint-placeholder-count="5">
+              <div style="display:flex;align-items:center;gap:11px">
+                <div style="{{ step.dot }}">{{ step.mark }}</div>
+                <div style="{{ step.txt }}">{{ step.label }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- RESULT -->
+        <sc-if value="{{ stageResult }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:ct-fade .35s ease">
+
+          <!-- verdict banner -->
+          <div style="{{ verdictBanner }}">
+            <div style="display:flex;align-items:center;gap:16px">
+              <div style="{{ verdictIconWrap }}">{{ verdictGlyph }}</div>
+              <div>
+                <div style="font-size:11px;font-weight:600;letter-spacing:.8px;opacity:.72">VEREDICTO</div>
+                <div style="font-size:24px;font-weight:700;letter-spacing:-.5px;line-height:1.1">{{ verdictLabel }}</div>
+                <div style="font-size:12.5px;opacity:.88;margin-top:3px;max-width:560px">{{ verdictSummary }}</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:24px;flex:none">
+              <div style="text-align:right">
+                <div style="font-size:11px;letter-spacing:.4px;opacity:.72">{{ procFileName }}</div>
+                <div style="font-family:'IBM Plex Mono';font-size:12px;opacity:.9">{{ selectedTemplate }}</div>
+                <div style="{{ matChip }}">{{ matLabel }}</div>
+              </div>
+              <div style="text-align:center;padding-left:22px;border-left:1px solid currentColor">
+                <div style="font-family:'IBM Plex Mono';font-size:30px;font-weight:600;line-height:1">{{ scoreText }}</div>
+                <div style="font-size:10px;letter-spacing:.4px;opacity:.72">{{ scoreCaption }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- layout switcher -->
+          <div style="display:flex;align-items:center;gap:10px;margin:18px 0 16px">
+            <span style="font-size:11.5px;color:#7C8A8F;font-weight:500">Vista del desglose:</span>
+            <div style="display:inline-flex;background:#fff;border:1px solid #CBD4D5;border-radius:8px;padding:3px;gap:2px">
+              <button onClick="{{ setLayoutA }}" style="{{ tabA }}">Dividida</button>
+              <button onClick="{{ setLayoutB }}" style="{{ tabB }}">Tarjetas</button>
+              <button onClick="{{ setLayoutC }}" style="{{ tabC }}">Compacta</button>
+            </div>
+          </div>
+
+          <!-- ===== VARIANT A: split ===== -->
+          <sc-if value="{{ layoutA }}" hint-placeholder-val="{{ true }}">
+          <div style="display:grid;grid-template-columns:1fr 1.25fr;gap:20px;align-items:start">
+            <section style="background:#fff;border:1px solid #DDE3E4;border-radius:14px;padding:16px;position:sticky;top:96px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:11px">
+                <div style="font-size:11px;font-weight:600;letter-spacing:.6px;color:#5C6B71">DOCUMENTO · RÓTULO DETECTADO</div>
+                <span style="font-size:10.5px;background:#E6F0F1;color:#0E6E78;padding:2px 7px;border-radius:5px;font-weight:600">pág 1/3</span>
+              </div>
+              <div onClick="{{ openDocPreview }}" title="Previsualizar a tamaño completo" style="{{ previewWrap }};cursor:zoom-in">
+                <div style="position:absolute;inset:0;background:linear-gradient(#dfe7e8 1px,transparent 1px),linear-gradient(90deg,#dfe7e8 1px,transparent 1px);background-size:26px 26px;opacity:.6"></div>
+                <div style="position:absolute;left:18px;top:18px;right:18px;bottom:80px;border:1.5px solid #c2cdcf;border-radius:3px"></div>
+                <svg style="position:absolute;left:30%;top:22%;opacity:.32" width="150" height="120" viewBox="0 0 150 120" fill="none"><rect x="10" y="14" width="80" height="60" stroke="#8aa0a2" stroke-width="2"/><path d="M10 74l40-30 40 30M50 44V14M90 30l40 14v50l-40 16" stroke="#8aa0a2" stroke-width="2" stroke-linejoin="round"/></svg>
+                <div style="position:absolute;right:18px;bottom:14px;width:236px;height:60px;border:2px solid #0E6E78;border-radius:4px;background:rgba(14,110,120,.07);box-shadow:0 0 0 4px rgba(14,110,120,.1)">
+                  <div style="position:absolute;top:-19px;left:-2px;background:#0E6E78;color:#fff;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px 4px 0 0">Cajetín detectado · {{ scoreText }} match</div>
+                  <div style="padding:8px 10px;font-family:'IBM Plex Mono';font-size:9px;color:#3a5256;line-height:1.6">N° PL-2231 · REV — · ESC 1:50<br>ABC · TIPO X · 14/06/2026</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:7px;margin-top:11px">
+                <button onClick="{{ openDocPreview }}" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;background:#fff;border:1px solid #CBD4D5;color:#3A474C;font-weight:600;font-size:11.5px;padding:8px;border-radius:8px;cursor:pointer"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12" r="2.5" stroke="currentColor" stroke-width="1.5"/></svg>Previsualizar</button>
+                <button onClick="{{ downloadDoc }}" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;background:#fff;border:1px solid #CBD4D5;color:#3A474C;font-weight:600;font-size:11.5px;padding:8px;border-radius:8px;cursor:pointer"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 4v10m0 0l-3.5-3.5M12 14l3.5-3.5M5 18h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Descargar</button>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:9px">
+                <div style="flex:1;background:#F7F9F9;border:1px solid #E2E8E8;border-radius:9px;padding:10px 12px"><div style="font-size:10.5px;color:#8A989E">Identidad</div><div style="{{ dimIdLabelStyle }}">{{ dimIdLabel }}</div></div>
+                <div style="flex:1;background:#F7F9F9;border:1px solid #E2E8E8;border-radius:9px;padding:10px 12px"><div style="font-size:10.5px;color:#8A989E">Completitud</div><div style="{{ dimCompLabelStyle }}">{{ dimCompLabel }}</div></div>
+              </div>
+            </section>
+
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <section style="background:#fff;border:1px solid #DDE3E4;border-radius:14px;overflow:hidden">
+                <div style="display:flex;align-items:center;gap:9px;padding:13px 16px;border-bottom:1px solid #EDF1F1;background:#FAFCFC">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.4-3 7.6-7 9-4-1.4-7-4.6-7-9V6l7-3z" stroke="#0E6E78" stroke-width="1.7" stroke-linejoin="round"/></svg>
+                  <div style="font-weight:700;font-size:13.5px">Identidad / pertenencia</div>
+                  <span style="margin-left:auto;font-size:11px;color:#7C8A8F">¿es el tipo X de ABC?</span>
+                </div>
+                <sc-for list="{{ identidad }}" as="c" hint-placeholder-count="5">
+                  <div style="display:flex;align-items:flex-start;gap:11px;padding:11px 16px;border-bottom:1px solid #F1F4F4">
+                    <div style="{{ c.badge }}">{{ c.icon }}</div>
+                    <div style="flex:1"><div style="font-weight:500;font-size:12.5px">{{ c.text }}</div><div style="{{ c.detailStyle }}">{{ c.detail }}</div></div>
+                  </div>
+                </sc-for>
+              </section>
+              <section style="background:#fff;border:1px solid #DDE3E4;border-radius:14px;overflow:hidden">
+                <div style="display:flex;align-items:center;gap:9px;padding:13px 16px;border-bottom:1px solid #EDF1F1;background:#FAFCFC">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 5h11M9 12h11M9 19h11" stroke="#0E6E78" stroke-width="1.7" stroke-linecap="round"/><path d="M4 5l1.2 1.2L7 4M4 12l1.2 1.2L7 11M4 19l1.2 1.2L7 18" stroke="#0E6E78" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <div style="font-weight:700;font-size:13.5px">Completitud / conformidad</div>
+                  <span style="margin-left:auto;font-size:11px;color:#7C8A8F">campos obligatorios</span>
+                </div>
+                <sc-for list="{{ completitud }}" as="c" hint-placeholder-count="6">
+                  <div style="display:flex;align-items:flex-start;gap:11px;padding:11px 16px;border-bottom:1px solid #F1F4F4">
+                    <div style="{{ c.badge }}">{{ c.icon }}</div>
+                    <div style="flex:1"><div style="font-weight:500;font-size:12.5px">{{ c.text }}</div><div style="{{ c.detailStyle }}">{{ c.detail }}</div></div>
+                  </div>
+                </sc-for>
+              </section>
+            </div>
+          </div>
+          </sc-if>
+
+          <!-- ===== VARIANT B: two dimension cards ===== -->
+          <sc-if value="{{ layoutB }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+            <section style="{{ dimCardId }}">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
+                <div style="font-size:11px;font-weight:600;letter-spacing:.6px;color:#5C6B71">DIMENSIÓN 1 · IDENTIDAD</div>
+                <div style="{{ dimIdPill }}">{{ dimIdLabel }}</div>
+              </div>
+              <div style="font-weight:700;font-size:16px;margin-bottom:13px">¿Pertenece al tipo X de ABC?</div>
+              <sc-for list="{{ identidad }}" as="c" hint-placeholder-count="5">
+                <div style="display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-top:1px solid #EDF1F1">
+                  <div style="{{ c.badge }}">{{ c.icon }}</div>
+                  <div style="flex:1"><div style="font-weight:500;font-size:12.5px">{{ c.text }}</div><div style="{{ c.detailStyle }}">{{ c.detail }}</div></div>
+                </div>
+              </sc-for>
+            </section>
+            <section style="{{ dimCardComp }}">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
+                <div style="font-size:11px;font-weight:600;letter-spacing:.6px;color:#5C6B71">DIMENSIÓN 2 · COMPLETITUD</div>
+                <div style="{{ dimCompPill }}">{{ dimCompLabel }}</div>
+              </div>
+              <div style="font-weight:700;font-size:16px;margin-bottom:13px">¿Están todos los campos?</div>
+              <sc-for list="{{ completitud }}" as="c" hint-placeholder-count="6">
+                <div style="display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-top:1px solid #EDF1F1">
+                  <div style="{{ c.badge }}">{{ c.icon }}</div>
+                  <div style="flex:1"><div style="font-weight:500;font-size:12.5px">{{ c.text }}</div><div style="{{ c.detailStyle }}">{{ c.detail }}</div></div>
+                </div>
+              </sc-for>
+            </section>
+          </div>
+          </sc-if>
+
+          <!-- ===== VARIANT C: compact ===== -->
+          <sc-if value="{{ layoutC }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff;border:1px solid #DDE3E4;border-radius:14px;overflow:hidden">
+            <div style="display:flex;align-items:center;gap:14px;padding:14px 18px;background:#FAFCFC;border-bottom:1px solid #EDF1F1">
+              <div onClick="{{ openDocPreview }}" title="Previsualizar" style="width:46px;height:34px;flex:none;border:1px solid #c2cdcf;border-radius:3px;background:linear-gradient(#eef2f2 1px,transparent 1px),linear-gradient(90deg,#eef2f2 1px,transparent 1px);background-size:8px 8px;position:relative;cursor:zoom-in"><div style="position:absolute;right:3px;bottom:3px;width:20px;height:9px;border:1.5px solid #0E6E78;border-radius:1px"></div></div>
+              <div style="flex:1">
+                <div style="font-weight:600;font-size:12.5px">{{ procFileName }}</div>
+                <div style="font-size:11px;color:#7C8A8F">Rótulo detectado · cajetín inferior derecho</div>
+              </div>
+              <div style="display:flex;gap:7px">
+                <div style="{{ dimIdPill }}">Identidad: {{ dimIdLabel }}</div>
+                <div style="{{ dimCompPill }}">Completitud: {{ dimCompLabel }}</div>
+              </div>
+            </div>
+            <div style="padding:4px 0">
+              <div style="font-size:10.5px;font-weight:600;letter-spacing:.6px;color:#0E6E78;padding:10px 18px 4px">IDENTIDAD</div>
+              <sc-for list="{{ identidad }}" as="c" hint-placeholder-count="5">
+                <div style="display:flex;align-items:center;gap:10px;padding:7px 18px">
+                  <div style="{{ c.badgeSm }}">{{ c.icon }}</div>
+                  <div style="flex:1;font-weight:500;font-size:12.5px">{{ c.text }}</div>
+                  <div style="{{ c.detailInline }}">{{ c.detail }}</div>
+                </div>
+              </sc-for>
+              <div style="font-size:10.5px;font-weight:600;letter-spacing:.6px;color:#0E6E78;padding:12px 18px 4px;border-top:1px solid #F1F4F4;margin-top:4px">COMPLETITUD</div>
+              <sc-for list="{{ completitud }}" as="c" hint-placeholder-count="6">
+                <div style="display:flex;align-items:center;gap:10px;padding:7px 18px">
+                  <div style="{{ c.badgeSm }}">{{ c.icon }}</div>
+                  <div style="flex:1;font-weight:500;font-size:12.5px">{{ c.text }}</div>
+                  <div style="{{ c.detailInline }}">{{ c.detail }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          </sc-if>
+
+          <!-- ===== FOOTER ACTIONS / PROMOTION LOOP ===== -->
+          <div style="margin-top:18px;background:#fff;border:1px solid #DDE3E4;border-radius:14px;overflow:hidden">
+
+            <!-- pending decision -->
+            <sc-if value="{{ showDecision }}" hint-placeholder-val="{{ true }}">
+            <div style="padding:16px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+              <div style="{{ decisionNote }}">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex:none"><path d="M12 8v5m0 3h.01M10.3 3.9L2.6 17.4A2 2 0 004.3 20.4h15.4a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>{{ decisionText }}</span>
+              </div>
+              <div style="display:flex;gap:10px;margin-left:auto">
+                <button onClick="{{ downloadReport }}" style="display:flex;align-items:center;gap:7px;background:#fff;border:1px solid #CBD4D5;color:#3A474C;font-weight:600;font-size:12.5px;padding:10px 15px;border-radius:9px;cursor:pointer">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 4v10m0 0l-3.5-3.5M12 14l3.5-3.5M5 18h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  Descargar reporte
+                </button>
+                <button onClick="{{ rejectDoc }}" style="display:flex;align-items:center;gap:7px;background:#fff;border:1px solid #E3B7B4;color:#C0413B;font-weight:600;font-size:12.5px;padding:10px 15px;border-radius:9px;cursor:pointer">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                  Rechazar
+                </button>
+                <button onClick="{{ approveManual }}" style="display:flex;align-items:center;gap:7px;background:#1F8A5B;border:1px solid #1F8A5B;color:#fff;font-weight:600;font-size:12.5px;padding:10px 17px;border-radius:9px;cursor:pointer;box-shadow:0 1px 2px rgba(31,138,91,.3)">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M5 12.5l4.2 4.2L19 7" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  Aprobar manualmente
+                </button>
+              </div>
+            </div>
+            </sc-if>
+
+            <!-- rejected -->
+            <sc-if value="{{ isRejected }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:16px 20px;display:flex;align-items:center;gap:12px;background:#FBEAE9">
+              <div style="width:28px;height:28px;border-radius:50%;background:#C0413B;color:#fff;display:flex;align-items:center;justify-content:center;flex:none"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg></div>
+              <div style="flex:1"><div style="font-weight:600;color:#8E2B27">Documento rechazado</div><div style="font-size:12px;color:#9c4742">Registrado en el historial · M. Rossi · hoy 09:31</div></div>
+              <button onClick="{{ undoDecision }}" style="background:#fff;border:1px solid #E3B7B4;color:#8E2B27;font-weight:600;font-size:12px;padding:8px 13px;border-radius:8px;cursor:pointer">Deshacer</button>
+            </div>
+            </sc-if>
+
+            <!-- approved → promotion -->
+            <sc-if value="{{ isApproved }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="padding:14px 20px;display:flex;align-items:center;gap:12px;background:#E6F4EC;border-bottom:1px solid #CDE8D8">
+                <div style="width:28px;height:28px;border-radius:50%;background:#1F8A5B;color:#fff;display:flex;align-items:center;justify-content:center;flex:none"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M5 12.5l4.2 4.2L19 7" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                <div style="flex:1"><div style="font-weight:600;color:#145C3C">Aprobado manualmente</div><div style="font-size:12px;color:#2f7a55">M. Rossi · hoy 09:33 · queda registrado en auditoría</div></div>
+                <button onClick="{{ undoDecision }}" style="background:transparent;border:none;color:#2f7a55;font-weight:600;font-size:12px;cursor:pointer;text-decoration:underline">Deshacer</button>
+              </div>
+
+              <!-- promotion panel -->
+              <sc-if value="{{ showPromo }}" hint-placeholder-val="{{ true }}">
+              <div style="padding:20px;display:flex;gap:18px;align-items:flex-start">
+                <div style="width:40px;height:40px;flex:none;border-radius:10px;background:#E6F0F1;display:flex;align-items:center;justify-content:center">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3v6m0 0l3-3m-3 3L9 6" stroke="#0E6E78" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 13v5a1.5 1.5 0 001.5 1.5h13A1.5 1.5 0 0020 18v-5" stroke="#0E6E78" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="13" r="2.3" stroke="#0E6E78" stroke-width="1.6"/></svg>
+                </div>
+                <div style="flex:1">
+                  <div style="font-weight:700;font-size:14.5px;letter-spacing:-.2px">Promover a documento de referencia</div>
+                  <div style="font-size:12.5px;color:#5C6B71;margin-top:3px;max-width:560px">{{ promoText }}</div>
+                  <label style="display:flex;align-items:center;gap:11px;margin-top:14px;cursor:pointer;user-select:none">
+                    <button onClick="{{ togglePromote }}" style="{{ switchTrack }}"><span style="{{ switchKnob }}"></span></button>
+                    <span style="font-weight:500;font-size:13px">Usar este documento para mejorar el template</span>
+                  </label>
+                </div>
+                <button onClick="{{ confirmPromote }}" style="{{ promoBtnStyle }}">{{ promoBtnLabel }}</button>
+              </div>
+              </sc-if>
+
+              <!-- promoted success -->
+              <sc-if value="{{ isPromoted }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:18px 20px;display:flex;align-items:center;gap:13px;background:#F2FAF5">
+                <div style="width:30px;height:30px;border-radius:8px;background:#1F8A5B;color:#fff;display:flex;align-items:center;justify-content:center;flex:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12.5l4.2 4.2L19 7" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                <div style="flex:1"><div style="font-weight:600;color:#145C3C;font-size:13.5px">{{ promotedTitle }}</div><div style="font-size:12px;color:#2f7a55;margin-top:1px">{{ promotedSub }}</div></div>
+                <button onClick="{{ goTemplates }}" style="background:#fff;border:1px solid #BCE0CC;color:#145C3C;font-weight:600;font-size:12px;padding:8px 13px;border-radius:8px;cursor:pointer">Ver template →</button>
+              </div>
+              </sc-if>
+            </div>
+            </sc-if>
+          </div>
+
+        </div>
+        </sc-if>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ========================= TEMPLATES ========================= -->
+    <sc-if value="{{ isTemplates }}" hint-placeholder-val="{{ false }}">
+    <div>
+      <header style="position:sticky;top:0;z-index:5;background:rgba(234,238,238,.9);backdrop-filter:blur(8px);border-bottom:1px solid #D7DEDF;padding:18px 32px;display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:10px">
+          <sc-if value="{{ inDetail }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ closeTpl }}" style="background:#fff;border:1px solid #CBD4D5;border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#3A474C"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          </sc-if>
+          <div>
+            <h1 style="margin:0;font-size:20px;font-weight:700;letter-spacing:-.4px">{{ tplHeaderTitle }}</h1>
+            <p style="margin:3px 0 0;color:#5C6B71;font-size:12.5px">{{ tplHeaderSub }}</p>
+          </div>
+        </div>
+        <sc-if value="{{ inList }}" hint-placeholder-val="{{ true }}">
+          <button onClick="{{ openNew }}" style="display:flex;align-items:center;gap:8px;background:#0E6E78;border:1px solid #0E6E78;color:#fff;font-weight:600;font-size:12.5px;padding:10px 16px;border-radius:9px;cursor:pointer;box-shadow:0 1px 2px rgba(14,110,120,.3)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+            Nuevo template
+          </button>
+        </sc-if>
+      </header>
+
+      <div style="max-width:1180px;margin:0 auto;padding:24px 32px 60px">
+
+        <!-- LIST -->
+        <sc-if value="{{ inList }}" hint-placeholder-val="{{ true }}">
+        <div style="background:#fff;border:1px solid #DDE3E4;border-radius:14px;overflow:hidden;animation:ct-fade .3s ease">
+          <div style="display:grid;grid-template-columns:2.2fr .9fr 1fr .85fr 1.2fr .9fr 108px;gap:12px;padding:11px 20px;background:#FAFCFC;border-bottom:1px solid #EDF1F1;font-size:10.5px;font-weight:600;letter-spacing:.5px;color:#7C8A8F">
+            <div>TIPO DE DOCUMENTO</div><div>EMPRESA</div><div>DISCIPLINA</div><div>REFERENCIAS</div><div>MADUREZ</div><div>ACTUALIZADO</div><div style="text-align:right">ACCIONES</div>
+          </div>
+          <sc-for list="{{ templateRows }}" as="t" hint-placeholder-count="4">
+            <div onClick="{{ t.onOpen }}" style="display:grid;grid-template-columns:2.2fr .9fr 1fr .85fr 1.2fr .9fr 108px;gap:12px;padding:14px 20px;border-bottom:1px solid #F1F4F4;cursor:pointer;align-items:center" style-hover="background:#F7FAFA">
+              <div style="display:flex;align-items:center;gap:11px">
+                <div style="width:30px;height:30px;flex:none;border-radius:7px;background:#E6F0F1;display:flex;align-items:center;justify-content:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M6 3h8l4 4v14H6z" stroke="#0E6E78" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 3v4h4" stroke="#0E6E78" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+                <div style="font-weight:600;font-size:13px">{{ t.tipo }}</div>
+              </div>
+              <div style="color:#3A474C">{{ t.empresa }}</div>
+              <div style="color:#3A474C">{{ t.disc }}</div>
+              <div style="font-family:'IBM Plex Mono';color:#3A474C">{{ t.refsText }}</div>
+              <div><span style="{{ t.badge }}">{{ t.maturity }}</span></div>
+              <div style="color:#8A989E;font-size:12px">{{ t.date }}</div>
+              <div style="display:flex;gap:5px;justify-content:flex-end">
+                <button onClick="{{ t.onEdit }}" title="Editar" style="{{ rowActBtn }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M14.5 5.5l4 4M4 20l4.5-1 9-9-3.5-3.5-9 9L4 20z" stroke="#5C6B71" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                <button onClick="{{ t.onDownload }}" title="Descargar" style="{{ rowActBtn }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 4v10m0 0l-3.5-3.5M12 14l3.5-3.5M5 18h14" stroke="#5C6B71" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                <button onClick="{{ t.onDelete }}" title="Borrar" style="{{ rowActBtn }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 7h14M9 7V5h6v2M7 7l1 13h8l1-13" stroke="#C0413B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <p style="margin:14px 4px 0;font-size:11.5px;color:#8A989E">Un template empieza en <b style="color:#5C6B71;font-weight:600">Solo reglas</b> (1 referencia: valida campos pero no similitud), pasa a <b style="color:#5C6B71;font-weight:600">Calibrando</b> y llega a <b style="color:#5C6B71;font-weight:600">Calibrado</b> a medida que sumás ejemplos. Cada documento aprobado puede promoverse para acelerar esto.</p>
+        </sc-if>
+
+        <!-- DETAIL -->
+        <sc-if value="{{ inDetail }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:ct-fade .3s ease;display:flex;flex-direction:column;gap:18px">
+
+          <!-- calibration header -->
+          <section style="background:#fff;border:1px solid #DDE3E4;border-radius:14px;padding:20px 22px">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:20px">
+              <div style="display:flex;gap:14px;flex:1">
+                <div style="width:42px;height:42px;flex:none;border-radius:10px;background:#E6F0F1;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 3h8l4 4v14H6z" stroke="#0E6E78" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 3v4h4" stroke="#0E6E78" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+                <sc-if value="{{ editingTpl }}" hint-placeholder-val="{{ false }}">
+                  <div style="flex:1;display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:8px;max-width:560px">
+                    <input value="{{ dTipo }}" onChange="{{ dOnTipo }}" placeholder="Tipo de documento" style="border:1px solid #CBD4D5;border-radius:8px;padding:8px 10px;font-family:inherit;font-size:13px;font-weight:600;background:#FAFCFC">
+                    <input value="{{ dEmpresa }}" onChange="{{ dOnEmpresa }}" placeholder="Empresa" style="border:1px solid #CBD4D5;border-radius:8px;padding:8px 10px;font-family:inherit;font-size:13px;background:#FAFCFC">
+                    <input value="{{ dDisc }}" onChange="{{ dOnDisc }}" placeholder="Disciplina" style="border:1px solid #CBD4D5;border-radius:8px;padding:8px 10px;font-family:inherit;font-size:13px;background:#FAFCFC">
+                  </div>
+                </sc-if>
+                <sc-if value="{{ notEditingTpl }}" hint-placeholder-val="{{ true }}">
+                  <div>
+                    <div style="display:flex;align-items:center;gap:10px"><span style="font-weight:700;font-size:16px;letter-spacing:-.2px">{{ dTipo }}</span><span style="{{ dBadge }}">{{ dMaturity }}</span></div>
+                    <div style="font-size:12.5px;color:#7C8A8F;margin-top:3px">{{ dEmpresa }} · {{ dDisc }}</div>
+                  </div>
+                </sc-if>
+              </div>
+              <div style="text-align:right;min-width:190px;flex:none">
+                <div style="display:flex;align-items:baseline;justify-content:flex-end;gap:6px"><span style="font-family:'IBM Plex Mono';font-size:22px;font-weight:600;color:#0E6E78">{{ dRefs }}</span><span style="font-size:11.5px;color:#8A989E">{{ dRefTarget }}</span></div>
+                <div style="height:7px;background:#EDF1F1;border-radius:5px;overflow:hidden;margin-top:6px"><div style="{{ dCalibBar }}"></div></div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:14px">
+              <button onClick="{{ toggleEditTpl }}" style="{{ editTplBtn }}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M14.5 5.5l4 4M4 20l4.5-1 9-9-3.5-3.5-9 9L4 20z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                {{ editTplLabel }}
+              </button>
+              <button style="display:flex;align-items:center;gap:7px;background:#fff;border:1px solid #CBD4D5;color:#3A474C;font-weight:600;font-size:12px;padding:8px 13px;border-radius:8px;cursor:pointer">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 4v10m0 0l-3.5-3.5M12 14l3.5-3.5M5 18h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Descargar template
+              </button>
+              <button onClick="{{ dDeleteTpl }}" style="display:flex;align-items:center;gap:7px;background:#fff;border:1px solid #E3B7B4;color:#C0413B;font-weight:600;font-size:12px;padding:8px 13px;border-radius:8px;cursor:pointer;margin-left:auto">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 7h14M9 7V5h6v2M7 7l1 13h8l1-13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Borrar template
+              </button>
+            </div>
+            <div style="{{ dMsgStyle }}">{{ dMsg }}</div>
+          </section>
+
+          <!-- reference gallery -->
+          <section style="background:#fff;border:1px solid #DDE3E4;border-radius:14px;padding:20px 22px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+              <div><div style="font-weight:700;font-size:14px">Documentos de referencia</div><div style="font-size:12px;color:#7C8A8F;margin-top:2px">Definen el formato característico. <span style="color:#0E6E78;font-weight:600">Promovido</span> = sumado desde una aprobación.</div></div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px">
+              <sc-for list="{{ refDocs }}" as="r" hint-placeholder-count="4">
+                <div style="border:1px solid #E2E8E8;border-radius:10px;overflow:hidden;background:#FAFCFC">
+                  <div onClick="{{ r.onPreview }}" title="Previsualizar" style="height:96px;background:linear-gradient(#eef2f2 1px,transparent 1px),linear-gradient(90deg,#eef2f2 1px,transparent 1px);background-size:14px 14px;position:relative;border-bottom:1px solid #E2E8E8;cursor:zoom-in" style-hover="background-color:#F0F6F6"><div style="position:absolute;right:10px;bottom:10px;width:54px;height:22px;border:1.5px solid #0E6E78;border-radius:2px;background:rgba(14,110,120,.06)"></div></div>
+                  <div style="padding:9px 10px">
+                    <div style="font-family:'IBM Plex Mono';font-size:11px;color:#3A474C;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:7px">
+                      <span style="{{ r.tagStyle }}">{{ r.tag }}</span>
+                      <div style="display:flex;gap:3px">
+                        <button onClick="{{ r.onPreview }}" title="Previsualizar" style="width:24px;height:24px;border-radius:6px;border:1px solid #E2E8E8;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z" stroke="#5C6B71" stroke-width="1.5"/><circle cx="12" cy="12" r="2.5" stroke="#5C6B71" stroke-width="1.5"/></svg></button>
+                        <button onClick="{{ r.onDownload }}" title="Descargar" style="width:24px;height:24px;border-radius:6px;border:1px solid #E2E8E8;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 4v10m0 0l-3.5-3.5M12 14l3.5-3.5M5 18h14" stroke="#5C6B71" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                        <button onClick="{{ r.onRemove }}" title="Borrar" style="width:24px;height:24px;border-radius:6px;border:1px solid #E3B7B4;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 7h14M9 7V5h6v2M7 7l1 13h8l1-13" stroke="#C0413B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </sc-for>
+              <button style="border:1.5px dashed #BFCBCC;border-radius:10px;background:#fff;min-height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;color:#0E6E78" style-hover="background:#F4FAFA;border-color:#0E6E78">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                <span style="font-size:12px;font-weight:600">Agregar ejemplos</span>
+              </button>
+            </div>
+          </section>
+
+          <!-- validation rules -->
+          <section style="background:#fff;border:1px solid #DDE3E4;border-radius:14px;padding:20px 22px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+              <div><div style="font-weight:700;font-size:14px">Reglas de validación · campos del rótulo</div><div style="font-size:12px;color:#7C8A8F;margin-top:2px">Campos obligatorios del cajetín y su patrón esperado.</div></div>
+              <button onClick="{{ addRule }}" style="display:flex;align-items:center;gap:6px;background:#E6F0F1;border:1px solid #BFD8DA;color:#0E6E78;font-weight:600;font-size:12px;padding:7px 12px;border-radius:8px;cursor:pointer"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>Agregar campo</button>
+            </div>
+            <div style="display:grid;grid-template-columns:1.3fr 1.6fr auto auto;gap:10px;padding:0 4px 8px;font-size:10.5px;font-weight:600;letter-spacing:.5px;color:#8A989E"><div>CAMPO</div><div>PATRÓN ESPERADO (regex / formato)</div><div>REQUERIDO</div><div></div></div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <sc-for list="{{ rulesView }}" as="rule" hint-placeholder-count="5">
+                <div style="display:grid;grid-template-columns:1.3fr 1.6fr auto auto;gap:10px;align-items:center">
+                  <input defaultValue="{{ rule.name }}" placeholder="Nombre del campo" style="border:1px solid #D7DEDF;border-radius:8px;padding:9px 11px;font-family:inherit;font-size:12.5px;background:#FAFCFC">
+                  <input defaultValue="{{ rule.pattern }}" placeholder="ej. ^REV-[0-9]+$" style="border:1px solid #D7DEDF;border-radius:8px;padding:9px 11px;font-family:'IBM Plex Mono';font-size:12px;background:#FAFCFC">
+                  <button onClick="{{ rule.onToggle }}" style="{{ rule.switchTrack }}" title="Requerido"><span style="{{ rule.switchKnob }}"></span></button>
+                  <button onClick="{{ rule.onRemove }}" style="width:34px;height:34px;border-radius:8px;border:1px solid #E3B7B4;background:#fff;color:#C0413B;cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 7h14M9 7V5h6v2M7 7l1 13h8l1-13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                </div>
+              </sc-for>
+            </div>
+          </section>
+        </div>
+        </sc-if>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ========================= HISTORIAL ========================= -->
+    <sc-if value="{{ isHistorial }}" hint-placeholder-val="{{ false }}">
+    <div>
+      <header style="position:sticky;top:0;z-index:5;background:rgba(234,238,238,.9);backdrop-filter:blur(8px);border-bottom:1px solid #D7DEDF;padding:18px 32px">
+        <h1 style="margin:0;font-size:20px;font-weight:700;letter-spacing:-.4px">Historial y auditoría</h1>
+        <p style="margin:3px 0 0;color:#5C6B71;font-size:12.5px">Toda validación queda registrada con su veredicto, score y operador.</p>
+      </header>
+      <div style="max-width:1180px;margin:0 auto;padding:24px 32px 60px;animation:ct-fade .3s ease">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px">
+          <div style="background:#fff;border:1px solid #DDE3E4;border-radius:13px;padding:16px 18px"><div style="font-size:11px;color:#8A989E;letter-spacing:.3px">Validados (mes)</div><div style="font-family:'IBM Plex Mono';font-size:26px;font-weight:600;margin-top:4px">1.284</div></div>
+          <div style="background:#fff;border:1px solid #DDE3E4;border-radius:13px;padding:16px 18px"><div style="font-size:11px;color:#8A989E;letter-spacing:.3px">% de aprobación</div><div style="font-family:'IBM Plex Mono';font-size:26px;font-weight:600;margin-top:4px;color:#1F8A5B">78%</div></div>
+          <div style="background:#fff;border:1px solid #DDE3E4;border-radius:13px;padding:16px 18px"><div style="font-size:11px;color:#8A989E;letter-spacing:.3px">Pendientes revisión</div><div style="font-family:'IBM Plex Mono';font-size:26px;font-weight:600;margin-top:4px;color:#C2860E">23</div></div>
+          <div style="background:#fff;border:1px solid #DDE3E4;border-radius:13px;padding:16px 18px"><div style="font-size:11px;color:#8A989E;letter-spacing:.3px">Promovidos a referencia</div><div style="font-family:'IBM Plex Mono';font-size:26px;font-weight:600;margin-top:4px;color:#0E6E78">61</div></div>
+        </div>
+
+        <div style="background:#fff;border:1px solid #DDE3E4;border-radius:14px;overflow:hidden">
+          <div style="display:grid;grid-template-columns:1.6fr 2fr 1.3fr 0.8fr 1fr 1.1fr;gap:12px;padding:11px 20px;background:#FAFCFC;border-bottom:1px solid #EDF1F1;font-size:10.5px;font-weight:600;letter-spacing:.5px;color:#7C8A8F">
+            <div>DOCUMENTO</div><div>TEMPLATE</div><div>VEREDICTO</div><div>SCORE</div><div>OPERADOR</div><div style="text-align:right">FECHA</div>
+          </div>
+          <sc-for list="{{ historyRows }}" as="h" hint-placeholder-count="6">
+            <div style="display:grid;grid-template-columns:1.6fr 2fr 1.3fr 0.8fr 1fr 1.1fr;gap:12px;padding:13px 20px;border-bottom:1px solid #F1F4F4;align-items:center" style-hover="background:#F7FAFA">
+              <div style="display:flex;align-items:center;gap:9px">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex:none"><path d="M6 3h8l4 4v14H6z" stroke="#9FB0B2" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 3v4h4" stroke="#9FB0B2" stroke-width="1.6" stroke-linejoin="round"/></svg>
+                <span style="font-family:'IBM Plex Mono';font-size:12px">{{ h.doc }}</span>
+                <sc-if value="{{ h.promoted }}" hint-placeholder-val="{{ false }}"><span title="Promovido a referencia" style="font-size:9px;background:#E6F0F1;color:#0E6E78;font-weight:600;padding:1px 6px;border-radius:5px">↑ ref</span></sc-if>
+              </div>
+              <div style="color:#3A474C;font-size:12.5px">{{ h.tpl }}</div>
+              <div><span style="{{ h.chip }}">{{ h.verdict }}</span></div>
+              <div style="font-family:'IBM Plex Mono';font-size:12.5px;color:#3A474C">{{ h.score }}</div>
+              <div style="color:#5C6B71;font-size:12.5px">{{ h.user }}</div>
+              <div style="text-align:right;color:#8A989E;font-size:12px">{{ h.date }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+  </main>
+
+  <!-- ============ NEW TEMPLATE MODAL ============ -->
+  <sc-if value="{{ showNewFlag }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;inset:0;z-index:40;background:rgba(16,36,42,.45);display:flex;justify-content:flex-end" onClick="{{ closeNew }}">
+    <div onClick="{{ stop }}" class="ct-scroll" style="width:560px;max-width:92vw;background:#fff;height:100%;overflow-y:auto;box-shadow:-8px 0 30px rgba(0,0,0,.18);animation:ct-fade .25s ease">
+      <div style="position:sticky;top:0;background:#fff;padding:20px 26px;border-bottom:1px solid #EDF1F1;display:flex;align-items:center;justify-content:space-between;z-index:2">
+        <div><h2 style="margin:0;font-size:17px;font-weight:700">Nuevo template de referencia</h2><p style="margin:3px 0 0;font-size:12px;color:#7C8A8F">Definí el tipo, subí al menos un ejemplo y configurá las reglas.</p></div>
+        <button onClick="{{ closeNew }}" style="width:32px;height:32px;border-radius:8px;border:1px solid #E2E8E8;background:#fff;cursor:pointer;color:#5C6B71;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+      </div>
+      <div style="padding:24px 26px 40px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div style="grid-column:1/3"><label style="font-size:11px;font-weight:600;color:#5C6B71;letter-spacing:.3px;display:block;margin-bottom:6px">TIPO DE DOCUMENTO</label><input placeholder="ej. Plano estructural tipo X" style="width:100%;border:1px solid #D7DEDF;border-radius:9px;padding:11px 13px;font-family:inherit;font-size:13px;background:#FAFCFC"></div>
+          <div><label style="font-size:11px;font-weight:600;color:#5C6B71;letter-spacing:.3px;display:block;margin-bottom:6px">EMPRESA / CLIENTE</label><input placeholder="ej. ABC" style="width:100%;border:1px solid #D7DEDF;border-radius:9px;padding:11px 13px;font-family:inherit;font-size:13px;background:#FAFCFC"></div>
+          <div><label style="font-size:11px;font-weight:600;color:#5C6B71;letter-spacing:.3px;display:block;margin-bottom:6px">DISCIPLINA</label><input placeholder="ej. Estructuras" style="width:100%;border:1px solid #D7DEDF;border-radius:9px;padding:11px 13px;font-family:inherit;font-size:13px;background:#FAFCFC"></div>
+        </div>
+
+        <label style="font-size:11px;font-weight:600;color:#5C6B71;letter-spacing:.3px;display:block;margin:20px 0 6px">DOCUMENTOS DE REFERENCIA</label>
+        <div style="border:1.5px dashed #BFCBCC;border-radius:11px;padding:26px;text-align:center;background:#FAFCFC">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" style="margin:0 auto"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5" stroke="#0E6E78" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15v3.5A1.5 1.5 0 005.5 20h13a1.5 1.5 0 001.5-1.5V15" stroke="#9FB9BB" stroke-width="1.7" stroke-linecap="round"/></svg>
+          <div style="font-weight:600;font-size:13px;margin-top:8px">Arrastrá PDF o imágenes que definen el formato</div>
+          <div style="font-size:11.5px;color:#7C8A8F;margin-top:3px">Podés empezar con <b style="color:#5C6B71">uno solo</b> e ir sumando ejemplos después para calibrar la similitud.</div>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:24px 0 10px">
+          <label style="font-size:11px;font-weight:600;color:#5C6B71;letter-spacing:.3px">CAMPOS OBLIGATORIOS DEL RÓTULO</label>
+          <button onClick="{{ addRule }}" style="display:flex;align-items:center;gap:6px;background:#E6F0F1;border:1px solid #BFD8DA;color:#0E6E78;font-weight:600;font-size:12px;padding:6px 11px;border-radius:8px;cursor:pointer"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>Agregar</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <sc-for list="{{ rulesView }}" as="rule" hint-placeholder-count="5">
+            <div style="display:grid;grid-template-columns:1.2fr 1.4fr auto auto;gap:8px;align-items:center">
+              <input defaultValue="{{ rule.name }}" placeholder="Campo" style="border:1px solid #D7DEDF;border-radius:8px;padding:9px 11px;font-family:inherit;font-size:12.5px;background:#FAFCFC">
+              <input defaultValue="{{ rule.pattern }}" placeholder="patrón" style="border:1px solid #D7DEDF;border-radius:8px;padding:9px 11px;font-family:'IBM Plex Mono';font-size:12px;background:#FAFCFC">
+              <button onClick="{{ rule.onToggle }}" style="{{ rule.switchTrack }}"><span style="{{ rule.switchKnob }}"></span></button>
+              <button onClick="{{ rule.onRemove }}" style="width:34px;height:34px;border-radius:8px;border:1px solid #E3B7B4;background:#fff;color:#C0413B;cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="position:sticky;bottom:0;background:#fff;border-top:1px solid #EDF1F1;padding:14px 26px;display:flex;justify-content:flex-end;gap:10px">
+        <button onClick="{{ closeNew }}" style="background:#fff;border:1px solid #CBD4D5;color:#3A474C;font-weight:600;font-size:13px;padding:10px 16px;border-radius:9px;cursor:pointer">Cancelar</button>
+        <button onClick="{{ closeNew }}" style="background:#0E6E78;border:1px solid #0E6E78;color:#fff;font-weight:600;font-size:13px;padding:10px 18px;border-radius:9px;cursor:pointer">Crear template</button>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ============ DOCUMENT PREVIEW MODAL ============ -->
+  <sc-if value="{{ previewOpen }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;inset:0;z-index:50;background:rgba(16,36,42,.55);display:flex;align-items:center;justify-content:center;padding:40px" onClick="{{ closePreview }}">
+    <div onClick="{{ stop }}" style="width:780px;max-width:94vw;max-height:90vh;background:#fff;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(0,0,0,.32);animation:ct-fade .2s ease">
+      <div style="padding:12px 18px;border-bottom:1px solid #EDF1F1;display:flex;align-items:center;gap:12px">
+        <div style="width:34px;height:34px;flex:none;border-radius:8px;background:#E6F0F1;display:flex;align-items:center;justify-content:center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M6 3h8l4 4v14H6z" stroke="#0E6E78" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 3v4h4" stroke="#0E6E78" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+        <div style="flex:1;min-width:0">
+          <input value="{{ previewName }}" onChange="{{ onPreviewRename }}" style="font-family:'IBM Plex Mono';font-size:13px;font-weight:600;color:#16242A;border:1px solid transparent;background:transparent;padding:4px 7px;border-radius:6px;width:100%" style-focus="border-color:#CBD4D5;background:#FAFCFC">
+          <div style="font-size:10.5px;color:#8A989E;padding-left:7px">Clic en el nombre para renombrar · pág. 1 de 3</div>
+        </div>
+        <span style="{{ previewTagStyle }}">{{ previewTag }}</span>
+        <button onClick="{{ closePreview }}" style="width:32px;height:32px;border-radius:8px;border:1px solid #E2E8E8;background:#fff;cursor:pointer;color:#5C6B71;display:flex;align-items:center;justify-content:center;flex:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+      </div>
+      <div class="ct-scroll" style="flex:1;overflow:auto;background:#EAEEEE;padding:26px;display:flex;justify-content:center">
+        <div style="width:540px;max-width:100%;aspect-ratio:1.414 / 1;background:#F4F7F7;border:1px solid #E2E8E8;border-radius:5px;position:relative;box-shadow:0 4px 14px rgba(0,0,0,.12);flex:none">
+          <div style="position:absolute;inset:0;background:linear-gradient(#dfe7e8 1px,transparent 1px),linear-gradient(90deg,#dfe7e8 1px,transparent 1px);background-size:30px 30px;opacity:.6"></div>
+          <div style="position:absolute;left:22px;top:22px;right:22px;bottom:96px;border:1.5px solid #c2cdcf;border-radius:3px"></div>
+          <svg style="position:absolute;left:28%;top:20%;opacity:.32" width="190" height="150" viewBox="0 0 150 120" fill="none"><rect x="10" y="14" width="80" height="60" stroke="#8aa0a2" stroke-width="2"/><path d="M10 74l40-30 40 30M50 44V14M90 30l40 14v50l-40 16" stroke="#8aa0a2" stroke-width="2" stroke-linejoin="round"/></svg>
+          <div style="position:absolute;right:22px;bottom:18px;width:280px;height:68px;border:2px solid #0E6E78;border-radius:4px;background:rgba(14,110,120,.07);box-shadow:0 0 0 4px rgba(14,110,120,.1)">
+            <div style="position:absolute;top:-19px;left:-2px;background:#0E6E78;color:#fff;font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px 4px 0 0">Cajetín / rótulo</div>
+            <div style="padding:9px 11px;font-family:'IBM Plex Mono';font-size:10px;color:#3a5256;line-height:1.7">N° PL-2231 · REV — · ESC 1:50<br>ABC · TIPO X · 14/06/2026</div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:12px 18px;border-top:1px solid #EDF1F1;display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;gap:6px">
+          <div style="width:30px;height:38px;border:2px solid #0E6E78;border-radius:3px;background:#F4F7F7"></div>
+          <div style="width:30px;height:38px;border:1px solid #D7DEDF;border-radius:3px;background:#F4F7F7"></div>
+          <div style="width:30px;height:38px;border:1px solid #D7DEDF;border-radius:3px;background:#F4F7F7"></div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button style="display:flex;align-items:center;gap:7px;background:#fff;border:1px solid #CBD4D5;color:#3A474C;font-weight:600;font-size:12.5px;padding:9px 15px;border-radius:9px;cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 4v10m0 0l-3.5-3.5M12 14l3.5-3.5M5 18h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>Descargar</button>
+          <button onClick="{{ closePreview }}" style="background:#0E6E78;border:1px solid #0E6E78;color:#fff;font-weight:600;font-size:12.5px;padding:9px 17px;border-radius:9px;cursor:pointer">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:&quot;100%&quot;,&quot;height&quot;:&quot;100%&quot;},&quot;defaultLayout&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;A&quot;,&quot;B&quot;,&quot;C&quot;],&quot;default&quot;:&quot;A&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;approvalThreshold&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:96,&quot;min&quot;:80,&quot;max&quot;:100,&quot;tsType&quot;:&quot;number&quot;},&quot;revisionThreshold&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:85,&quot;min&quot;:50,&quot;max&quot;:95,&quot;tsType&quot;:&quot;number&quot;}}">
+class Component extends DCLogic {
+  state = {
+    section: 'validar',
+    stage: 'upload',
+    fileName: '',
+    selectedTemplate: '',
+    procStep: 0,
+    layout: null,
+    decision: null,   // 'approved' | 'rejected'
+    promote: true,
+    promoted: false,
+    tplDetail: null,
+    editingTpl: false,
+    showNew: false,
+    refDocs: [],
+    rules: [],
+    preview: null,
+    templates: [
+      {id:'t1', tipo:'Plano estructural tipo X', empresa:'ABC', disc:'Estructuras', maturity:'Calibrado', refs:7, score:87, date:'hoy 09:33'},
+      {id:'t2', tipo:'Plano arquitectónico tipo A', empresa:'Delta Ing.', disc:'Arquitectura', maturity:'Calibrado', refs:9, score:91, date:'02/04/2026'},
+      {id:'t3', tipo:'Memoria de cálculo MC-02', empresa:'ABC', disc:'Estructuras', maturity:'Calibrando', refs:3, score:82, date:'28/02/2026'},
+      {id:'t4', tipo:'Plano de instalación eléctrica', empresa:'Delta Ing.', disc:'Eléctrica', maturity:'Solo reglas', refs:1, score:74, date:'05/03/2026'},
+    ],
+  };
+  _timers = [];
+
+  componentWillUnmount(){ this._timers.forEach(clearTimeout); }
+
+  // ----- template metadata -----
+  meta(key){
+    const M = {
+      'Plano estructural tipo X — ABC':        {empresa:'ABC',   tipoCode:'X',     disc:'Estructuras',  maturity:'Calibrado',  refs:7, score:87},
+      'Memoria de cálculo MC-02 — ABC':        {empresa:'ABC',   tipoCode:'MC-02', disc:'Estructuras',  maturity:'Calibrando', refs:3, score:82},
+      'Plano de instalación eléctrica — Delta Ing.': {empresa:'Delta', tipoCode:'IE', disc:'Eléctrica', maturity:'Solo reglas', refs:1, score:74},
+      'Plano arquitectónico tipo A — Delta Ing.':    {empresa:'Delta', tipoCode:'A',  disc:'Arquitectura', maturity:'Calibrado', refs:9, score:91},
+    };
+    return M[key] || M['Plano estructural tipo X — ABC'];
+  }
+  matBadge(m){
+    const c = m==='Calibrado' ? ['#E6F4EC','#145C3C'] : m==='Calibrando' ? ['#FBF1DC','#855A06'] : ['#EEF1F2','#5C6B71'];
+    return `display:inline-block;font-size:10.5px;font-weight:600;letter-spacing:.2px;padding:3px 9px;border-radius:6px;background:${c[0]};color:${c[1]}`;
+  }
+  statusMeta(s){
+    if(s==='pass') return {icon:'✓', color:'#1F8A5B', bg:'#E6F4EC'};
+    if(s==='fail') return {icon:'✕', color:'#C0413B', bg:'#FBEAE9'};
+    if(s==='warn') return {icon:'!', color:'#C2860E', bg:'#FBF1DC'};
+    return {icon:'i', color:'#5C6B71', bg:'#EEF1F2'};
+  }
+  decorate(arr){
+    return arr.map(c=>{
+      const m=this.statusMeta(c.status);
+      return {...c,
+        icon:m.icon,
+        badge:`width:22px;height:22px;flex:none;border-radius:50%;background:${m.bg};color:${m.color};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px`,
+        badgeSm:`width:18px;height:18px;flex:none;border-radius:50%;background:${m.bg};color:${m.color};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:10.5px`,
+        detailStyle:`font-size:11.5px;margin-top:2px;color:${c.status==='pass'?'#7C8A8F':m.color}`,
+        detailInline:`font-size:11.5px;color:${c.status==='pass'?'#8A989E':m.color};text-align:right;max-width:300px`,
+      };
+    });
+  }
+
+  // ----- nav -----
+  navStyle(active){
+    return `display:flex;align-items:center;gap:11px;width:100%;text-align:left;border:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:${active?600:500};padding:9px 11px;border-radius:9px;background:${active?'#0E6E78':'transparent'};color:${active?'#fff':'#AFCBCD'}`;
+  }
+  go(s){ this.setState({section:s, tplDetail:null, showNew:false}); }
+
+  // ----- validation flow -----
+  startValidation(){
+    this.setState({stage:'processing', procStep:0, decision:null, promoted:false, promote:true});
+    [400,950,1500,2050].forEach((t,i)=> this._timers.push(setTimeout(()=>this.setState({procStep:i+1}), t)));
+    this._timers.push(setTimeout(()=>this.setState({stage:'result'}), 2550));
+  }
+  resetValidation(){
+    this._timers.forEach(clearTimeout); this._timers=[];
+    this.setState({stage:'upload', fileName:'', selectedTemplate:'', procStep:0, decision:null, promoted:false, promote:true});
+  }
+
+  // ----- rules -----
+  seedRules(){
+    return [
+      {id:1, name:'Número de plano', pattern:'^PL-[0-9]{3,5}$', required:true},
+      {id:2, name:'Revisión',        pattern:'^REV-[0-9]+$',    required:true},
+      {id:3, name:'Escala',          pattern:'^1:[0-9]+$',      required:true},
+      {id:4, name:'Fecha',           pattern:'DD/MM/AAAA',      required:true},
+      {id:5, name:'Firma',           pattern:'',                required:true},
+      {id:6, name:'Código de empresa', pattern:'^[A-Z]{3}$',    required:true},
+    ];
+  }
+  seedRefs(count){
+    const out=[];
+    for(let i=0;i<count;i++){
+      const promoted = i>=2 && i%2===1; // some promoted
+      out.push({id:i, name:(promoted?'val-':'ref-')+(1000+i*37)+'.pdf', tag: promoted?'Promovido':'Inicial', promoted});
+    }
+    return out;
+  }
+  openTpl(id){ const t=this.state.templates.find(x=>x.id===id); this.setState({tplDetail:id, editingTpl:false, refDocs:this.seedRefs(t?t.refs:4), rules:this.seedRules()}); }
+  openNew(){ this.setState({showNew:true, rules:this.seedRules()}); }
+  updateTpl(id,field,val){ this.setState(s=>({templates:s.templates.map(t=>t.id===id?{...t,[field]:val}:t)})); }
+  deleteTpl(id){ this.setState(s=>({templates:s.templates.filter(t=>t.id!==id), tplDetail:s.tplDetail===id?null:s.tplDetail})); }
+  openPreview(doc){ this.setState({preview:doc}); }
+  closePreview(){ this.setState({preview:null}); }
+
+  addRule(){ this.setState(s=>({rules:[...s.rules, {id:Date.now(), name:'', pattern:'', required:true}]})); }
+  removeRule(id){ this.setState(s=>({rules:s.rules.filter(r=>r.id!==id)})); }
+  toggleRule(id){ this.setState(s=>({rules:s.rules.map(r=>r.id===id?{...r,required:!r.required}:r)})); }
+  removeRef(id){ this.setState(s=>({refDocs:s.refDocs.filter(r=>r.id!==id)})); }
+
+  switchTrack(on){ return `position:relative;width:38px;height:22px;border-radius:12px;border:none;cursor:pointer;flex:none;padding:0;background:${on?'#0E6E78':'#CBD4D5'};transition:background .15s`; }
+  switchKnob(on){ return `position:absolute;top:2px;left:${on?'18px':'2px'};width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:left .15s`; }
+
+  renderVals(){
+    const s = this.state;
+    const appr = this.props.approvalThreshold ?? 96;
+    const rev  = this.props.revisionThreshold ?? 85;
+    const layout = s.layout || this.props.defaultLayout || 'A';
+    const sel = s.selectedTemplate;
+    const m = this.meta(sel);
+    const soloReglas = sel ? m.maturity==='Solo reglas' : false;
+    const fileName = s.fileName || 'PL-2231_rev.pdf';
+
+    // ---- result data ----
+    const identidad = this.decorate([
+      {text:'Rótulo detectado en posición esperada', detail:'Cajetín inferior derecho · coincide layout del template', status:'pass'},
+      {text:`Código de empresa coincide (${m.empresa})`, detail:`OCR detectó "${m.empresa}" en el campo emisor`, status:'pass'},
+      {text:`Código de tipo coincide (${m.tipoCode})`, detail:`Tipo "${m.tipoCode}" presente en el rótulo`, status:'pass'},
+      {text:'Logo / sello de la empresa presente', detail:'Sello detectado en margen superior', status:'pass'},
+      soloReglas
+        ? {text:'Similitud visual con el template', detail:`Informativa — el template tiene 1 ejemplo de referencia, el umbral aún no está calibrado. ${m.score}% (no concluyente)`, status:'info'}
+        : {text:'Similitud visual con el template', detail:`${m.score}% · sobre umbral de revisión (${rev}%), por debajo del de aprobación (${appr}%)`, status:'warn'},
+    ]);
+    const completitud = this.decorate([
+      {text:"Campo 'Número de plano' presente", detail:'PL-2231 · coincide patrón', status:'pass'},
+      {text:"Campo 'Escala' presente", detail:'1:50', status:'pass'},
+      {text:"Campo 'Fecha' presente", detail:'14/06/2026', status:'pass'},
+      {text:"Campo 'Revisión' presente", detail:'Falta el campo — es obligatorio', status:'fail'},
+      {text:"Campo 'Firma' presente", detail:'Baja confianza de lectura — verificar manualmente', status:'warn'},
+      {text:'Formato de código de empresa válido', detail:'Coincide patrón ^[A-Z]{3}$', status:'pass'},
+    ]);
+
+    // verdict = review (missing required field + borderline/uncalibrated similarity)
+    const vC = {bg:'#FBF1DC', fg:'#855A06', icon:'#C2860E'};
+    const verdictSummary = soloReglas
+      ? 'Identidad confirmada por reglas. La similitud visual no es concluyente (template con 1 ejemplo) y falta 1 campo obligatorio → requiere decisión humana.'
+      : 'Identidad confirmada, pero falta 1 campo obligatorio (Revisión) y la similitud está en zona de revisión → requiere decisión humana.';
+
+    const pill = (status,label)=>{
+      const cm=this.statusMeta(status);
+      return {label, style:`display:inline-block;font-size:11px;font-weight:600;padding:3px 9px;border-radius:6px;background:${cm.bg};color:${cm.color}`,
+        labelStyle:`font-weight:600;font-size:13px;margin-top:2px;color:${cm.color}`};
+    };
+    const dimId = soloReglas ? pill('warn','No concluyente') : pill('pass','Confirmada');
+    const dimComp = pill('warn','Falta 1 campo');
+
+    // ---- promotion copy ----
+    const promoText = `Se agregará «${fileName}» a los ${m.refs} ejemplos de «${sel||'Plano estructural tipo X'}». Con más ejemplos, Cotejar calibra mejor el umbral de similitud y aprueba de forma más autónoma — cada aprobación humana entrena el template.`;
+    const nextRefs = m.refs+1;
+    const nextMat = soloReglas && nextRefs>=2 ? 'Calibrando' : (nextRefs>=5 ? 'Calibrado' : m.maturity);
+
+    // ---- procSteps ----
+    const labels = ['Extrayendo texto (OCR)','Detectando rótulo / cajetín','Cotejando identidad (empresa · tipo)','Verificando campos obligatorios','Calculando score de similitud'];
+    const procSteps = labels.map((label,i)=>{
+      const st = i<s.procStep ? 'done' : (i===s.procStep ? 'active':'pending');
+      const dot = st==='done'
+        ? 'width:22px;height:22px;flex:none;border-radius:50%;background:#1F8A5B;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700'
+        : st==='active'
+        ? 'width:22px;height:22px;flex:none;border-radius:50%;border:2px solid #0E6E78;color:#0E6E78;display:flex;align-items:center;justify-content:center;font-size:11px;animation:ct-pulse 1s ease-in-out infinite'
+        : 'width:22px;height:22px;flex:none;border-radius:50%;border:2px solid #DDE3E4;color:#C4CDCE;display:flex;align-items:center;justify-content:center;font-size:11px';
+      return {label, mark: st==='done'?'✓':(i+1),
+        dot, txt:`font-size:13px;font-weight:${st==='active'?600:500};color:${st==='pending'?'#A6B2B5':'#3A474C'}`};
+    });
+
+    // ---- template list ----
+    const rowActBtn = 'width:28px;height:28px;border-radius:7px;border:1px solid #E2E8E8;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center';
+    const templateRows = s.templates.map(t=>({
+      id:t.id, tipo:t.tipo, empresa:t.empresa, disc:t.disc,
+      refsText:t.refs+' docs', maturity:t.maturity, badge:this.matBadge(t.maturity), date:t.date,
+      onOpen:()=>this.openTpl(t.id),
+      onEdit:(e)=>{e.stopPropagation(); this.openTpl(t.id); this.setState({editingTpl:true});},
+      onDownload:(e)=>{e.stopPropagation();},
+      onDelete:(e)=>{e.stopPropagation(); this.deleteTpl(t.id);},
+    }));
+
+    // ---- template detail ----
+    const dTpl = s.tplDetail ? s.templates.find(t=>t.id===s.tplDetail) : null;
+    const dm = dTpl;
+    const dRefsNow = s.refDocs.length;
+    const target = 5;
+    const calibPct = Math.min(100, Math.round(dRefsNow/target*100));
+    let dMsg='', dMsgColor=['#EEF1F2','#5C6B71'];
+    if(dm){
+      if(dm.maturity==='Solo reglas'){ dMsg='Solo validás campos obligatorios. La similitud visual aún no está calibrada — agregá al menos 3 ejemplos para activarla como check confiable.'; dMsgColor=['#EEF1F2','#5C6B71']; }
+      else if(dm.maturity==='Calibrando'){ dMsg='Buen comienzo. Agregá más ejemplos para mejorar la precisión de la validación por similitud.'; dMsgColor=['#FBF1DC','#855A06']; }
+      else { dMsg='Umbral de similitud calibrado. Seguí promoviendo documentos aprobados para mantener la precisión a lo largo del tiempo.'; dMsgColor=['#E6F4EC','#145C3C']; }
+    }
+    const refDocs = s.refDocs.map(r=>({
+      name:r.name, tag:r.tag,
+      tagStyle: r.promoted
+        ? 'display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:600;padding:2px 7px;border-radius:5px;background:#E6F0F1;color:#0E6E78'
+        : 'display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:600;padding:2px 7px;border-radius:5px;background:#EEF1F2;color:#7C8A8F',
+      onPreview:()=>this.openPreview({name:r.name, tag:r.tag, promoted:r.promoted, kind:'ref'}),
+      onDownload:()=>{},
+      onRemove:()=>this.removeRef(r.id),
+    }));
+    const pv = s.preview;
+    const rulesView = s.rules.map(r=>({
+      name:r.name, pattern:r.pattern,
+      switchTrack:this.switchTrack(r.required), switchKnob:this.switchKnob(r.required),
+      onToggle:()=>this.toggleRule(r.id), onRemove:()=>this.removeRule(r.id),
+    }));
+
+    // ---- history ----
+    const chip=(status,label)=>{const cm=this.statusMeta(status);return {verdict:label, chip:`display:inline-block;font-size:11px;font-weight:600;padding:3px 10px;border-radius:6px;background:${cm.bg};color:${cm.color}`};};
+    const historyRows = [
+      {doc:'DOC-10482.pdf', tpl:'Plano estructural tipo X · ABC', ...chip('pass','VÁLIDO'), score:'96%', user:'M. Rossi', date:'hoy 09:42', promoted:true},
+      {doc:'PL-2231_rev.pdf', tpl:'Plano estructural tipo X · ABC', ...chip('warn','REVISIÓN MANUAL'), score:'87%', user:'M. Rossi', date:'hoy 09:31', promoted:false},
+      {doc:'electrico_07.pdf', tpl:'Plano instalación eléctrica · Delta', ...chip('fail','INVÁLIDO'), score:'61%', user:'J. Pérez', date:'ayer 18:20', promoted:false},
+      {doc:'MC-0034.pdf', tpl:'Memoria de cálculo MC-02 · ABC', ...chip('pass','VÁLIDO'), score:'93%', user:'A. Díaz', date:'ayer 17:05', promoted:true},
+      {doc:'plano_44.pdf', tpl:'Plano arquitectónico tipo A · Delta', ...chip('warn','REVISIÓN MANUAL'), score:'84%', user:'J. Pérez', date:'ayer 15:48', promoted:false},
+      {doc:'legal_acta_2.pdf', tpl:'Acta de obra · Construcciones Sur', ...chip('fail','INVÁLIDO'), score:'48%', user:'A. Díaz', date:'ayer 11:10', promoted:false},
+    ];
+
+    const tabStyle=(on)=>`border:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:${on?600:500};padding:6px 13px;border-radius:6px;background:${on?'#0E6E78':'transparent'};color:${on?'#fff':'#5C6B71'}`;
+
+    return {
+      // nav
+      navValidar:this.navStyle(s.section==='validar'),
+      navTemplates:this.navStyle(s.section==='templates'),
+      navHistorial:this.navStyle(s.section==='historial'),
+      goValidar:()=>this.go('validar'), goTemplates:()=>this.go('templates'), goHistorial:()=>this.go('historial'),
+      isValidar:s.section==='validar', isTemplates:s.section==='templates', isHistorial:s.section==='historial',
+
+      // validar upload
+      stageUpload:s.stage==='upload', stageProcessing:s.stage==='processing', stageResult:s.stage==='result',
+      onFile:(e)=>{const f=e.target.files&&e.target.files[0]; this.setState({fileName:f?f.name:'documento.pdf'});},
+      fileLabel:s.fileName || 'Seleccioná un archivo para validar',
+      dropStyle:`border:1.5px dashed ${s.fileName?'#0E6E78':'#BFCBCC'};background:${s.fileName?'#F2FAFA':'#FAFCFC'};border-radius:12px;padding:34px;text-align:center;transition:.15s`,
+      onSelectTemplate:(e)=>this.setState({selectedTemplate:e.target.value}),
+      selectedTemplate:sel,
+      validateDisabled:!(s.fileName && sel),
+      validateBtnStyle:`margin-top:22px;width:100%;display:flex;align-items:center;justify-content:center;gap:9px;border:none;border-radius:10px;padding:13px;font-family:inherit;font-size:14px;font-weight:600;cursor:${(s.fileName&&sel)?'pointer':'not-allowed'};background:${(s.fileName&&sel)?'#0E6E78':'#C4D2D3'};color:#fff`,
+      startValidation:()=>{ if(s.fileName&&sel) this.startValidation(); },
+      resetValidation:()=>this.resetValidation(),
+      apprText:appr+'%', revText:rev+'%',
+
+      // processing
+      procFileName:fileName, procSteps,
+
+      // verdict banner
+      verdictBanner:`display:flex;align-items:center;justify-content:space-between;gap:20px;border-radius:14px;padding:22px 24px;background:${s.decision==='rejected'?'#FBEAE9':s.decision==='approved'?'#E6F4EC':vC.bg};color:${s.decision==='rejected'?'#8E2B27':s.decision==='approved'?'#145C3C':vC.fg};border:1px solid ${s.decision==='rejected'?'#EBC9C6':s.decision==='approved'?'#C9E6D6':'#EBDDB6'}`,
+      verdictIconWrap:`width:52px;height:52px;flex:none;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;background:${s.decision==='rejected'?'#C0413B':s.decision==='approved'?'#1F8A5B':vC.icon};color:#fff`,
+      verdictGlyph: s.decision==='rejected'?'✕':s.decision==='approved'?'✓':'!',
+      verdictLabel: s.decision==='rejected'?'RECHAZADO':s.decision==='approved'?'APROBADO':'REVISIÓN MANUAL',
+      verdictSummary: s.decision==='rejected'?'Rechazado por el operador. No ingresa al circuito.':s.decision==='approved'?'Aprobado manualmente por el operador tras revisar el caso.':verdictSummary,
+      scoreText:m.score+'%',
+      scoreCaption: soloReglas?'NO CALIBRADO':'SIMILITUD',
+      matChip:this.matBadge(m.maturity)+';margin-top:5px',
+      matLabel:'Template '+m.maturity,
+
+      // layout switch
+      setLayoutA:()=>this.setState({layout:'A'}), setLayoutB:()=>this.setState({layout:'B'}), setLayoutC:()=>this.setState({layout:'C'}),
+      tabA:tabStyle(layout==='A'), tabB:tabStyle(layout==='B'), tabC:tabStyle(layout==='C'),
+      layoutA:layout==='A', layoutB:layout==='B', layoutC:layout==='C',
+
+      identidad, completitud,
+      previewWrap:'position:relative;width:100%;height:300px;background:#F4F7F7;border:1px solid #E2E8E8;border-radius:10px;overflow:hidden',
+      dimIdLabel:dimId.label, dimIdLabelStyle:dimId.labelStyle,
+      dimCompLabel:dimComp.label, dimCompLabelStyle:dimComp.labelStyle,
+      dimIdPill:dimId.style, dimCompPill:dimComp.style,
+      dimCardId:`background:#fff;border:1px solid #DDE3E4;border-left:3px solid ${soloReglas?'#C2860E':'#1F8A5B'};border-radius:14px;padding:18px 20px`,
+      dimCardComp:'background:#fff;border:1px solid #DDE3E4;border-left:3px solid #C2860E;border-radius:14px;padding:18px 20px',
+
+      // footer / promotion
+      showDecision: s.decision===null,
+      decisionText: 'Este caso está en ámbar: la decisión final es humana. Aprobá o rechazá según tu criterio.',
+      decisionNote:'display:flex;align-items:center;gap:9px;font-size:12.5px;font-weight:500;color:#855A06;background:#FBF1DC;padding:9px 13px;border-radius:9px',
+      approveManual:()=>this.setState({decision:'approved'}),
+      rejectDoc:()=>this.setState({decision:'rejected'}),
+      downloadReport:()=>{},
+      undoDecision:()=>this.setState({decision:null, promoted:false}),
+      isApproved:s.decision==='approved', isRejected:s.decision==='rejected',
+      showPromo: s.decision==='approved' && !s.promoted,
+      isPromoted:s.promoted,
+      promote:s.promote, togglePromote:()=>this.setState(p=>({promote:!p.promote})),
+      switchTrack:this.switchTrack(s.promote), switchKnob:this.switchKnob(s.promote),
+      promoText,
+      confirmPromote:()=>this.setState({promoted:true}),
+      promoBtnLabel: s.promote?'Confirmar y promover':'Confirmar sin promover',
+      promoBtnStyle:`flex:none;align-self:center;border:none;border-radius:9px;padding:11px 18px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;background:${s.promote?'#0E6E78':'#5C6B71'};color:#fff`,
+      promotedTitle: s.promote?`Agregado como referencia · el template ahora tiene ${nextRefs} ejemplos`:'Documento aprobado · no se promovió a referencia',
+      promotedSub: s.promote?`Madurez: ${nextMat}. Las próximas validaciones de este tipo serán más precisas.`:'Podés promoverlo más tarde desde el historial.',
+
+      // templates header
+      inDetail: !!s.tplDetail && !s.showNew,
+      inList: !s.tplDetail,
+      tplHeaderTitle: dTpl ? dTpl.tipo : 'Templates de referencia',
+      tplHeaderSub: dTpl ? 'Calibración, galería de referencias y reglas de validación' : 'Administrá los formatos contra los que se validan los documentos.',
+      closeTpl:()=>this.setState({tplDetail:null, editingTpl:false}),
+      openNew:()=>this.openNew(),
+      templateRows,
+      rowActBtn,
+
+      // detail
+      editingTpl:s.editingTpl,
+      notEditingTpl:!s.editingTpl,
+      editTplLabel: s.editingTpl?'Listo':'Editar datos',
+      editTplBtn: s.editingTpl
+        ? 'display:flex;align-items:center;gap:7px;background:#0E6E78;border:1px solid #0E6E78;color:#fff;font-weight:600;font-size:12px;padding:8px 13px;border-radius:8px;cursor:pointer'
+        : 'display:flex;align-items:center;gap:7px;background:#fff;border:1px solid #CBD4D5;color:#0E6E78;font-weight:600;font-size:12px;padding:8px 13px;border-radius:8px;cursor:pointer',
+      toggleEditTpl:()=>this.setState(p=>({editingTpl:!p.editingTpl})),
+      dDeleteTpl:()=>this.deleteTpl(s.tplDetail),
+      dOnTipo:(e)=>this.updateTpl(s.tplDetail,'tipo',e.target.value),
+      dOnEmpresa:(e)=>this.updateTpl(s.tplDetail,'empresa',e.target.value),
+      dOnDisc:(e)=>this.updateTpl(s.tplDetail,'disc',e.target.value),
+      dTipo: dTpl?dTpl.tipo:'', dEmpresa: dTpl?dTpl.empresa:'', dDisc: dTpl?dTpl.disc:'',
+      dMaturity: dm?dm.maturity:'', dBadge: dm?this.matBadge(dm.maturity):'',
+      dRefs: dRefsNow, dRefTarget: '/ '+target+' ejemplos sugeridos',
+      dCalibBar:`height:100%;width:${calibPct}%;background:${dm&&dm.maturity==='Calibrado'?'#1F8A5B':dm&&dm.maturity==='Calibrando'?'#C2860E':'#9FB0B2'};border-radius:5px`,
+      dMsg, dMsgStyle:`margin-top:16px;font-size:12.5px;padding:11px 14px;border-radius:9px;background:${dMsgColor[0]};color:${dMsgColor[1]}`,
+      refDocs, rulesView, addRule:()=>this.addRule(),
+
+      // preview modal + uploaded doc management
+      previewOpen: !!pv,
+      previewName: pv?pv.name:'',
+      previewTag: pv?(pv.tag||''):'',
+      previewTagStyle: pv ? (pv.promoted?'display:inline-block;font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:6px;background:#E6F0F1;color:#0E6E78':'display:inline-block;font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:6px;background:#EEF1F2;color:#7C8A8F') : '',
+      closePreview:()=>this.closePreview(),
+      onPreviewRename:(e)=>{const v=e.target.value; this.setState(p=>{const nx={preview:{...p.preview,name:v}}; if(p.preview&&p.preview.kind==='upload') nx.fileName=v; return nx;});},
+      openDocPreview:()=>this.openPreview({name:fileName, tag:'A validar', kind:'upload'}),
+      downloadDoc:()=>{},
+
+      // modal
+      showNewFlag:s.showNew, closeNew:()=>this.setState({showNew:false}), stop:(e)=>e.stopPropagation(),
+
+      // history
+      historyRows,
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+tipo_doc: pandacarrierelectrico
+nombre: Panda Carrier Eléctrico
+disciplinas:
+- electrica
+formatos_archivo:
+- pdf
+cajetin:
+  requerido: true
+  campos_requeridos:
+  - proyecto
+  - codigo_documento
+  - revision
+  - autor
+  - fecha
+  - formato
+  - pagina_x_de_n
+  logo_empresa: true
+secciones_requeridas:
+- indice_hojas
+- historial_revisiones
+columnas_requeridas: []
+caracteristicas:
+- cada hoja con cajetín completo y número de página 'Página X de N'
+- índice de hojas al principio
+- historial de revisiones en la primera hoja
+nomenclatura: ECA-BRD-xxxx/yyyy VxxRxx
+bloqueante:
+- formato de archivo no aceptado
+- falta cajetín en las hojas
+- falta índice de hojas
+- falta historial de revisiones
+- no es un diagrama eléctrico
+senales_reconocimiento: Diagramas eléctricos con numeración clara de hojas y detalles
+  técnicos precisos para cada módulo.
+criterios_aceptacion: Documento en formato PDF que incluya un cajetín completo en
+  cada hoja, índice de hojas, historial de revisiones y numeración de páginas.
+no_corresponde: Documentos que no contengan diagramas eléctricos o que no cumplan
+  con la estructura especificada.

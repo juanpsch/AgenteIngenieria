@@ -1,0 +1,92 @@
+tipo_doc: hd_2
+nombre: Hojas de Datos - Proyecto CAREM25
+disciplinas:
+- mecanica
+formatos_archivo:
+- pdf
+cajetin:
+  requerido: true
+  campos_requeridos:
+  - proyecto
+  - codigo_documento
+  - revision
+  - titulo
+  - archivo_digital
+  - permiso_de_uso
+  - gestionado_en
+  - motivo_de_la_emision
+  - estado_del_documento
+  - fin_previsto
+  - copias_controladas
+  logo_empresa: true
+secciones_requeridas:
+- objetivo
+- resumen
+- sintesis_de_las_conclusiones
+- alcance
+- abreviaturas_y_definiciones
+- referencias
+- responsabilidades
+- desarrollo
+- conclusiones_otras_recomendaciones
+- registros
+- anexos
+columnas_requeridas: []
+caracteristicas:
+- Cada hoja tiene un cajetín completo.
+- Primera hoja incluye un índice con las secciones principales.
+- Tabla de revisiones presente en cada documento.
+- Incluye firmas digitales para aprobación, revisión y calidad.
+nomenclatura: HD-CAREM25XT-[0-9]+-r[0-9]+.pdf
+bloqueante:
+- Formato de archivo no es PDF.
+- Falta el cajetín completo en todas las hojas.
+- No incluye un índice de contenido claro en la primera hoja.
+- El código de documento no coincide con la nomenclatura esperada.
+senales_reconocimiento: Documentos con cajetines detallados de Proyecto CAREM25, incluyendo
+  revisiones, firmas digitales y contenido técnico orientado al sistema de refrigeración.
+criterios_aceptacion: Cada documento debe tener un cajetín completo, un índice de
+  secciones en la primera hoja y el contenido técnico detallado según los requisitos
+  del proyecto CAREM25.
+no_corresponde: Documentos que no detallan datos técnicos del sistema de refrigeración
+  CAREM25 o carecen de los elementos formales como cajetines y firmas requeridas.
+zonas:
+- nombre: Identidad (sugerida)
+  pagina: 1
+  bbox:
+    x: 0.048
+    y: 0.049
+    w: 0.908
+    h: 0.15
+  identidad: true
+- nombre: Código del documento
+  pagina: 1
+  bbox:
+    x: 0.0
+    y: 0.0
+    w: 0.0
+    h: 0.0
+  campo: codigo
+  patron: HD-CAREM25XT-[0-9]+-B1900-r[0-9]+
+  tipo: filename
+  ancla_inicio: CÓDIGO CNEA
+  comparar: texto
+  requerido: true
+- nombre: Logo CAREM25
+  pagina: 1
+  bbox:
+    x: 0.0
+    y: 0.0
+    w: 0.0
+    h: 0.0
+  tipo: presencia
+  ancla_inicio: PROYECTO CAREM25
+  comparar: visual
+- nombre: Logo
+  pagina: 2
+  bbox:
+    x: 0.1104
+    y: 0.0484
+    w: 0.1455
+    h: 0.1014
+  comparar: visual

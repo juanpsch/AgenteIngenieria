@@ -1,0 +1,14 @@
+# Tema de marca — Workforce AI by Lobox
+[theme]
+base = "dark"
+primaryColor = "#2348FF"            # Signal
+backgroundColor = "#1E1E1E"          # Negro Lobox
+secondaryBackgroundColor = "#242424" # superficie
+textColor = "#F4F2EE"                # Papel
+font = "sans-serif"                   # las fuentes Syne/Space Mono se cargan por CSS
+
+[server]
+headless = true
+# Sin file-watcher: Ctrl+C cierra limpio (sin "stopping…" colgado).
+# Trade-off: no hay auto-reload; reiniciá el proceso para ver cambios de código.
+fileWatcherType = "none"

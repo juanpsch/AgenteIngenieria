@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QA-Ingeniería — Spec visual</title>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#161b22; --border:#30363d; --txt:#c9d1d9; --muted:#8b949e;
+    --accent:#58a6ff; --green:#3fb950; --yellow:#d29922; --red:#f85149; --purple:#bc8cff; --new:#1f6feb;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;line-height:1.5;padding:32px}
+  h1{font-size:24px;margin:0 0 4px}
+  .sub{color:var(--muted);margin:0 0 28px;font-size:14px}
+  h2{font-size:15px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);border-bottom:1px solid var(--border);padding-bottom:8px;margin:36px 0 18px}
+  .layers{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:16px}
+  .card h3{margin:0 0 10px;font-size:13px;color:var(--accent);text-transform:uppercase;letter-spacing:.5px}
+  .card ul{margin:0;padding-left:16px;font-size:13px;color:var(--txt)}
+  .card li{margin:4px 0}
+  .tag{display:inline-block;font-size:10px;padding:1px 7px;border-radius:10px;margin-left:6px;vertical-align:middle}
+  .tag.base{background:#1d2d3a;color:#79c0ff}
+  .tag.new{background:#13361f;color:#56d364}
+  /* graph */
+  .graph{display:flex;flex-direction:column;gap:0;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:24px}
+  .node{background:#1c2330;border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:13px;min-width:200px;text-align:center}
+  .node .n-title{font-weight:600}
+  .node .n-sub{color:var(--muted);font-size:11px;margin-top:2px}
+  .spine{display:flex;flex-direction:column;align-items:center;gap:0}
+  .arrow{color:var(--muted);font-size:18px;line-height:1;margin:6px 0}
+  .branch{border-left:2px solid var(--border);border-radius:0;margin:8px 0 8px 16px;padding:6px 0 6px 18px;display:flex;flex-direction:column;gap:8px}
+  .branch-label{font-size:11px;color:var(--muted);margin-bottom:2px}
+  .row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+  .hitl{border-color:var(--purple);background:#241b33}
+  .hitl .n-title{color:var(--purple)}
+  .obs{border-color:var(--yellow);background:#2a2410}
+  .approve{border-color:var(--green);background:#10271a}
+  .reject{border-color:var(--red);background:#2a1414}
+  .stop{border-color:var(--red);background:#2a1414}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:14px;font-size:12px;color:var(--muted)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+  /* traces */
+  .trace{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:16px 18px;margin-bottom:14px}
+  .trace h3{margin:0 0 10px;font-size:13px;color:var(--accent)}
+  .flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12px}
+  .step{background:#1c2330;border:1px solid var(--border);border-radius:6px;padding:4px 9px;white-space:nowrap}
+  .sep{color:var(--muted)}
+  .pill{border-radius:10px;padding:3px 9px;font-size:11px;font-weight:600;white-space:nowrap}
+  .p-recv{background:#1d2d3a;color:#79c0ff}
+  .p-wait{background:#2a2410;color:#e3b341}
+  .p-hitl{background:#241b33;color:#bc8cff}
+  .p-ok{background:#10271a;color:#56d364}
+  .p-stop{background:#2a1414;color:#f85149}
+  .trace .note{color:var(--muted);font-size:12px;margin-top:8px}
+  /* tree */
+  .tree{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:20px;font-family:"SF Mono",Consolas,monospace;font-size:13px;white-space:pre;overflow-x:auto}
+  .tree .nw{color:var(--green)}
+  .tree .re{color:var(--muted)}
+  .tree .cm{color:#6e7681}
+</style>
+</head>
+<body>
+  <h1>Agente QA-Ingeniería</h1>
+  <p class="sub">Revisión / QA de documentación de ingeniería · email-driven · LangGraph + Neon · OpenAI SDK · Resend · Drive/Docs/Sheets</p>
+
+  <h2>Capas del sistema</h2>
+  <div class="layers">
+    <div class="card">
+      <h3>Entrada</h3>
+      <ul>
+        <li>Email a <code>qa@tenant</code> con adjunto</li>
+        <li>Resend Inbound + Svix <span class="tag base">base</span></li>
+        <li>Filtro por <code>to</code> <span class="tag base">base</span></li>
+        <li>Entrada condicional: parser vs clasificador</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Workflow</h3>
+      <ul>
+        <li>LangGraph + checkpointer Neon <span class="tag base">base</span></li>
+        <li>Status: RECIBIDO→EN_TRIAGE→(INCOMPLETA | NO_ADMISIBLE | EN_REVISION)→ESPERA_SENIOR→OBSERVADO/APROBADO/RECHAZADO <span class="tag new">nuevo</span></li>
+        <li>Versionado por <code>ronda</code> <span class="tag new">nuevo</span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Agentes (OpenAI SDK)</h3>
+      <ul>
+        <li>Parser: email→tipo/disciplina/proyecto <span class="tag new">nuevo</span></li>
+        <li><b>Triage</b>: admisibilidad + completitud (¿están todos los docs requeridos de la entrega?) <span class="tag new">nuevo</span></li>
+        <li>Extractor: doc→secciones + <code>confidence</code> <span class="tag new">nuevo</span></li>
+        <li>Revisor: checklist + hallazgos libres <span class="tag new">nuevo</span></li>
+        <li>Clasificador de respuestas <span class="tag new">nuevo</span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Almacenamiento</h3>
+      <ul>
+        <li>Informe Google Doc → PDF <span class="tag base">base</span></li>
+        <li>Sheet maestro del proyecto <span class="tag new">nuevo</span></li>
+        <li>Carpeta por caso en Drive <span class="tag base">base</span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Datos / config</h3>
+      <ul>
+        <li>Checklists/normas por disciplina en <code>knowledge/</code> <span class="tag new">nuevo</span></li>
+        <li><code>DRIVE_ROOT</code> + <code>SHEET_MAESTRO_ID</code> por tenant <span class="tag new">nuevo</span></li>
+        <li>Senior aprobador + umbrales cron <span class="tag base">base</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Grafo del flujo</h2>
+  <div class="graph">
+    <div class="spine">
+      <div class="node"><div class="n-title">Trigger: email + adjunto</div><div class="n-sub">parser (nuevo) · clasificador (si [REF:thread_id])</div></div>
+      <div class="arrow">▼</div>
+      <div class="node"><div class="n-title">Validación de datos mínimos</div><div class="n-sub">adjunto + tipo + disciplina</div></div>
+    </div>
+
+    <div class="branch">
+      <div class="branch-label">✗ faltan datos</div>
+      <div class="row">
+        <div class="node obs"><div class="n-title">Pide al emisor → FALTAN_DATOS</div><div class="n-sub">espera, no revisa</div></div>
+      </div>
+    </div>
+
+    <div class="spine">
+      <div class="arrow">▼ datos ok</div>
+      <div class="node"><div class="n-title">Triage: admisibilidad + completitud</div><div class="n-sub">catálogo del proyecto (Sheet) + plantilla de entrega (knowledge) → ¿están todos los docs requeridos?, ¿cada uno correcto/relevante/formato?</div></div>
+    </div>
+
+    <div class="branch">
+      <div class="branch-label">triage: dos formas de no pasar</div>
+      <div class="row">
+        <div class="node obs"><div class="n-title">faltan docs requeridos → INCOMPLETA</div><div class="n-sub">reclama faltantes al emisor · acumula reenvíos hasta completar</div></div>
+        <div class="node stop"><div class="n-title">irrelevante / formato mal → NO_ADMISIBLE</div><div class="n-sub">devuelve con motivo · no revisa contenido</div></div>
+      </div>
+    </div>
+
+    <div class="spine">
+      <div class="arrow">▼ admisible</div>
+      <div class="node"><div class="n-title">Extractor</div><div class="n-sub">secciones + confidence por ítem</div></div>
+      <div class="arrow">▼</div>
+      <div class="node"><div class="n-title">Revisor</div><div class="n-sub">checklist disciplina + hallazgos libres → Markdown</div></div>
+      <div class="arrow">▼</div>
+      <div class="node hitl"><div class="n-title">⚑ ESPERANDO APROBACIÓN SENIOR</div><div class="n-sub">HITL: aprobación previa siempre · bloqueantes/baja-confianza resaltados</div></div>
+    </div>
+
+    <div class="branch">
+      <div class="branch-label">decisión por severidad (tras OK del senior)</div>
+      <div class="row">
+        <div class="node obs"><div class="n-title">≥1 Bloqueante → OBSERVADO</div><div class="n-sub">envía informe + vuelca a Sheet · espera corrección</div></div>
+        <div class="node approve"><div class="n-title">solo No bloqueantes → APROBADO</div><div class="n-sub">envía + vuelca a Sheet · cierra</div></div>
+        <div class="node reject"><div class="n-title">crítico → RECHAZADO</div><div class="n-sub">cierra con dictamen negativo</div></div>
+      </div>
+    </div>
+
+    <div class="branch">
+      <div class="branch-label">respuesta del emisor (clasificador)</div>
+      <div class="row">
+        <div class="node"><div class="n-title">corrección reenviada</div><div class="n-sub">→ EN_REVISION (ronda+1)</div></div>
+        <div class="node hitl"><div class="n-title">no acuerda</div><div class="n-sub">→ escala al senior</div></div>
+        <div class="node stop"><div class="n-title">desconoce / corta</div><div class="n-sub">→ avisa al dueño · detiene</div></div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <span><span class="dot" style="background:var(--purple)"></span>HITL / senior</span>
+      <span><span class="dot" style="background:var(--yellow)"></span>observado / espera</span>
+      <span><span class="dot" style="background:var(--green)"></span>aprobado</span>
+      <span><span class="dot" style="background:var(--red)"></span>rechazo / corte</span>
+    </div>
+  </div>
+
+  <h2>Trazas de escenarios (table-read)</h2>
+  <div class="trace">
+    <h3>1 · Entregable correcto, observaciones menores</h3>
+    <div class="flow">
+      <span class="pill p-recv">RECIBIDO</span><span class="sep">→</span>
+      <span class="step">parser</span><span class="sep">→</span>
+      <span class="step">validación ✓</span><span class="sep">→</span>
+      <span class="pill p-recv">EN_TRIAGE</span><span class="sep">→</span>
+      <span class="step">triage: entrega completa + formato ✓</span><span class="sep">→</span>
+      <span class="step">extractor</span><span class="sep">→</span>
+      <span class="step">revisor: 2 no-bloqueantes</span><span class="sep">→</span>
+      <span class="pill p-hitl">ESPERA SENIOR</span><span class="sep">→</span>
+      <span class="step">aprueba + vuelca a Sheet</span><span class="sep">→</span>
+      <span class="pill p-ok">APROBADO_CON_NOTAS</span>
+    </div>
+  </div>
+  <div class="trace">
+    <h3>2 · Archivo equivocado — lo frena el gate</h3>
+    <div class="flow">
+      <span class="pill p-recv">RECIBIDO</span><span class="sep">→</span>
+      <span class="step">parser: dice "memoria estructural"</span><span class="sep">→</span>
+      <span class="step">validación ✓</span><span class="sep">→</span>
+      <span class="pill p-recv">EN_TRIAGE</span><span class="sep">→</span>
+      <span class="step">triage: el adjunto es un plano, no coincide</span><span class="sep">→</span>
+      <span class="step">devuelve al emisor con motivo</span><span class="sep">→</span>
+      <span class="pill p-stop">NO_ADMISIBLE</span>
+    </div>
+    <div class="note">No corre extractor/revisor. Silencioso con el emisor las primeras 2 veces; al 3er rebote del caso → notifica al dueño. Si el emisor no acuerda con el triage → escala al senior.</div>
+  </div>
+  <div class="trace">
+    <h3>2b · Entrega incompleta (falta un documento requerido)</h3>
+    <div class="flow">
+      <span class="pill p-recv">RECIBIDO</span><span class="sep">→</span>
+      <span class="step">parser: entrega "fabricación", adjunta solo el Plano</span><span class="sep">→</span>
+      <span class="pill p-recv">EN_TRIAGE</span><span class="sep">→</span>
+      <span class="step">requiere Plano + Lista de materiales · falta la lista</span><span class="sep">→</span>
+      <span class="step">reclama el faltante al emisor</span><span class="sep">→</span>
+      <span class="pill p-wait">INCOMPLETA</span><span class="sep">→</span>
+      <span class="step">emisor reenvía la lista [REF]</span><span class="sep">→</span>
+      <span class="step">re-triage: completa ✓</span><span class="sep">→</span>
+      <span class="pill p-recv">EN_REVISION</span>
+    </div>
+  </div>
+  <div class="trace">
+    <h3>3 · Faltan datos mínimos</h3>
+    <div class="flow">
+      <span class="pill p-recv">RECIBIDO</span><span class="sep">→</span>
+      <span class="step">parser: sin tipo/disciplina</span><span class="sep">→</span>
+      <span class="step">validación: faltan obligatorios</span><span class="sep">→</span>
+      <span class="step">pide al emisor (no al senior)</span><span class="sep">→</span>
+      <span class="pill p-wait">FALTAN_DATOS</span><span class="sep">→</span>
+      <span class="step">responde con datos → reentra</span>
+    </div>
+  </div>
+  <div class="trace">
+    <h3>4 · Hallazgo bloqueante + ciclo de corrección</h3>
+    <div class="flow">
+      <span class="step">parser/validación/triage ✓</span><span class="sep">→</span>
+      <span class="pill p-recv">EN_REVISION</span><span class="sep">→</span>
+      <span class="step">revisor: 1 bloqueante + baja confianza ⚑</span><span class="sep">→</span>
+      <span class="pill p-hitl">ESPERA SENIOR</span><span class="sep">→</span>
+      <span class="step">aprueba (dictamen OBSERVADO)</span><span class="sep">→</span>
+      <span class="pill p-wait">OBSERVADO</span><span class="sep">→</span>
+      <span class="step">emisor reenvía corregido [REF]</span><span class="sep">→</span>
+      <span class="step">clasificador: corrección</span><span class="sep">→</span>
+      <span class="pill p-recv">EN_TRIAGE (ronda 2)</span><span class="sep">→</span>
+      <span class="step">re-revisa → resuelto</span><span class="sep">→</span>
+      <span class="pill p-ok">APROBADO_CON_NOTAS</span>
+    </div>
+  </div>
+
+  <h2>Cron (umbrales por etapa)</h2>
+  <div class="layers">
+    <div class="card">
+      <h3>Aprobación senior pendiente</h3>
+      <ul><li>Estado <code>ESPERANDO_APROBACION_SENIOR</code></li><li>Recuerda a las <b>X horas</b></li><li>Re-escala a las <b>Y horas</b></li></ul>
+    </div>
+    <div class="card">
+      <h3>Corrección del emisor pendiente</h3>
+      <ul><li>Estado <code>OBSERVADO</code></li><li>Recuerda a los <b>X días</b></li><li>Avisa al dueño a los <b>Y días</b></li></ul>
+    </div>
+  </div>
+
+  <h2>Árbol de archivos</h2>
+  <div class="tree"><span class="cm">qa-ingenieria/</span>
+├── api/index.py            <span class="re"># entrypoint serverless (base)</span>
+├── server/main.py          <span class="re"># webhook, /assets, /cron/*, filtro to (base)</span>
+├── graph/
+│   ├── <span class="nw">state.py</span>            <span class="cm"># estado del caso QA + Status + ronda</span>
+│   ├── <span class="nw">nodes.py</span>            <span class="cm"># validación, extractor, revisor, aprobación, envío</span>
+│   ├── <span class="nw">edges.py</span>            <span class="cm"># routers por severidad y por categoría</span>
+│   └── graph.py            <span class="re"># ensamblado + checkpointer (base)</span>
+├── ai_agents/              <span class="cm"># parser, triage, extractor, revisor, clasificador</span>
+│   ├── <span class="nw">parser.py</span>
+│   ├── <span class="nw">triage.py</span>          <span class="cm"># admisibilidad + completitud de la entrega</span>
+│   ├── <span class="nw">extractor.py</span>
+│   ├── <span class="nw">revisor.py</span>
+│   └── <span class="nw">clasificador.py</span>
+├── prompts/                <span class="cm"># instrucciones .txt de cada agente</span>
+│   ├── <span class="nw">parser.txt</span>
+│   ├── <span class="nw">triage.txt</span>
+│   ├── <span class="nw">extractor.txt</span>
+│   ├── <span class="nw">revisor.txt</span>
+│   └── <span class="nw">clasificador.txt</span>
+├── tools/
+│   ├── email.py            <span class="re"># Resend + Svix + From/Reply-To (base)</span>
+│   ├── drive.py            <span class="re"># Drive/Docs + Markdown→Doc (base)</span>
+│   ├── <span class="nw">sheets.py</span>           <span class="cm"># lee catálogo de entregables + write-back hallazgos</span>
+│   ├── db.py               <span class="re"># Neon/psycopg pooled (base)</span>
+│   └── google_auth.py      <span class="re"># OAuth Google (base)</span>
+├── knowledge/              <span class="cm"># checklists + plantillas de formato por disciplina (por tenant)</span>
+│   ├── <span class="nw">checklist_estructural.md</span>
+│   ├── <span class="nw">checklist_electrica.md</span>
+│   ├── <span class="nw">checklist_sanitaria.md</span>
+│   └── <span class="nw">entrega_<tipo>.md</span>  <span class="cm"># docs requeridos + formato por tipo de entrega (triage)</span>
+├── assets/logo.png         <span class="re"># servido por la app (base)</span>
+├── scripts/<span class="nw">create_tables.sql</span>  <span class="cm"># schema de casos QA + seguimientos</span>
+└── vercel.json             <span class="re"># builds + routes + crons (base)</span>
+  </div>
+</body>
+</html>

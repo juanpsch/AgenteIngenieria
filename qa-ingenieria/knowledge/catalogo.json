@@ -1,0 +1,21 @@
+{
+  "_descripcion": "Catálogo de entregas esperadas por proyecto. Fixture local de Fase 0; en Fase 4 sale del Sheet maestro. El fake de sheets (tools/sheets.py) lo lee para resolver los documentos requeridos de (proyecto, tipo_entrega).",
+  "proyectos": {
+    "P-102": {
+      "nombre": "Nave industrial P-102",
+      "entregas": {}
+    },
+    "P-205": {
+      "nombre": "Pasarela peatonal P-205",
+      "entregas": {}
+    }
+  },
+  "_default_por_tipo_entrega": {
+    "pandaingenieria": [
+      "pandacarrierelectrico"
+    ],
+    "ingenieria_basica": [
+      "hd"
+    ]
+  }
+}

@@ -1,0 +1,33 @@
+Acá van los exactos, listos para copiar y pegar. En cada uno: qué archivo adjuntás (📎) y qué texto escribís.
+
+1) Cálculo completo → EN_REVISION
+📎 memoria_calculo_P102.pdf
+Texto:
+Envío la memoria de cálculo estructural del proyecto P-102 rev B para revisar
+
+
+2) Incompleta → INCOMPLETA (falta lista)
+📎 plano_P102.pdf
+Texto:
+Envío el plano de fabricación del proyecto P-102, disciplina estructural
+
+3) Irrelevante → NO_ADMISIBLE
+📎 presupuesto.pdf
+Texto:
+Envío la memoria de cálculo estructural del proyecto P-102
+
+4) Sin adjunto → FALTAN_DATOS
+(sin archivo)
+Texto:
+Hola, les mando algo para que revisen cuando puedan
+
+5) Ida y vuelta (mismo chat, dos turnos)
+Turno 1 → da INCOMPLETA:
+📎 plano_P102.pdf
+Texto:
+Envío el plano de fabricación del P-102, disciplina estructural
+Turno 2 (en el mismo chat) → completa a EN_REVISION:
+📎 lista_materiales_P102.xlsx
+Texto:
+Ahí va la lista de materiales que faltaba
+Los archivos están en qa-ingenieria/sandbox/test_fixtures/. ¿Los corrés y me confirmás cómo respondió cada uno?

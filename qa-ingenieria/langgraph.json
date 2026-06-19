@@ -1,0 +1,7 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "qa_ingenieria_sandbox": "./sandbox/studio_graph.py:graph"
+  },
+  "env": ".env"
+}

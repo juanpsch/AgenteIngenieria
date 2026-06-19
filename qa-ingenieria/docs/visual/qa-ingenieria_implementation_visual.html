@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QA-Ingeniería — Implementación visual</title>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#161b22; --border:#30363d; --txt:#c9d1d9; --muted:#8b949e;
+    --accent:#58a6ff; --green:#3fb950; --yellow:#d29922; --red:#f85149; --purple:#bc8cff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;line-height:1.5;padding:32px}
+  h1{font-size:24px;margin:0 0 4px}
+  .sub{color:var(--muted);margin:0 0 24px;font-size:14px}
+  h2{font-size:15px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);border-bottom:1px solid var(--border);padding-bottom:8px;margin:34px 0 18px}
+  /* progress */
+  .progress-wrap{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:16px 18px;margin-bottom:8px}
+  .progress-label{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px}
+  .bar{height:10px;background:#0d1117;border:1px solid var(--border);border-radius:6px;overflow:hidden}
+  .bar > span{display:block;height:100%;width:0%;background:linear-gradient(90deg,#1f6feb,#388bfd)}
+  /* pipeline */
+  .pipe{display:flex;gap:10px;flex-wrap:wrap;align-items:stretch}
+  .stage{flex:1;min-width:150px;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:14px;position:relative}
+  .stage .ph{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  .stage .ti{font-weight:600;font-size:14px;margin:4px 0 6px}
+  .stage .ds{font-size:12px;color:var(--muted)}
+  .stage.now{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+  .stage.later{opacity:.7}
+  .badge{position:absolute;top:10px;right:10px;font-size:10px;padding:2px 7px;border-radius:10px}
+  .badge.now{background:#102a43;color:#79c0ff}
+  .badge.local{background:#13361f;color:#56d364}
+  .badge.real{background:#33281a;color:#e3b341}
+  .arrowrow{display:flex;justify-content:center;color:var(--muted);margin:2px 0}
+  /* checklists */
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:780px){.cols{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:16px 18px}
+  .card h3{margin:0 0 4px;font-size:14px;color:var(--accent)}
+  .card .meta{font-size:12px;color:var(--muted);margin-bottom:10px}
+  .chk{list-style:none;margin:0;padding:0;font-size:13px}
+  .chk li{padding:4px 0 4px 24px;position:relative}
+  .chk li:before{content:"☐";position:absolute;left:0;color:var(--muted)}
+  .chk li.done:before{content:"✓";color:var(--green)}
+  .chk li.done{color:var(--muted)}
+  .chk li .f{color:var(--muted);font-family:"SF Mono",Consolas,monospace;font-size:11px}
+  .lesson{font-size:11px;color:#8b949e;border-left:2px solid var(--border);padding-left:8px;margin-top:10px}
+  .pill{display:inline-block;border-radius:10px;padding:1px 7px;font-size:10px;margin-left:6px}
+  .pill.l{background:#13361f;color:#56d364}
+  .pill.r{background:#33281a;color:#e3b341}
+</style>
+</head>
+<body>
+  <h1>QA-Ingeniería — Plan de implementación</h1>
+  <p class="sub">Sandbox-first · local-first · la arquitectura real va al final. <span class="pill l">local/fake</span> <span class="pill r">infra real</span></p>
+
+  <div class="progress-wrap">
+    <div class="progress-label"><span>Progreso global</span><span>✅ Fase 0 completa y validada (LLM real, 4/4 escenarios) · lista para Fase 1</span></div>
+    <div class="bar"><span style="width:22%"></span></div>
+  </div>
+
+  <h2>Pipeline de fases</h2>
+  <div class="pipe">
+    <div class="stage now">
+      <span class="badge local">✓ completa</span>
+      <div class="ph">Fase 0</div><div class="ti">Sandbox local</div>
+      <div class="ds">parser + validación + triage sobre archivos subidos. DB local, OpenAI real, resto fake.</div>
+    </div>
+    <div class="stage">
+      <div class="ph">Fase 1</div><div class="ti">Revisión</div>
+      <div class="ds">extractor (confidence) + revisor (checklist + severidad).</div>
+    </div>
+    <div class="stage">
+      <div class="ph">Fase 2</div><div class="ti">HITL + documento</div>
+      <div class="ds">aprobación senior, Doc/PDF, write-back (fake).</div>
+    </div>
+    <div class="stage">
+      <div class="ph">Fase 3</div><div class="ti">Respuestas</div>
+      <div class="ds">clasificador + ciclo de corrección + bordes.</div>
+    </div>
+    <div class="stage later">
+      <span class="badge real">dps</span>
+      <div class="ph">Fase 4</div><div class="ti">Arquitectura real</div>
+      <div class="ds">Resend/Svix, Neon, Drive/Sheets, webhook, Vercel, cron.</div>
+    </div>
+    <div class="stage later">
+      <span class="badge real">dps</span>
+      <div class="ph">Fase 5</div><div class="ti">Deploy + smoke</div>
+      <div class="ds">deploy Vercel, inbound Resend, pruebas end-to-end, limpieza.</div>
+    </div>
+  </div>
+
+  <h2>Stack (Fase 0–3, local)</h2>
+  <div class="pipe">
+    <div class="stage"><div class="ph">Entorno</div><div class="ti">uv · Python 3.12</div><div class="ds">venv + lockfile; uv fija el Python.</div></div>
+    <div class="stage"><div class="ph">Orquestación</div><div class="ti">LangGraph + SQLite</div><div class="ds">checkpointer local (toggle a Neon en Fase 4).</div></div>
+    <div class="stage"><div class="ph">LLM</div><div class="ti">OpenAI Agents SDK</div><div class="ds">proveedor configurable (OpenAI/Claude vía LiteLLM por env).</div></div>
+    <div class="stage"><div class="ph">Lectura docs</div><div class="ti">Híbrido texto+visión</div><div class="ds">PyMuPDF/pdfplumber · openpyxl/python-docx · ezdxf+ODA (DWG).</div></div>
+    <div class="stage"><div class="ph">Sandbox</div><div class="ti">agent-sandbox + upload</div><div class="ds">chat local, archivos, email/drive/sheets fake.</div></div>
+  </div>
+  <p class="sub" style="margin-top:10px">Prerrequisito de sistema: <b>ODA File Converter</b> para leer DWG (degrada con gracia si no está).</p>
+
+  <h2>Detalle — Fase 0 y Fase 1</h2>
+  <div class="cols">
+    <div class="card">
+      <h3>Fase 0 · Sandbox local <span class="pill l">local/fake</span></h3>
+      <div class="meta">Validar el agente: recibe una entrega y dictamina completa / faltan docs / no admisible.</div>
+      <ul class="chk">
+        <li class="done">Entorno uv + Python 3.12 + deps + lockfile <span class="f">pyproject.toml</span></li>
+        <li class="done">Proveedor LLM configurable (OpenAI/Claude) <span class="f">ai_agents/provider.py</span></li>
+        <li class="done">Estado del caso + enum Status <span class="f">graph/state.py</span></li>
+        <li class="done">Checkpointer en DB local (SQLite) <span class="f">tools/db.py</span></li>
+        <li class="done">Plantillas de entrega (docs requeridos + formato) <span class="f">knowledge/entrega_*.md</span></li>
+        <li class="done">Fixture del catálogo por proyecto <span class="f">knowledge/catalogo.json</span></li>
+        <li class="done">Tools fake: email/sheets/drive en memoria <span class="f">tools/*.py</span></li>
+        <li class="done">Lectura híbrida: PDF/Office/CAD/imagen <span class="f">tools/docs.py</span></li>
+        <li class="done">build_trigger_state desde archivos <span class="f">tools/email.py</span></li>
+        <li class="done">Parser de la entrega <span class="f">ai_agents/parser.py</span></li>
+        <li class="done">Triage: completitud + tipo/relevancia + formato <span class="f">ai_agents/triage.py</span></li>
+        <li class="done">Nodos + routers (validación, triage) <span class="f">graph/nodes.py · edges.py</span></li>
+        <li class="done">Ensamblado del grafo + entrada condicional <span class="f">graph/graph.py</span></li>
+        <li class="done">Contador rebotes_admisibilidad (3º → avisa)</li>
+        <li class="done">Smoke runner local (CLI) <span class="f">scripts/run_local.py</span></li>
+        <li class="done">Sandbox: manifest + fakes + upload de archivos <span class="f">sandbox/*.py</span></li>
+        <li class="done">4 escenarios validados con LLM real (CLI) <span class="f">scripts/run_local.py</span></li>
+      </ul>
+      <div class="lesson">Lecciones: parseo LLM regex+fallback · IO en tools/ (real+fake) · un solo build_trigger_state · ai_agents/ no agents/.</div>
+    </div>
+    <div class="card">
+      <h3>Fase 1 · Revisión <span class="pill l">local/fake</span></h3>
+      <div class="meta">Sobre una entrega completa, producir hallazgos con severidad y dictamen propuesto.</div>
+      <ul class="chk">
+        <li>Extractor: secciones/datos + confidence por ítem <span class="f">ai_agents/extractor.py</span></li>
+        <li>Checklists por disciplina <span class="f">knowledge/checklist_*.md</span></li>
+        <li>Revisor: checklist + hallazgos libres → Markdown <span class="f">ai_agents/revisor.py</span></li>
+        <li>Estado: hallazgos[], dictamen, EN_REVISION <span class="f">graph/state.py</span></li>
+        <li>Nodos extractor + revisor <span class="f">graph/nodes.py</span></li>
+        <li>Router por severidad (bloqueante / no bloqueante) <span class="f">graph/edges.py</span></li>
+        <li>Marcar baja confianza para resaltar al senior</li>
+        <li>Validar en sandbox: caso con y sin bloqueante</li>
+      </ul>
+      <div class="lesson">Lecciones: LLM → Markdown, el código formatea (sin loops de tool-calling) · confidence por ítem → lo dudoso a humano.</div>
+    </div>
+  </div>
+</body>
+</html>

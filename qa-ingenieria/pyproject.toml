@@ -1,0 +1,50 @@
+[project]
+name = "qa-ingenieria"
+version = "0.0.0"
+description = "Agente QA-Ingeniería — revisión/QA de documentación de ingeniería (Fase 0: sandbox local)"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    # Orquestación + estado
+    "langgraph>=0.2.50",
+    "langgraph-checkpoint-sqlite>=2.0.0",
+    # Agentes LLM (runner) + proveedor configurable
+    "openai-agents[litellm]>=0.0.10",
+    "litellm>=1.50.0",
+    # Lectura de documentos (híbrido multi-formato)
+    "pymupdf>=1.24.0",       # PDF: texto + render de páginas
+    "pdfplumber>=0.11.0",    # PDF: tablas
+    "openpyxl>=3.1.0",       # xlsx
+    "python-docx>=1.1.0",    # docx
+    "ezdxf>=1.3.0",          # DXF nativo; DWG vía addon odafc + ODA File Converter
+    # Utilidades
+    "python-dotenv>=1.0.0",
+    "pydantic>=2.7.0",
+    "pyyaml>=6.0",           # templates de tipos de documento (knowledge/tipos/*.yaml)
+    "streamlit>=1.58.0",
+    # API HTTP (Cotejar Fase B)
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.27.0",
+    "python-multipart>=0.0.9",
+    "open-clip-torch>=3.3.0",
+    "numpy>=2.4.6",
+    "pillow>=12.2.0",
+    "pytesseract>=0.3.13",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    # Companion del sandbox (paquete local del skill agent-sandbox). Ruta machine-specific:
+    # reinstalar con: uv pip install "D:/Users/juanp_schamun/.claude/skills/agent-sandbox/core"
+    "agent-sandbox-harness",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+agent-sandbox-harness = { path = "D:/Users/juanp_schamun/.claude/skills/agent-sandbox/core" }
