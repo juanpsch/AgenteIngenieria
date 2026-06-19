@@ -31,7 +31,7 @@ export function ResultadoDetalle({ res, fileName }: { res: ValidarResp; fileName
       <InformeZonas zonas={res.zonas_resultado || []} />
       <Desglose ident={ident} compl={compl} preview={previewCard} />
       <FeedbackReglas res={res} />
-      {res.revision && <RevisionSection rev={res.revision} threadId={res.thread_id} nPaginas={res.n_paginas} imagenes={imagenes} />}
+      {res.revision && <RevisionSection rev={res.revision} threadId={res.thread_id} nPaginas={res.n_paginas} imagenes={imagenes} feedback={res.requisito_feedback} />}
       <details className="card" style={{ fontSize: 12.5 }}>
         <summary style={{ cursor: "pointer", fontWeight: 600 }}>¿Cómo se compara un documento?</summary>
         <div style={{ color: "var(--muted)", lineHeight: 1.7, marginTop: 8 }}>

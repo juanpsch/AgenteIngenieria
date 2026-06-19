@@ -137,12 +137,12 @@ con la etiqueta por regla). La grilla se arma del `revision.hallazgos` (que ya t
 
 ## 7. Plan incremental (sin romper lo actual)
 
-1. **Paso 1 — Resolvedor (backend):** id global `<norma>:<id>` + `revision.requisitos`/`excluir` +
-   `resolver_requisitos(template)` que reemplace al `cfg.normas` plano en `revisor._tier2_reglas`. Tests.
-2. **Paso 2 — Catálogo:** `catalogo_requisitos()` (vista plana con tags) + endpoint, para la UI.
-3. **Paso 3 — UI grilla + feedback por regla (§6b):** grilla-árbol Norma→Dimensión→requisito con `mi
-   juicio` (3 acciones) + `POST /casos/{id}/requisito-feedback`. Da observabilidad y empieza a juntar
-   etiquetas por regla.
+1. **Paso 1 — Resolvedor (backend) ✅ hecho:** id global `<norma>:<id>` + `revision.requisitos`/`excluir` +
+   `resolver_requisitos(template)` en `revisor._tier2_reglas` (`tools/normas.py`).
+2. **Paso 2 — Catálogo ✅ hecho:** `catalogo_requisitos()` + `GET /api/normas/catalogo`.
+3. **Paso 3 — UI grilla + feedback por regla (§6b) ✅ hecho:** `GrillaRequisitos` (árbol Norma→Dimensión→
+   requisito, plegable) con `mi juicio` (3 acciones) + `POST /casos/{id}/requisito-feedback` (persistido en
+   `api/historial` tabla `requisito_feedback`; `req_id` viaja en cada hallazgo).
 4. **Paso 4 — UI de asignación:** en el detalle del template, sugeridos (auto) + agregar/quitar desde el
    catálogo + guardar (`revision.requisitos`).
 5. **Paso 5 — Aprendedor:** `sugerir_requisitos(familia)` desde la matriz (§5) sobre el corpus etiquetado

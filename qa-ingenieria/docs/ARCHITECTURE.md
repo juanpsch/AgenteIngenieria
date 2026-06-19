@@ -211,6 +211,8 @@ Base `/api`. Endpoints (ver `api/main.py`):
 | `POST` | `/api/casos/{thread_id}/decision` | Decisión humana de admisión (`approved`/`rejected`). Al aprobar un caso `EN_REVISION` dispara la revisión de contenido. |
 | `POST` | `/api/casos/{thread_id}/revisar` | Dispara la **revisión de contenido** a pedido (cuando el toggle interrumpió). **409** si el caso no está `EN_REVISION`. |
 | `GET` | `/api/casos/{thread_id}/pagina/{page}` | Render PNG de la página N del documento del caso, **on-demand** (la previsualización no viaja en el payload; el visor pide cada hoja). |
+| `POST` | `/api/casos/{thread_id}/requisito-feedback` | Juicio humano POR REGLA (`de_acuerdo`/`no_aplica`/`regla_mal`) — retroalimenta a la regla, no solo al doc. |
+| `GET` | `/api/normas/catalogo` | Catálogo plano de **requisitos chequeables** (biblioteca asignable a las familias). |
 | `POST` | `/api/casos/{thread_id}/revision/decision` | Veredicto humano de la revisión (`aprobado`/`aprobado_con_notas`/`observado`/`rechazado`/`escalar_senior` + `notas`). |
 | `POST` | `/api/tipos/{id}/referencias/promover` | Promueve el doc del caso a referencia (gate humano; **409** si el caso no fue aprobado). |
 | `GET`/`PUT`/`DELETE` | `/api/entregas-tipo[/{id}]` | Catálogo de tipos de entrega. |

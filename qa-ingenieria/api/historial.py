@@ -39,6 +39,17 @@ def init() -> None:
         cols = {r["name"] for r in c.execute("PRAGMA table_info(validaciones)").fetchall()}
         if "campos" not in cols:
             c.execute("ALTER TABLE validaciones ADD COLUMN campos TEXT")
+        # Feedback humano POR REGLA (revisión de contenido): la etiqueta fina que alimenta la matriz.
+        c.execute(
+            """CREATE TABLE IF NOT EXISTS requisito_feedback (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                thread_id TEXT, tipo_doc TEXT, req_id TEXT,
+                juicio TEXT, estado TEXT, nota TEXT, fecha TEXT
+            )"""
+        )
+        c.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS ix_req_fb ON requisito_feedback(thread_id, req_id)"
+        )
         c.commit()
 
 
@@ -75,6 +86,30 @@ def decision_de(thread_id: str) -> Optional[str]:
             (thread_id,),
         ).fetchone()
         return row["decision"] if row else None
+
+
+def registrar_requisito_feedback(thread_id: str, req_id: str, juicio: str, fecha: str,
+                                 tipo_doc: str | None = None, estado: str | None = None,
+                                 nota: str | None = None) -> None:
+    """Guarda (o reemplaza) el juicio humano de UNA regla en un caso. `juicio` ∈ {de_acuerdo,
+    no_aplica, regla_mal}; `estado` = resultado automático al momento (para la matriz de aprendizaje)."""
+    with closing(_conn()) as c:
+        c.execute("DELETE FROM requisito_feedback WHERE thread_id=? AND req_id=?", (thread_id, req_id))
+        c.execute(
+            """INSERT INTO requisito_feedback (thread_id, tipo_doc, req_id, juicio, estado, nota, fecha)
+               VALUES (?,?,?,?,?,?,?)""",
+            (thread_id, tipo_doc, req_id, juicio, estado, nota, fecha),
+        )
+        c.commit()
+
+
+def feedback_de(thread_id: str) -> dict[str, dict[str, Any]]:
+    """Juicios humanos por regla de un caso: {req_id: {juicio, nota}}."""
+    with closing(_conn()) as c:
+        rows = c.execute(
+            "SELECT req_id, juicio, nota FROM requisito_feedback WHERE thread_id=?", (thread_id,)
+        ).fetchall()
+        return {r["req_id"]: {"juicio": r["juicio"], "nota": r["nota"]} for r in rows}
 
 
 def listar(limit: int = 200) -> list[dict[str, Any]]:

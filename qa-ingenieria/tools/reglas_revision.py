@@ -38,13 +38,15 @@ def _meta(regla: dict) -> dict:
         "severidad": regla.get("severidad", "menor"),
         "fuente": "reglas",
         "norma_ref": regla.get("norma_ref"),
+        "req_id": regla.get("req_id"),
         "desc": regla.get("descripcion") or regla.get("id") or tipo,
     }
 
 
 def _h(m: dict, estado: str, evidencia: str, sugerencia: str = "") -> Hallazgo:
     return mk(m["check_id"], m["dimension"], m["severidad"], estado, fuente=m["fuente"],
-              evidencia=evidencia, razonamiento=m["desc"], sugerencia=sugerencia, norma_ref=m.get("norma_ref"))
+              evidencia=evidencia, razonamiento=m["desc"], sugerencia=sugerencia,
+              norma_ref=m.get("norma_ref"), req_id=m.get("req_id"))
 
 
 def _unidad_rx(unidad: str) -> re.Pattern:

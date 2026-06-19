@@ -30,11 +30,13 @@ class Hallazgo(TypedDict, total=False):
     sugerencia: str         # cómo corregir
     fuente: str             # deterministico | reglas | vlm
     norma_ref: str          # norma/cláusula que origina el chequeo (trazabilidad del vínculo)
+    req_id: str             # id global del requisito "<norma>:<id>" (para el feedback por regla)
 
 
 def mk(check_id: str, dimension: str, severidad: str, estado: str, *,
        razonamiento: str, fuente: str, evidencia: str = "", sugerencia: str = "",
-       ubicacion: Optional[dict] = None, norma_ref: Optional[str] = None) -> Hallazgo:
+       ubicacion: Optional[dict] = None, norma_ref: Optional[str] = None,
+       req_id: Optional[str] = None) -> Hallazgo:
     """Construye un hallazgo normalizado (campos vacíos se omiten)."""
     h: Hallazgo = {"check_id": check_id, "dimension": dimension, "severidad": severidad,
                    "estado": estado, "razonamiento": razonamiento, "fuente": fuente}
@@ -46,6 +48,8 @@ def mk(check_id: str, dimension: str, severidad: str, estado: str, *,
         h["ubicacion"] = ubicacion
     if norma_ref:
         h["norma_ref"] = norma_ref
+    if req_id:
+        h["req_id"] = req_id
     return h
 
 

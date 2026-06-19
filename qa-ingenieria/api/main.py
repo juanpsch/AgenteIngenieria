@@ -22,13 +22,13 @@ from fastapi.responses import RedirectResponse, Response
 from ai_agents.tipo_extractor import proponer_template, proponer_template_multi
 from api import historial
 from api.schemas import (
-    AplicarReglaIn, DecisionIn, DisciplinaIn, EntregaTipoIn, PromoverIn, RevisionDecisionIn,
-    SugerirVarianteIn, TemplateIn, ZonasIn,
+    AplicarReglaIn, DecisionIn, DisciplinaIn, EntregaTipoIn, PromoverIn, RequisitoFeedbackIn,
+    RevisionDecisionIn, SugerirVarianteIn, TemplateIn, ZonasIn,
 )
 from graph.graph import get_compiled_graph
 from graph.nodes import extractor_node, revisor_node
 from graph.state import Status, veredicto_ui
-from tools import docs, refs
+from tools import docs, normas, refs
 from tools.disciplinas import agregar_disciplina, cargar_disciplinas, eliminar_disciplina
 from tools.email import build_trigger_state
 from tools.sheets import (
@@ -124,6 +124,7 @@ def _map_validacion(st: dict) -> dict:
         "campos": st.get("campos") or {},
         "zonas_resultado": st.get("zonas_resultado") or [],  # resultado por zona (informe + overlays)
         "revision": _map_revision(st),  # revisión de contenido (Fase 1); None si no corrió
+        "requisito_feedback": historial.feedback_de(st.get("thread_id") or "") if st.get("thread_id") else {},
         "documento_panel": panel[0] if panel else None,
         "imagen": imgs[0] if imgs else None,  # data-url de la 1ª página (compat / fallback)
         "imagenes": imgs,  # páginas pre-renderizadas del gate (fallback del visor)
@@ -421,6 +422,26 @@ def caso_pagina(thread_id: str, page: int = 1):
     if not durl:
         raise HTTPException(404, "página fuera de rango o documento sin render")
     return Response(content=base64.b64decode(durl.split(",", 1)[1]), media_type="image/png")
+
+
+@app.get("/api/normas/catalogo")
+def normas_catalogo():
+    """Catálogo plano de requisitos chequeables (la biblioteca asignable a las familias)."""
+    return normas.catalogo_requisitos()
+
+
+@app.post("/api/casos/{thread_id}/requisito-feedback")
+def requisito_feedback(thread_id: str, body: RequisitoFeedbackIn):
+    """Juicio humano POR REGLA (grilla): de_acuerdo / no_aplica / regla_mal. Alimenta el aprendizaje."""
+    if body.juicio not in ("de_acuerdo", "no_aplica", "regla_mal"):
+        raise HTTPException(400, "juicio debe ser de_acuerdo | no_aplica | regla_mal")
+    st = _state_de(thread_id) or {}
+    tipo = st.get("tipo_objetivo")
+    estado = next((h.get("estado") for h in (st.get("hallazgos") or [])
+                   if h.get("req_id") == body.requisito_id), None)
+    historial.registrar_requisito_feedback(thread_id, body.requisito_id, body.juicio, _now(),
+                                           tipo_doc=tipo, estado=estado, nota=body.notas)
+    return {"ok": True, "requisito_id": body.requisito_id, "juicio": body.juicio}
 
 
 @app.post("/api/casos/{thread_id}/revision/decision")

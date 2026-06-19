@@ -14,3 +14,17 @@ def test_sin_decision_usa_el_veredicto():
     assert _admitido({"veredicto": "valido"}) is True
     assert _admitido({"veredicto": "revision_manual"}) is False
     assert _admitido({"veredicto": "invalido"}) is False
+
+
+def test_requisito_feedback_persistencia_y_upsert(tmp_path, monkeypatch):
+    import api.historial as hist
+    monkeypatch.setattr(hist, "_DB", tmp_path / "h.sqlite")
+    hist.init()
+    rid = "aea-90364:aea_caida_tension"
+    hist.registrar_requisito_feedback("t1", rid, "no_aplica", "2026-01-01",
+                                      tipo_doc="memoria_electrica", estado="fallo", nota="no es de potencia")
+    assert hist.feedback_de("t1")[rid]["juicio"] == "no_aplica"
+    # re-juzgar la MISMA regla reemplaza (no duplica)
+    hist.registrar_requisito_feedback("t1", rid, "de_acuerdo", "2026-01-02")
+    fb = hist.feedback_de("t1")
+    assert fb[rid]["juicio"] == "de_acuerdo" and len(fb) == 1

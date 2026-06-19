@@ -61,6 +61,12 @@ export interface Hallazgo {
   sugerencia?: string;
   fuente: "deterministico" | "reglas" | "vlm";
   norma_ref?: string;
+  req_id?: string;
+}
+export type Juicio = "de_acuerdo" | "no_aplica" | "regla_mal";
+export interface CatalogoRequisito {
+  req_id: string; id: string; tipo: string; descripcion?: string; severidad?: string;
+  norma_id: string; norma_nombre?: string; norma_ref?: string; disciplinas?: string[] | null;
 }
 export interface RevisionBlock {
   verdicto: VerdictoRevision | null;
@@ -84,6 +90,7 @@ export interface ValidarResp {
   checks: Check[];
   zonas_resultado: ZonaResultado[];
   revision: RevisionBlock | null;
+  requisito_feedback: Record<string, { juicio: Juicio; nota: string | null }>;
   imagen: string | null;
   imagenes: string[];
   n_paginas: number;
@@ -174,6 +181,9 @@ export const api = {
   casoPaginaUrl: (threadId: string, page = 1) => `/api/casos/${threadId}/pagina/${page}`,  // preview on-demand (no payload)
   revisionDecision: (threadId: string, decision: VerdictoRevision | "escalar_senior", notas?: string) =>
     req<{ verdicto: string; resuelta: boolean }>("POST", `/casos/${threadId}/revision/decision`, { decision, notas }),
+  catalogoRequisitos: () => req<CatalogoRequisito[]>("GET", "/normas/catalogo"),
+  requisitoFeedback: (threadId: string, requisito_id: string, juicio: Juicio, notas?: string) =>
+    req<{ ok: boolean }>("POST", `/casos/${threadId}/requisito-feedback`, { requisito_id, juicio, notas }),
   promover: (id: string, threadId: string, promote: boolean) => req<any>("POST", `/tipos/${id}/referencias/promover`, { thread_id: threadId, promote }),
   entregas: () => req<Record<string, string[]>>("GET", "/entregas-tipo"),
   putEntrega: (id: string, documentos_requeridos: string[]) => req("PUT", `/entregas-tipo/${id}`, { documentos_requeridos }),

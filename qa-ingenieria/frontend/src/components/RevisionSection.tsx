@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
-import { api, type EstadoRevision, type Hallazgo, type RevisionBlock, type Severidad, type ZonaResultado, type CheckState } from "../api/client";
+import { useState } from "react";
+import { api, type EstadoRevision, type Juicio, type RevisionBlock, type ZonaResultado, type CheckState } from "../api/client";
 import { PaginasViewer } from "./PaginasViewer";
+import { GrillaRequisitos } from "./GrillaRequisitos";
 import { useActivity } from "./Activity";
 import { errMsg } from "../design/tokens";
 
@@ -11,26 +12,20 @@ const VERDICTO: Record<string, { label: string; cls: string; glyph: string }> = 
   rechazado: { label: "RECHAZADO", cls: "v-red", glyph: "✕" },
   pendiente_senior: { label: "PENDIENTE SENIOR", cls: "v-info", glyph: "↑" },
 };
-const SEV_CLS: Record<Severidad, string> = { bloqueante: "mat-red", mayor: "mat-amber", menor: "mat-neutral", observacion: "mat-ok" };
-const EST_BADGE: Record<EstadoRevision, string> = { ok: "b-pass", fallo: "b-fail", advertencia: "b-warn", no_verificable: "b-info" };
-const EST_GLYPH: Record<EstadoRevision, string> = { ok: "✓", fallo: "✕", advertencia: "!", no_verificable: "?" };
 const EST_OVL: Record<EstadoRevision, CheckState> = { ok: "pass", fallo: "fail", advertencia: "warn", no_verificable: "info" };
-const DIM_LABEL: Record<string, string> = { legibilidad: "Legibilidad", norma: "Norma / nomenclatura", contenido: "Contenido", consistencia: "Consistencia" };
 
-/** Sección "Revisión de contenido" (Fase 1): banner del veredicto de revisión + hallazgos agrupados
- *  por dimensión + overlay "ver en plano" + acciones para resolver el veredicto humano. */
-export function RevisionSection({ rev, threadId, nPaginas, imagenes }: { rev: RevisionBlock; threadId?: string; nPaginas?: number; imagenes?: string[] }) {
+/** Sección "Revisión de contenido" (Fase 1): banner del veredicto + grilla jerárquica de requisitos
+ *  (con juicio humano por regla) + overlay "ver en plano" + acciones para resolver el veredicto. */
+export function RevisionSection({ rev, threadId, nPaginas, imagenes, feedback }: {
+  rev: RevisionBlock; threadId?: string; nPaginas?: number; imagenes?: string[];
+  feedback?: Record<string, { juicio: Juicio; nota: string | null }>;
+}) {
   const { run } = useActivity();
   const [resuelto, setResuelto] = useState<string | null>(rev.resuelta ? rev.verdicto : null);
   const [notas, setNotas] = useState("");
   const [err, setErr] = useState("");
 
   const v = VERDICTO[rev.verdicto || ""] || VERDICTO.observado;
-  const porDim = useMemo(() => {
-    const m: Record<string, Hallazgo[]> = {};
-    for (const h of rev.hallazgos || []) (m[h.dimension] ||= []).push(h);
-    return m;
-  }, [rev.hallazgos]);
   const overlays: ZonaResultado[] = (rev.hallazgos || [])
     .filter((h) => h.ubicacion?.bbox)
     .map((h) => ({ nombre: h.check_id, pagina: h.ubicacion!.pagina, bbox: h.ubicacion!.bbox!, clase: "regla", estado: EST_OVL[h.estado], detalle: h.evidencia }));
@@ -63,29 +58,7 @@ export function RevisionSection({ rev, threadId, nPaginas, imagenes }: { rev: Re
         {resuelto && <span className="chip mat-ok" style={{ alignSelf: "flex-start" }}>resuelto: {resuelto}</span>}
       </div>
 
-      {Object.keys(porDim).map((dim) => (
-        <div key={dim} className="card">
-          <div className="dim-h">{DIM_LABEL[dim] || dim}</div>
-          {porDim[dim].map((h, i) => (
-            <div key={i} className="check" style={{ borderTop: i ? "1px solid var(--line)" : undefined, paddingTop: i ? 8 : 0 }}>
-              <div className={`badge ${EST_BADGE[h.estado]}`} title={h.estado}>{EST_GLYPH[h.estado]}</div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div className="lab" style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-                  <span>{h.check_id}</span>
-                  <span className={`chip ${SEV_CLS[h.severidad]}`} style={{ fontSize: 9.5 }}>{h.severidad}</span>
-                  {h.estado === "no_verificable" && <span className="chip mat-neutral" style={{ fontSize: 9.5 }}>no verificable</span>}
-                  {h.norma_ref && <span className="chip mat-neutral" style={{ fontSize: 9.5 }} title="norma de referencia">{h.norma_ref}</span>}
-                  <span className="faint" style={{ fontSize: 10, fontWeight: 400 }}>{h.fuente}</span>
-                  {h.ubicacion?.pagina && <span className="faint" style={{ fontSize: 10, fontWeight: 400 }}>pág {h.ubicacion.pagina}</span>}
-                </div>
-                {h.evidencia && <div className="det">{h.evidencia}</div>}
-                <div className="det faint">{h.razonamiento}</div>
-                {h.sugerencia && <div className="det" style={{ color: "var(--teal)" }}>→ {h.sugerencia}</div>}
-              </div>
-            </div>
-          ))}
-        </div>
-      ))}
+      <GrillaRequisitos hallazgos={rev.hallazgos} threadId={threadId} feedbackInicial={feedback} />
 
       {overlays.length > 0 && (
         <>

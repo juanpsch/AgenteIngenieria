@@ -34,6 +34,13 @@ class RevisionDecisionIn(BaseModel):
     notas: str | None = None
 
 
+class RequisitoFeedbackIn(BaseModel):
+    # juicio humano POR REGLA (grilla de requisitos)
+    requisito_id: str          # id global del requisito "<norma>:<id>"
+    juicio: str                # "de_acuerdo" | "no_aplica" | "regla_mal"
+    notas: str | None = None
+
+
 class PromoverIn(BaseModel):
     thread_id: str
     promote: bool = True
