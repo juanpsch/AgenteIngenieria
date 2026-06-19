@@ -1,0 +1,35 @@
+id: cirsoc-201
+nombre: CIRSOC 201 — Estructuras de hormigón armado y pretensado
+organismo: CIRSOC / INTI
+region: Argentina
+version: "1982/2005"
+
+deteccion:
+  anclas:
+    - 'CIRSOC\s*201'
+    - 'INPRES[- ]?CIRSOC\s*103'
+    - 'CIRSOC\s*30[12]'
+  canales: [seccion_normas, cajetin, notas]
+
+reglas:
+  - id: cirsoc_resistencia_hormigon
+    tipo: presencia
+    descripcion: "Resistencia del hormigón declarada (tipo H / σ'bk)"
+    patron: "H-?\\d{2,3}|σ'?bk|s'bk|fck"
+    severidad: mayor
+  - id: cirsoc_acero_fluencia
+    tipo: presencia_unidad
+    descripcion: "Tensión de fluencia del acero declarada (kg/cm²)"
+    unidad: 'kg/cm2'
+    severidad: mayor
+  - id: cirsoc_combinaciones_carga
+    tipo: presencia
+    descripcion: "Hipótesis/combinaciones de carga enumeradas"
+    patron: 'peso propio|sobrecarga|sismo|viento'
+    severidad: menor
+
+vlm:
+  norma_ref: CIRSOC 201 / INPRES-CIRSOC 103
+  criterios: >
+    Disposición y detallado de armaduras, coherencia geométrica entre planos de encofrado y armado,
+    idoneidad del esquema estructural y de las secciones adoptadas.

@@ -1,0 +1,51 @@
+# Documentos de ingeniería reales para probar la revisión de contenido (Fase 1).
+# Públicos (licitaciones, vendors, organismos). Se descargan con scripts/descargar_fixtures.py a
+# tests/fixtures/docs/ (gitignored). Cada uno declara la norma esperada y el caso esperado.
+docs:
+  - id: aea_memoria_unrn
+    archivo: aea_memoria_unrn.pdf
+    url: https://www.unrn.edu.ar/downloads/licitaciones-vigentes/3.4._Memoria_Inst.electrica.pdf
+    tipo: memoria_calculo_electrica
+    disciplina: electrica
+    norma_esperada: aea-90364
+    caso: valido           # declara AEA + cuadro de cargas con caída/secciones/30 mA
+
+  - id: aea_carpeta_ersep
+    archivo: aea_carpeta_ersep.pdf
+    url: https://ersep.cba.gov.ar/wp-content/uploads/2022/05/Carpeta-Tecnica-Modelo.pdf
+    tipo: memoria_calculo_electrica
+    disciplina: electrica
+    norma_esperada: aea-90364
+    caso: valido
+
+  - id: cirsoc_memoria_unrn
+    archivo: cirsoc_memoria_unrn.pdf
+    url: https://www.unrn.edu.ar/downloads/licitaciones-vigentes/3.3._Memoria_Calc.Estructural.pdf
+    tipo: memoria_calculo_estructural
+    disciplina: estructural
+    norma_esperada: cirsoc-201
+    caso: valido
+
+  - id: asme_u1_data_report
+    archivo: asme_u1_data_report.pdf
+    url: https://www.asme.org/wwwasmeorg/media/resourcefiles/aboutasme/who%20we%20are/bpvc%20resources/section_viii-1/bpvc_viii-1_u-1.pdf
+    tipo: hoja_datos_recipiente
+    disciplina: mecanica
+    norma_esperada: asme-viii-1
+    caso: valido
+
+  - id: pcb_beaglebone_sch
+    archivo: pcb_beaglebone_sch.pdf
+    url: https://raw.githubusercontent.com/CircuitCo/BeagleBone-Black/master/BBB_SCH.pdf
+    tipo: esquematico_electronico
+    disciplina: electronica
+    norma_esperada: ipc-2612
+    caso: valido
+
+  - id: isa_pid_loop
+    archivo: isa_pid_loop.pdf
+    url: https://www.isa.org/getmedia/e122051e-8c8c-48be-97ef-5d344c585771/Chapter7_Control
+    tipo: pid
+    disciplina: instrumentacion
+    norma_esperada: isa-5.1
+    caso: valido

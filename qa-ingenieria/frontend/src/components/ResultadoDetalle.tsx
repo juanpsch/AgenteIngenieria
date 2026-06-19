@@ -20,7 +20,8 @@ export function ResultadoDetalle({ res, fileName }: { res: ValidarResp; fileName
   const imagenes = res.imagenes?.length ? res.imagenes : (res.imagen ? [res.imagen] : []);
 
   const previewCard = (
-    <PaginasViewer imagenes={imagenes} zonas={res.zonas_resultado || []} cajetinBbox={res.cajetin_bbox} />
+    <PaginasViewer threadId={res.thread_id} nPaginas={res.n_paginas} imagenes={imagenes}
+      zonas={res.zonas_resultado || []} cajetinBbox={res.cajetin_bbox} />
   );
 
   return (
@@ -30,7 +31,7 @@ export function ResultadoDetalle({ res, fileName }: { res: ValidarResp; fileName
       <InformeZonas zonas={res.zonas_resultado || []} />
       <Desglose ident={ident} compl={compl} preview={previewCard} />
       <FeedbackReglas res={res} />
-      {res.revision && <RevisionSection rev={res.revision} imagenes={imagenes} threadId={res.thread_id} />}
+      {res.revision && <RevisionSection rev={res.revision} threadId={res.thread_id} nPaginas={res.n_paginas} imagenes={imagenes} />}
       <details className="card" style={{ fontSize: 12.5 }}>
         <summary style={{ cursor: "pointer", fontWeight: 600 }}>¿Cómo se compara un documento?</summary>
         <div style={{ color: "var(--muted)", lineHeight: 1.7, marginTop: 8 }}>

@@ -7,46 +7,97 @@ Los Tier 2 (reglas/tablas) y Tier 3 (VLM) se enchufan acá más adelante sin toc
 
 from __future__ import annotations
 
+import os
 from typing import Any
 
 from graph.revision import Hallazgo, mk
-from tools import legibilidad
+from tools import docs, legibilidad, normas, reglas_revision
+
+
+_BLANK_VAR = 10.0  # varianza Laplaciano por debajo de esto = hoja en blanco/casi vacía (no "borrosa")
+
+
+def _leg_dpi() -> int:
+    try:
+        return int(os.getenv("OCR_DPI", "220"))
+    except ValueError:
+        return 220
+
+
+def _indices_muestra(n: int, k: int) -> list[int]:
+    """Índices 0-based de páginas a muestrear: portada + equiespaciadas + última (k como máx).
+    Robusto a k=1 (sin división por cero) y a n pequeño."""
+    if n <= 0:
+        return []
+    if n <= k:
+        return list(range(n))
+    return sorted({round(i * (n - 1) / max(1, k - 1)) for i in range(k)})
+
+
+def _muestras_legibilidad(doc: dict) -> list[tuple[int, Any]]:
+    """Páginas a muestrear para legibilidad. Cubre TODO el documento sin renderizar cada hoja.
+    [(pagina_1indexed, img_data_url)]."""
+    path = doc.get("path")
+    if path and str(path).lower().endswith(".pdf"):
+        n = docs.contar_paginas(path) or 1
+        try:
+            k = max(1, int(os.getenv("REVISION_LEG_SAMPLES", "6")))
+        except ValueError:
+            k = 6
+        dpi = _leg_dpi()
+        out = [(i + 1, docs.render_pdf_page(path, page=i + 1, dpi=dpi)) for i in _indices_muestra(n, k)]
+        out = [(pg, im) for pg, im in out if im]
+        if out:
+            return out
+    imgs = doc.get("imagenes") or []
+    return [(1, imgs[0])] if imgs else []
 
 
 def _tier1_legibilidad(doc: dict, cfg: dict) -> list[Hallazgo]:
-    """Métricas físicas de la hoja: nitidez, confianza de OCR, resolución (DPI)."""
+    """Métricas físicas de la hoja: nitidez, confianza de OCR (muestreadas en TODO el doc), DPI.
+    Reporta la PEOR página (la más borrosa / de menor confianza)."""
     out: list[Hallazgo] = []
-    imgs = doc.get("imagenes") or []
     path = doc.get("path")
     leg = cfg.get("legibilidad") or {}
-    img0 = imgs[0] if imgs else None
+    muestras = _muestras_legibilidad(doc)
 
-    # Nitidez (varianza Laplaciano sobre la 1ª página)
+    # Nitidez: varianza Laplaciano por página muestreada -> la peor (mínima). Se ignoran las hojas
+    # EN BLANCO (var≈0): no son "borrosas", y reportarlas daría falsos negativos.
     thr_blur = float(leg.get("blur_var_min", 120))
-    var = legibilidad.varianza_laplaciano(img0) if img0 else None
-    if var is None:
+    vals = [(pg, legibilidad.varianza_laplaciano(im)) for pg, im in muestras]
+    vals = [(pg, v) for pg, v in vals if v is not None and v > _BLANK_VAR]
+    if not vals:
         out.append(mk("nitidez", "legibilidad", "mayor", "no_verificable", fuente="deterministico",
-                      razonamiento="No se pudo medir la nitidez (sin render de página).", ubicacion={"pagina": 1}))
-    else:
-        ok = var >= thr_blur
-        out.append(mk("nitidez", "legibilidad", "mayor", "ok" if ok else "fallo", fuente="deterministico",
-                      evidencia=f"varianza Laplaciano {var:.0f} (mínimo {thr_blur:.0f})",
-                      razonamiento="Líneas/textos borrosos dificultan la revisión y la lectura de cotas.",
-                      sugerencia="" if ok else "Re-exportar el plano en mayor calidad o re-escanear sin compresión.",
+                      razonamiento="No hay páginas con contenido para medir nitidez (en blanco o sin render).",
                       ubicacion={"pagina": 1}))
+    else:
+        peor_pg, peor = min(vals, key=lambda x: x[1])
+        ok = peor >= thr_blur
+        out.append(mk("nitidez", "legibilidad", "mayor", "ok" if ok else "fallo", fuente="deterministico",
+                      evidencia=f"varianza Laplaciano mínima {peor:.0f} en pág {peor_pg} (de {len(vals)} muestreadas, mínimo {thr_blur:.0f})",
+                      razonamiento="Líneas/textos borrosos dificultan la revisión y la lectura de cotas.",
+                      sugerencia="" if ok else "Re-exportar/re-escanear esa(s) hoja(s) en mayor calidad.",
+                      ubicacion={"pagina": peor_pg}))
 
-    # Confianza media de OCR
+    # Confianza media de OCR: robusta por MAYORÍA (una hoja-diagrama suelta de baja confianza NO
+    # reprueba el doc; sí lo hace si la mayoría de las hojas con texto está por debajo del umbral).
     thr_ocr = float(leg.get("ocr_conf_min", 0.70))
-    conf = legibilidad.confianza_ocr(img0) if img0 else None
-    if conf is None:
+    confs = [(pg, legibilidad.confianza_ocr(im)) for pg, im in muestras]
+    confs = [(pg, c) for pg, c in confs if c is not None]
+    if not confs:
         out.append(mk("ocr_confianza", "legibilidad", "mayor", "no_verificable", fuente="deterministico",
                       razonamiento="OCR no disponible o sin texto legible para medir confianza.", ubicacion={"pagina": 1}))
     else:
-        ok = conf >= thr_ocr
-        out.append(mk("ocr_confianza", "legibilidad", "mayor", "ok" if ok else "fallo", fuente="deterministico",
-                      evidencia=f"confianza media OCR {conf:.0%} (mínimo {thr_ocr:.0%})",
-                      razonamiento="Mucho texto de baja confianza sugiere una hoja poco legible.",
-                      sugerencia="" if ok else "Mejorar resolución/contraste del escaneo.", ubicacion={"pagina": 1}))
+        bajos = [(pg, c) for pg, c in confs if c < thr_ocr]
+        peor_pg, peor = min(confs, key=lambda x: x[1])
+        mayoria_baja = len(bajos) * 2 > len(confs)
+        out.append(mk("ocr_confianza", "legibilidad", "mayor", "fallo" if mayoria_baja else "ok", fuente="deterministico",
+                      evidencia=(f"{len(bajos)}/{len(confs)} hojas con confianza OCR < {thr_ocr:.0%} (mínima {peor:.0%} en pág {peor_pg})"
+                                 if mayoria_baja else
+                                 f"confianza OCR aceptable en {len(confs)} hojas (mínima {peor:.0%} en pág {peor_pg}, umbral {thr_ocr:.0%})"),
+                      razonamiento="Mucho texto de baja confianza sugiere hojas poco legibles.",
+                      sugerencia="" if not mayoria_baja else "Mejorar resolución/contraste del documento.",
+                      ubicacion={"pagina": peor_pg}))
 
     # Resolución efectiva (DPI) — solo si la hoja es raster (escaneo)
     if leg.get("dpi_min"):
@@ -83,13 +134,44 @@ def _tier1_presencia(doc: dict, cfg: dict) -> list[Hallazgo]:
     return out
 
 
-def revisar(doc: dict, cfg: dict) -> list[Hallazgo]:
+def _tier2_reglas(doc: dict, cfg: dict, extracto: dict) -> list[Hallazgo]:
+    """Tier 2 (determinista): vínculo doc↔norma + reglas sobre texto/tablas.
+    1) Detección: ¿el doc DECLARA las normas que el template espera? (declarar la norma es un check).
+    2) Aplicación: reglas del template + reglas de las normas (merge; el template pisa por id)."""
+    out: list[Hallazgo] = []
+    texto = doc.get("contenido") or ""
+    tablas = (extracto or {}).get("tablas") or []
+    normas_ids = cfg.get("normas") or []
+
+    # 1) Detección del vínculo
+    for det in normas.detectar_normas(texto, normas_ids):
+        declarada = det.get("declarada")
+        out.append(mk(f"norma_declarada:{det['id']}", "norma", "mayor",
+                      "ok" if declarada else "fallo", fuente="reglas",
+                      evidencia=(f"el documento declara «{det['nombre']}»" if declarada
+                                 else f"no se declara la norma esperada «{det['nombre']}»"),
+                      razonamiento="El documento debe citar la norma/código de diseño aplicable.",
+                      sugerencia="" if declarada else f"Citar «{det['nombre']}» en la sección de normas o el cajetín.",
+                      norma_ref=det.get("norma_ref")))
+
+    # 2) Aplicación: reglas del template + de las normas (merge por id, el template gana)
+    reglas_tpl = cfg.get("reglas") or []
+    ids_tpl = {r.get("id") for r in reglas_tpl}
+    reglas = list(reglas_tpl) + [r for r in normas.reglas_de_normas(normas_ids) if r.get("id") not in ids_tpl]
+    for r in reglas:
+        out.append(reglas_revision.evaluar_regla(r, texto, tablas))
+    return out
+
+
+def revisar(doc: dict, cfg: dict, extracto: dict | None = None) -> list[Hallazgo]:
     """Corre los tiers disponibles sobre un documento admitido y devuelve los hallazgos.
-    `cfg` = bloque `revision:` del template. Tier 1 implementado; 2 y 3 se agregan acá."""
+    `cfg` = bloque `revision:` del template; `extracto` = lo que dejó el extractor (tablas, etc.).
+    Tier 1 (legibilidad/presencia) + Tier 2 (reglas/normas). Tier 3 (VLM) se enchufa acá."""
     if not cfg:
         return []
     hallazgos: list[Hallazgo] = []
     hallazgos += _tier1_legibilidad(doc, cfg)
     hallazgos += _tier1_presencia(doc, cfg)
-    # Tier 2 (reglas/tablas) y Tier 3 (VLM): se enchufan aquí en próximos incrementos.
+    hallazgos += _tier2_reglas(doc, cfg, extracto or {})
+    # Tier 3 (VLM, observación no bloqueante): se enchufa aquí en el próximo incremento.
     return hallazgos

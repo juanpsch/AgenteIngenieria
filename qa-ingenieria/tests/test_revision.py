@@ -91,8 +91,27 @@ def test_route_post_admision_tipo_sin_revision():
 
 # --- Nodos ---
 def test_extractor_node_da_extracto():
-    out = extractor_node({"documentos": [{"contenido": "abc", "imagenes": ["x"]}]})
+    out = extractor_node({"documentos": [{"contenido": "abc", "imagenes": ["x"], "path": None}]})
     assert out["revision_extracto"]["texto_chars"] == 3
+    assert "tablas" in out["revision_extracto"]   # Tier 2 las usa
+
+
+def test_indices_muestra_robusto():
+    # k=1 no debe romper (división por cero) y cubre casos chicos/grandes
+    from ai_agents.revisor import _indices_muestra
+    assert _indices_muestra(10, 1) == [0]          # antes: ZeroDivisionError
+    assert _indices_muestra(0, 6) == []
+    assert _indices_muestra(4, 6) == [0, 1, 2, 3]   # n <= k -> todas
+    idx = _indices_muestra(100, 6)
+    assert idx[0] == 0 and idx[-1] == 99 and len(idx) == len(set(idx))  # incluye portada y última, sin duplicados
+
+
+def test_revision_max_pages_env(monkeypatch):
+    from graph.nodes import _revision_max_pages
+    monkeypatch.setenv("REVISION_MAX_PAGES", "12")
+    assert _revision_max_pages() == 12
+    monkeypatch.setenv("REVISION_MAX_PAGES", "no-num")
+    assert _revision_max_pages() == 0   # degrada a "todas"
 
 
 def test_revisor_node_sin_revision_en_template():

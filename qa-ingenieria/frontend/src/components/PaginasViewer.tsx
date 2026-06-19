@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
-import type { BBox, CheckState, ZonaResultado } from "../api/client";
+import { api, type BBox, type CheckState, type ZonaResultado } from "../api/client";
 import { C } from "../design/tokens";
 
 const COLOR: Record<CheckState, { b: string; bg: string; ink: string }> = {
@@ -36,15 +36,19 @@ function ZonaBox({ z }: { z: ZonaResultado }) {
 }
 
 /** Visor multipágina del documento validado con las zonas dibujadas encima, coloreadas por estado
- *  (cumple/no cumple/a revisar/informativo). Cumple OBSERVABILIDAD: se ve DÓNDE valida y dónde no. */
-export function PaginasViewer({ imagenes, zonas, cajetinBbox }: {
-  imagenes: string[]; zonas: ZonaResultado[]; cajetinBbox?: BBox | null;
+ *  (cumple/no cumple/a revisar/informativo). Cumple OBSERVABILIDAD: se ve DÓNDE valida y dónde no.
+ *  Las páginas se piden ON-DEMAND al endpoint del caso (no viajan en el payload): si hay `threadId`
+ *  + `nPaginas` cubre TODO el documento; si no, cae a las `imagenes` pre-renderizadas. */
+export function PaginasViewer({ threadId, nPaginas, imagenes, zonas, cajetinBbox }: {
+  threadId?: string; nPaginas?: number; imagenes?: string[]; zonas: ZonaResultado[]; cajetinBbox?: BBox | null;
 }) {
   const [pg, setPg] = useState(0);
   const [zoom, setZoom] = useState(false);
-  const n = imagenes?.length || 0;
+  const n = nPaginas || imagenes?.length || 0;
   const page = Math.min(pg, Math.max(0, n - 1));
-  const img = n ? imagenes[page] : null;
+  const src = (i: number): string | null =>
+    threadId ? api.casoPaginaUrl(threadId, i + 1) : (imagenes?.[i] ?? null);
+  const img = n ? src(page) : null;
   const zonasPg = (zonas || []).filter((z) => (z.pagina || 1) === page + 1 && z.bbox);
   const conZona = new Set((zonas || []).filter((z) => z.bbox).map((z) => (z.pagina || 1) - 1));
   const estadosPresentes = Array.from(new Set((zonas || []).map((z) => z.estado)));
@@ -87,7 +91,7 @@ export function PaginasViewer({ imagenes, zonas, cajetinBbox }: {
       {/* Miniaturas-índice: qué páginas tienen zonas */}
       {n > 1 && (
         <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginTop: 8 }}>
-          {imagenes.map((_, i) => (
+          {Array.from({ length: n }, (_, i) => (
             <button key={i} onClick={() => setPg(i)} title={conZona.has(i) ? "tiene zonas" : "sin zonas"}
               style={{
                 width: 26, height: 22, fontSize: 10.5, borderRadius: 4, cursor: "pointer",

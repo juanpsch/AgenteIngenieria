@@ -15,8 +15,9 @@ ejemplos de referencia, que calibran el tipo y mejoran el cotejo siguiente.
 Un documento **admitido** continúa (opcional, con toggle) a la **revisión de contenido** (Fase 1): un
 segundo nodo que mide calidad/cumplimiento por *tiers* (lo mecánico se mide, lo semántico con reglas, lo
 difuso al VLM) y produce su propio veredicto — **aprobado / con notas / observado / rechazado** — con
-hallazgos ubicados en el plano. Hoy está la rebanada **Tier 1** (legibilidad + presencia de secciones);
-ver [docs/spec/SPEC_Cotejar_Fase1_Revision.md](docs/spec/SPEC_Cotejar_Fase1_Revision.md).
+hallazgos que citan la norma. Hoy: **Tier 1** (legibilidad + presencia) + **Tier 2** (reglas + **catálogo
+de normas** reutilizable que los templates referencian: AEA 90364, CIRSOC 201; el vínculo doc↔norma se
+detecta por anclas y cada hallazgo cita `norma_ref`). Ver [docs/spec/SPEC_Cotejar_Fase1_Revision.md](docs/spec/SPEC_Cotejar_Fase1_Revision.md).
 
 ---
 
@@ -72,7 +73,8 @@ qa-ingenieria/
 └── local_state/       # SQLite (checkpointer + historial). Gitignored.
 ```
 
-Ver **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** para el detalle de arquitectura y el contrato de la API.
+Ver **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** para el detalle de arquitectura y el contrato de la API,
+y **[docs/REVISION_UI.md](docs/REVISION_UI.md)** para la guía del flujo de revisión de contenido en la pantalla.
 
 ---
 

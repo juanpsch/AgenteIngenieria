@@ -57,12 +57,31 @@ Tras la **admisión** (gate Fase 0 → `EN_REVISION`), un cotejo single-doc pued
 
 - **`extractor_node`** — extrae contenido para los tiers (texto/render ya vienen del parser; deja un
   `revision_extracto` observable; tablas/pdfplumber para tiers futuros).
-- **`revisor_node`** — corre los tiers (hoy **Tier 1**) vía `ai_agents/revisor.revisar` y agrega la
+- **`revisor_node`** — corre los tiers (**Tier 1 + Tier 2**) vía `ai_agents/revisor.revisar` y agrega la
   severidad en un veredicto con `graph/revision.agregar_revision`. **La admisión NO se toca**: `status`
   queda `EN_REVISION`; el veredicto de revisión va aparte en `verdicto_revision` (no pisa el chip de
   admisión). Motor por tiers (spec `docs/spec/SPEC_Cotejar_Fase1_Revision.md`): lo mecánico se **mide**
-  (Tier 1, determinista), lo semántico con **reglas** (Tier 2, pendiente), lo difuso al **VLM** (Tier 3,
-  pendiente; nunca decide un bloqueante solo).
+  (Tier 1, determinista), lo semántico con **reglas/normas** (Tier 2, determinista), lo difuso al **VLM**
+  (Tier 3, pendiente; nunca decide un bloqueante solo).
+
+#### Vínculo documento ↔ norma (Tier 2)
+
+Las normas/códigos viven en un **catálogo reutilizable** (`knowledge/normas/<id>.yaml`) que los templates
+**referencian** (`revision.normas: [aea-90364, ...]`). El vínculo tiene dos direcciones:
+- **Detección** (doc → norma): `tools/normas.detectar_normas` busca las `anclas` de cada norma en el
+  texto (¿el doc la declara? ¿qué versión?). Declarar la norma esperada es en sí un hallazgo.
+- **Aplicación** (norma → checks): `reglas_de_normas` trae sus reglas Tier 2; se **mergean** con las del
+  template (el template gana por `id`). Cada hallazgo lleva `norma_ref` (cita la norma incumplida).
+Una norma declara: `deteccion.anclas`, `reglas` (Tier 2), `lookups` (tablas de la norma como dato) y
+`vlm` (`norma_ref` + criterios para Tier 3). El `extractor_node` suma `tablas` (pdfplumber) para las
+reglas `tabla`. Lo no medible (tabla dibujada, valor no extraíble) → `no_verificable`, nunca un `ok`.
+
+**Cobertura y UX (dos pasos).** El gate usa `SIM_MAX_PAGES` (≈6, identidad en portada). La **revisión**
+cubre **todo el documento** (`REVISION_MAX_PAGES`, 0=todas): el texto ya cubre todas las páginas, las
+**tablas** se extraen de todas, y la **legibilidad** se muestrea en varias páginas (`REVISION_LEG_SAMPLES`)
+reportando la peor. Como la revisión es más cara, corre como **2º paso con progreso**: la UI valida el
+gate (rápido), lo muestra, y luego llama `POST /casos/{id}/revisar` (mientras el usuario lee la admisión).
+Flujo de pantalla detallado: [REVISION_UI.md](REVISION_UI.md).
 - **Hallazgo** (`graph/revision.Hallazgo`): `{check_id, dimension, severidad, estado, ubicacion?, evidencia, razonamiento, sugerencia?, fuente}`.
   Agregación determinista → `aprobado | aprobado_con_notas | observado | rechazado | pendiente_senior`;
   `no_verificable` no cuenta como fallo pero baja la confianza (nunca se inventa un `ok`).
@@ -118,6 +137,8 @@ mergea y deduplica por `(dimension, label)` — el check autoritativo va primero
 | `layout.py` | Zonas por texto (cajas de palabras PyMuPDF): `localizar_bbox`/`bbox_efectivo` (recorte que sigue al ancla) + `extraer_campos_zonas` (valor de cada zona-regla: dentro del recuadro, entre anclas o junto al ancla; refinado por patrón). Cae a OCR si no hay capa de texto. |
 | `ocr.py` | OCR opcional (`OCR_PROVIDER=tesseract`, local). Fuente de texto de respaldo cuando el dato vive solo en la imagen (escaneo) + `confianza()` (Tier 1 de revisión). Degrada con gracia. |
 | `legibilidad.py` | Métricas Tier 1 de la revisión de contenido: `varianza_laplaciano` (nitidez, numpy/sin cv2), `dpi_efectivo` (resolución del escaneo; None si es vectorial), `confianza_ocr`, `contiene_seccion`/`ubicacion_seccion` (presencia de secciones por texto). |
+| `normas.py` | Catálogo de normas/códigos REUTILIZABLE (`knowledge/normas/<id>.yaml`). `cargar_normas`, `detectar_normas`/`auto_detectar` (vínculo doc↔norma por anclas de texto), `reglas_de_normas` (reglas Tier 2 de la norma, anotadas con `norma_ref`). |
+| `reglas_revision.py` | Motor de reglas **Tier 2** (determinista, sobre texto/tablas): `presencia`, `presencia_unidad`, `patron`, `norma_lookup` (extrae valores y verifica max/min, p. ej. caída ≤5%), `tabla` (columnas requeridas; `no_verificable` si no se extrajo). |
 | `sheets.py`, `disciplinas.py` | Catálogos editables (tipos de entrega, disciplinas). |
 | `email.py` | `build_trigger_state(...)` (armador de estado) + emisores fake (sandbox). |
 
@@ -189,6 +210,7 @@ Base `/api`. Endpoints (ver `api/main.py`):
 | `GET` | `/api/casos/{thread_id}` | Detalle de un análisis pasado (reconstruido del checkpointer). |
 | `POST` | `/api/casos/{thread_id}/decision` | Decisión humana de admisión (`approved`/`rejected`). Al aprobar un caso `EN_REVISION` dispara la revisión de contenido. |
 | `POST` | `/api/casos/{thread_id}/revisar` | Dispara la **revisión de contenido** a pedido (cuando el toggle interrumpió). **409** si el caso no está `EN_REVISION`. |
+| `GET` | `/api/casos/{thread_id}/pagina/{page}` | Render PNG de la página N del documento del caso, **on-demand** (la previsualización no viaja en el payload; el visor pide cada hoja). |
 | `POST` | `/api/casos/{thread_id}/revision/decision` | Veredicto humano de la revisión (`aprobado`/`aprobado_con_notas`/`observado`/`rechazado`/`escalar_senior` + `notas`). |
 | `POST` | `/api/tipos/{id}/referencias/promover` | Promueve el doc del caso a referencia (gate humano; **409** si el caso no fue aprobado). |
 | `GET`/`PUT`/`DELETE` | `/api/entregas-tipo[/{id}]` | Catálogo de tipos de entrega. |
@@ -198,15 +220,16 @@ Base `/api`. Endpoints (ver `api/main.py`):
 
 Respuesta de `/api/validar` (`_map_validacion`): `{thread_id, status, veredicto, tipo_doc, score,
 no_concluyente, score_detalle, maturity, cajetin_bbox, resumen, checks[], campos, zonas_resultado[],
-documento_panel, imagen, imagenes[]}`. `imagenes` = TODAS las páginas renderizadas (preview
-multipágina + overlays). `zonas_resultado` = resultado por zona `[{nombre, pagina, bbox, clase
+documento_panel, imagen, imagenes[], n_paginas}`. `imagenes` = páginas pre-renderizadas del gate
+(fallback); `n_paginas` = total real → el visor pide cada hoja al endpoint `/casos/{id}/pagina/{n}`
+(preview on-demand, no infla el payload). `zonas_resultado` = resultado por zona `[{nombre, pagina, bbox, clase
 (identidad|visual|regla), estado, detalle, score?, requerido?, campo?, valor?}]` (informe + overlays).
 Los `checks` de reglas llevan metadata (`campo, patron, valor, regla_tipo`) para el feedback.
 `score_detalle` (observabilidad) = `{score, cajetin, pagina, peso_cajetin, peso_pagina,
 umbral_aprobacion, umbral_revision, umbrales_auto, n_referencias, ref_top:{filename,score}, decisivo}`.
 `revision` (Fase 1; `None` si no corrió) = `{verdicto, severidad_max, confiabilidad, resuelta, notas,
 hallazgos[]}` con cada `hallazgo` = `{check_id, dimension, severidad, estado, ubicacion?, evidencia,
-razonamiento, sugerencia?, fuente}`.
+razonamiento, sugerencia?, fuente, norma_ref?}` (`norma_ref` = norma que origina el chequeo).
 
 **Seguridad**: nombres de archivo y de tipo se sanitizan (anti path-traversal) en `_safe_name()`
 (uploads) y `refs._safe()` (slug). CORS abierto (uso local).
@@ -215,8 +238,10 @@ razonamiento, sugerencia?, fuente}`.
 
 - **Estado de casos**: checkpointer SQLite de LangGraph (`local_state/…sqlite`), keyed por `thread_id`.
 - **Auditoría**: `api/historial.py` — tabla `validaciones` (validación + decisión + promoción) y `metricas()`.
-- **Conocimiento**: `knowledge/` — templates YAML (con `zonas`), referencias (archivos + `.npz` de
-  embeddings: páginas + zonas), catálogos JSON. Las referencias y `.env` están gitignored.
+- **Conocimiento**: `knowledge/` — templates YAML (con `zonas` y `revision`), **normas** (`knowledge/normas/<id>.yaml`:
+  detección + reglas + lookups + vlm), referencias (archivos + `.npz` de embeddings: páginas + zonas),
+  catálogos JSON. Las referencias, los PDFs de cliente y `.env` están gitignored. Fixtures de prueba
+  (públicos) se bajan con `scripts/descargar_fixtures.py` (gitignored, reproducibles vía `tests/fixtures/manifest.yaml`).
 
 ## 8. Frontend (frontend/)
 
@@ -230,6 +255,8 @@ React 18 + TS + Vite. `src/api/client.ts` es el cliente tipado del contrato §7.
 - `Desglose` — checks por dimensión en 3 vistas (Dividida / Tarjetas / Compacta).
 - `PaginasViewer` — visor **multipágina** del documento validado con las zonas dibujadas encima,
   coloreadas por estado (cumple/no cumple/a revisar/informativo) + índice de páginas con zonas + zoom.
+  Pide cada hoja **on-demand** al endpoint del caso (`threadId`+`nPaginas`) — cubre TODO el doc sin payload;
+  cae a `imagenes` pre-renderizadas si no hay `threadId`.
 - `InformeZonas` — informe prolijo POR zona (cada regla/zona con estado, página y % de parecido si es visual).
 - `RevisionSection` — sección **Revisión de contenido** (Fase 1): banner del veredicto de revisión +
   hallazgos por dimensión + overlay "ver en plano" (reusa `PaginasViewer`) + acciones para resolverla.
@@ -246,7 +273,7 @@ el humano decida y promueva con evidencia.
 
 ## 9. Tests
 
-Suite pytest en `tests/` (`uv run pytest` — **95 tests**), enfocada en el núcleo **determinista**
+Suite pytest en `tests/` (`uv run pytest` — **113 tests**), enfocada en el núcleo **determinista**
 (sin LLM ni red):
 - `test_state` — umbralado del score (global y por-template) + mapeo de veredicto.
 - `test_nodes` — dedup de checks (autoritativo primero, case-insensitive).
@@ -261,3 +288,5 @@ Suite pytest en `tests/` (`uv run pytest` — **95 tests**), enfocada en el núc
 - `test_ocr` — degradación con gracia del OCR (no rompe si tesseract no está; provider `none`).
 - `test_zonas_resultado` — estado visual por zona (calibrado/calibrando) + lectura per-zona de refs.
 - `test_revision` — Fase 1: agregación severidad→veredicto, router de entrada (toggle), Tier 1 y nodos.
+- `test_reglas_revision` — motor Tier 2: cada tipo de regla con casos VÁLIDO e INVÁLIDO (y dónde falla).
+- `test_normas` — catálogo de normas: detección del vínculo, merge template↔norma, integración válido/inválido.

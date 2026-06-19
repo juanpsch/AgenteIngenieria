@@ -1,0 +1,80 @@
+"""Catálogo de normas: carga, detección del vínculo, merge, e integración VÁLIDO vs INVÁLIDO."""
+from ai_agents.revisor import revisar
+from graph.revision import agregar_revision
+from tools import normas
+
+# Texto de memoria eléctrica que CUMPLE (declara AEA + valores en límite)
+MEMORIA_OK = (
+    "2. NORMAS Y REGLAMENTOS. Para este cálculo se han seguido los lineamientos del reglamento "
+    "AEA 90364, parte 7: 771, y de las normas IRAM e IEC que de él se derivan. "
+    "Circuito IUG: sección 1,5 mm2, caída de tensión 2,1 %. "
+    "Circuito TUG: sección 2,5 mm2, protección diferencial 4 x 25 A, 30 mA. "
+    "Puesta a tierra mediante jabalina. Caída de tensión total 4,2 %."
+)
+# Texto que NO cumple (no declara la norma + caída 7,5% + sección 0,75 + sin 30 mA ni PAT)
+MEMORIA_MAL = (
+    "Memoria de cálculo eléctrico. Circuito A: sección 0,75 mm2, caída de tensión 7,5 %. "
+    "Sin más datos."
+)
+
+
+def test_cargar_y_detectar():
+    cat = normas.cargar_normas()
+    assert "aea-90364" in cat
+    det = {d["id"]: d for d in normas.detectar_normas(MEMORIA_OK, ["aea-90364"])}
+    assert det["aea-90364"]["declarada"] is True
+    det2 = {d["id"]: d for d in normas.detectar_normas(MEMORIA_MAL, ["aea-90364"])}
+    assert det2["aea-90364"]["declarada"] is False
+
+
+def test_auto_detectar_barre_catalogo():
+    assert "aea-90364" in normas.auto_detectar(MEMORIA_OK)
+
+
+def test_reglas_de_normas_llevan_norma_ref():
+    rs = normas.reglas_de_normas(["aea-90364"])
+    assert rs and all(r.get("norma_ref") for r in rs)
+    assert any(r["tipo"] == "norma_lookup" for r in rs)
+
+
+def test_ancla_con_regex_invalido_no_rompe():
+    # un ancla mal escrita (paréntesis sin cerrar) no debe crashear la detección
+    assert normas._ancla_match("(AEA sin cerrar", "texto (AEA sin cerrar aquí") is True
+    assert normas._ancla_match("[malformada", "otra cosa") is False
+
+
+def test_seccion_minima_capta_mm2_y_simbolo_no_cotas():
+    from tools.reglas_revision import evaluar_regla
+    r = next(x for x in normas.reglas_de_normas(["aea-90364"]) if x["id"] == "aea_seccion_minima")
+    assert evaluar_regla(r, "conductor de 2,5 mm²", [])["estado"] == "ok"      # acepta mm² (símbolo)
+    assert evaluar_regla(r, "conductor de 0,75 mm2", [])["estado"] == "fallo"  # < 1,5
+    assert evaluar_regla(r, "una cota de 10 mm de largo", [])["estado"] == "no_verificable"  # no es sección
+
+
+def test_merge_template_pisa_a_norma():
+    # una regla del template con el mismo id que una de la norma debe ganar (no duplicar)
+    cfg = {"normas": ["aea-90364"], "reglas": [{"id": "aea_caida_tension", "tipo": "presencia", "patron": "x"}]}
+    hall = revisar({"contenido": MEMORIA_OK, "imagenes": []}, cfg)
+    ids = [h["check_id"] for h in hall]
+    assert ids.count("aea_caida_tension") == 1
+
+
+def test_integracion_valido():
+    cfg = {"normas": ["aea-90364"]}
+    hall = revisar({"contenido": MEMORIA_OK, "imagenes": [], "path": None}, cfg)
+    agg = agregar_revision(hall)
+    # cumple todo lo determinista (Tier 1 sin imagen => no_verificable, no bloquea)
+    assert agg["verdicto"] in ("aprobado", "aprobado_con_notas")
+    assert not [h for h in hall if h["estado"] == "fallo"]
+
+
+def test_integracion_invalido_dice_donde_falla():
+    cfg = {"normas": ["aea-90364"]}
+    hall = revisar({"contenido": MEMORIA_MAL, "imagenes": [], "path": None}, cfg)
+    agg = agregar_revision(hall)
+    assert agg["verdicto"] == "observado"            # hay fallos mayores
+    porid = {h["check_id"]: h for h in hall}
+    assert porid["norma_declarada:aea-90364"]["estado"] == "fallo"   # no declara la norma
+    assert porid["aea_caida_tension"]["estado"] == "fallo" and "7.5" in porid["aea_caida_tension"]["evidencia"]
+    assert porid["aea_seccion_minima"]["estado"] == "fallo"          # 0,75 < 1,5
+    assert porid["aea_caida_tension"]["norma_ref"] == "AEA 90364"    # trazabilidad

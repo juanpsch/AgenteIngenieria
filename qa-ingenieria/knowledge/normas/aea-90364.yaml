@@ -1,0 +1,59 @@
+id: aea-90364
+nombre: AEA 90364 — Reglamentación para instalaciones eléctricas en BT
+organismo: Asociación Electrotécnica Argentina (AEA)
+region: Argentina
+version: "2006/2017"
+
+# --- Detección: cómo se reconoce que un documento sigue esta norma (el vínculo doc↔norma) ---
+deteccion:
+  anclas:
+    - 'AEA\s*90364'
+    - '90364-7-77\d'
+    - 'Asociaci[oó]n Electrot[eé]cnica Argentina'
+  canales: [seccion_normas, cajetin, notas]
+
+# --- Reglas DETERMINISTAS (Tier 2). Cada hallazgo cita esta norma (norma_ref) ---
+reglas:
+  - id: aea_caida_tension
+    tipo: norma_lookup
+    descripcion: "Caída de tensión total ≤ 5% (AEA 90364)"
+    captura: 'ca[ií]da[^%\n]{0,40}?(\d+[.,]?\d*)\s*%'
+    max: 5
+    severidad: mayor
+  - id: aea_seccion_minima
+    tipo: norma_lookup
+    descripcion: "Sección de conductor ≥ 1,5 mm² (AEA 90364)"
+    captura: '(\d+[.,]?\d*)\s*mm[2²]'   # exige mm² / mm2 (no captura cotas lineales "10 mm")
+    min: 1.5
+    severidad: mayor
+  - id: aea_diferencial_30ma
+    tipo: presencia
+    descripcion: "Protección diferencial 30 mA en circuitos de tomas (AEA 90364)"
+    patron: '30\s*mA'
+    severidad: mayor
+  - id: aea_puesta_a_tierra
+    tipo: presencia
+    descripcion: "Puesta a tierra declarada (AEA 90364)"
+    patron: 'puesta a tierra|toma de tierra|conductor de protecci|jabalina|dispersor|electrodo|\btierra\b'
+    severidad: mayor
+  - id: aea_cuadro_cargas
+    tipo: tabla
+    descripcion: "Cuadro de cargas con columnas mínimas"
+    tabla: cuadro de cargas
+    columnas: [circuito, secci, protec]
+    severidad: menor
+
+# --- Tablas de la norma como DATO (para checks de lookup más avanzados, futuro) ---
+lookups:
+  secciones_minimas:
+    - { tipo: IUG, mm2: 1.5, corriente_max_A: 10 }
+    - { tipo: TUG, mm2: 2.5, corriente_max_A: 16 }
+    - { tipo: especial, mm2: 4.0, corriente_max_A: 25 }
+  caida_tension_max_pct: 5
+
+# --- Parte interpretativa: instrucciones para el VLM (Tier 3, observación, nunca bloquea) ---
+vlm:
+  norma_ref: AEA 90364
+  criterios: >
+    Selectividad y coordinación de protecciones, esquema de puesta a tierra (TN-S/TT),
+    caída de tensión adecuada al equipo, grado de electrificación coherente con la superficie.

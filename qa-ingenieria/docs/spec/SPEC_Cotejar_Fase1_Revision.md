@@ -21,9 +21,19 @@
 >   visor multipágina) + toggle "Revisar contenido al admitir" en Validar.
 > - **Piloto**: bloque `revision:` en `knowledge/tipos/esquematico_electronico.yaml`.
 >
-> **PENDIENTE** (se enchufan en `ai_agents/revisor.py` sin tocar el grafo): **Tier 2** (reglas sobre
-> OCR + tablas pdfplumber, §3.2/§4), **Tier 3** (observación VLM, §3.3), compliance símbolo-por-símbolo
-> (§11), informe Doc/PDF + write-back, aprobación senior real (solo el *hook* `pendiente_senior`).
+> **Tier 2 (reglas + normas) IMPLEMENTADO** (113 pytest ✓): motor `tools/reglas_revision.py`
+> (`presencia` / `presencia_unidad` / `patron` / `norma_lookup` / `tabla`) sobre texto + tablas
+> (pdfplumber, vía `extractor_node`). **Catálogo de normas reutilizable** `knowledge/normas/<id>.yaml`
+> (AEA 90364 + CIRSOC 201) que los templates **referencian** (`revision.normas: [...]`); `tools/normas.py`
+> hace el **vínculo doc↔norma**: detección por anclas (declarar la norma es un check) + merge de reglas
+> (cada hallazgo cita `norma_ref`). Fixtures reales descargables (`tests/fixtures/manifest.yaml` +
+> `scripts/descargar_fixtures.py`) para probar casos válidos/ inválidos. Template piloto:
+> `knowledge/tipos/memoria_electrica.yaml` (referencia AEA 90364).
+>
+> **PENDIENTE** (se enchufan en `ai_agents/revisor.py` sin tocar el grafo): **Tier 3** (observación VLM,
+> §3.3, con `norma_ref`/criterios del catálogo en el prompt), `norma_lookup` con join contra `lookups`
+> (tablas de la norma), compliance símbolo-por-símbolo (§11), informe Doc/PDF + write-back, aprobación
+> senior real (solo el *hook* `pendiente_senior`).
 
 ## 0. Relación con el gate (no confundir las dos preguntas)
 - **Gate (Fase 0, ya especificado):** *identidad + completitud*. "¿Es un plano tipo X de ABC y trae los campos/secciones requeridos?" → veredicto `VÁLIDO` / `REVISIÓN MANUAL` / `INVÁLIDO`.

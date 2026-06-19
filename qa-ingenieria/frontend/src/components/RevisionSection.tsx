@@ -19,7 +19,7 @@ const DIM_LABEL: Record<string, string> = { legibilidad: "Legibilidad", norma: "
 
 /** Sección "Revisión de contenido" (Fase 1): banner del veredicto de revisión + hallazgos agrupados
  *  por dimensión + overlay "ver en plano" + acciones para resolver el veredicto humano. */
-export function RevisionSection({ rev, imagenes, threadId }: { rev: RevisionBlock; imagenes: string[]; threadId?: string }) {
+export function RevisionSection({ rev, threadId, nPaginas, imagenes }: { rev: RevisionBlock; threadId?: string; nPaginas?: number; imagenes?: string[] }) {
   const { run } = useActivity();
   const [resuelto, setResuelto] = useState<string | null>(rev.resuelta ? rev.verdicto : null);
   const [notas, setNotas] = useState("");
@@ -74,6 +74,7 @@ export function RevisionSection({ rev, imagenes, threadId }: { rev: RevisionBloc
                   <span>{h.check_id}</span>
                   <span className={`chip ${SEV_CLS[h.severidad]}`} style={{ fontSize: 9.5 }}>{h.severidad}</span>
                   {h.estado === "no_verificable" && <span className="chip mat-neutral" style={{ fontSize: 9.5 }}>no verificable</span>}
+                  {h.norma_ref && <span className="chip mat-neutral" style={{ fontSize: 9.5 }} title="norma de referencia">{h.norma_ref}</span>}
                   <span className="faint" style={{ fontSize: 10, fontWeight: 400 }}>{h.fuente}</span>
                   {h.ubicacion?.pagina && <span className="faint" style={{ fontSize: 10, fontWeight: 400 }}>pág {h.ubicacion.pagina}</span>}
                 </div>
@@ -89,7 +90,7 @@ export function RevisionSection({ rev, imagenes, threadId }: { rev: RevisionBloc
       {overlays.length > 0 && (
         <>
           <div className="faint" style={{ fontSize: 11.5 }}>Ubicación de los hallazgos en el plano:</div>
-          <PaginasViewer imagenes={imagenes} zonas={overlays} />
+          <PaginasViewer threadId={threadId} nPaginas={nPaginas} imagenes={imagenes} zonas={overlays} />
         </>
       )}
 

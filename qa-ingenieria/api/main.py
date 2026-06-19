@@ -105,7 +105,10 @@ def _map_validacion(st: dict) -> dict:
     panel = st.get("documentos_panel") or []
     docs_ = st.get("documentos") or []
     # El documento cotejado es el ÚLTIMO (la ida-y-vuelta lo reemplaza in situ).
-    imgs = (docs_[-1].get("imagenes") if docs_ else None) or []
+    doc_ult = docs_[-1] if docs_ else {}
+    imgs = doc_ult.get("imagenes") or []
+    path = doc_ult.get("path")
+    n_paginas = docs.contar_paginas(path) if path else len(imgs)
     return {
         "thread_id": st.get("thread_id"),
         "status": st.get("status"),
@@ -122,8 +125,9 @@ def _map_validacion(st: dict) -> dict:
         "zonas_resultado": st.get("zonas_resultado") or [],  # resultado por zona (informe + overlays)
         "revision": _map_revision(st),  # revisión de contenido (Fase 1); None si no corrió
         "documento_panel": panel[0] if panel else None,
-        "imagen": imgs[0] if imgs else None,  # data-url de la 1ª página (compat)
-        "imagenes": imgs,  # TODAS las páginas renderizadas (preview multipágina + overlays por página)
+        "imagen": imgs[0] if imgs else None,  # data-url de la 1ª página (compat / fallback)
+        "imagenes": imgs,  # páginas pre-renderizadas del gate (fallback del visor)
+        "n_paginas": n_paginas,  # total real de páginas → el visor pide cada una on-demand al endpoint
     }
 
 
@@ -402,6 +406,23 @@ def revisar_caso(thread_id: str):
     return resp
 
 
+@app.get("/api/casos/{thread_id}/pagina/{page}")
+def caso_pagina(thread_id: str, page: int = 1):
+    """Render PNG de la página N del documento del caso, on-demand desde el archivo guardado
+    (la previsualización NO viaja en el payload: el visor pide cada hoja a este endpoint)."""
+    import base64
+
+    st = _state_de(thread_id)
+    docs_ = (st or {}).get("documentos") or []
+    p = docs_[-1].get("path") if docs_ else None
+    if not p or not Path(p).exists():
+        raise HTTPException(404, "documento del caso no encontrado")
+    durl = docs.render_pdf_page(p, page=max(1, page))
+    if not durl:
+        raise HTTPException(404, "página fuera de rango o documento sin render")
+    return Response(content=base64.b64decode(durl.split(",", 1)[1]), media_type="image/png")
+
+
 @app.post("/api/casos/{thread_id}/revision/decision")
 def revision_decision(thread_id: str, body: RevisionDecisionIn):
     """Veredicto humano sobre la revisión de contenido (o escalar a senior)."""
@@ -426,9 +447,11 @@ def promover(tid: str, body: PromoverIn):
         return {"refs_count": refs.refs_count(tid), "maturity": refs.maturity(tid), "promovido": False}
     st = _state_de(body.thread_id) or {}
     docs_ = st.get("documentos", [])
-    if not docs_ or not docs_[0].get("path"):
+    # El doc cotejado es el ÚLTIMO (la ida-y-vuelta lo reemplaza); promover ese, no el primero.
+    doc = docs_[-1] if docs_ else {}
+    if not doc.get("path"):
         raise HTTPException(400, "no se encontró el documento del caso para promover")
-    res = refs.agregar_referencia_desde_path(tid, docs_[0]["path"], docs_[0].get("filename"), origin="promovido")
+    res = refs.agregar_referencia_desde_path(tid, doc["path"], doc.get("filename"), origin="promovido")
     historial.marcar_promovido(body.thread_id)
     return {"refs_count": res["refs_count"], "maturity": res["maturity"], "promovido": True}
 

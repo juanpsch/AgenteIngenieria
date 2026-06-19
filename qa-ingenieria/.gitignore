@@ -25,3 +25,6 @@ tmp/
 # Documentos de ingeniería reales (confidenciales — no publicar). Los .md de docs/ SÍ se versionan.
 docs/*.pdf
 knowledge/tipos/filesTipos/
+
+# Fixtures de prueba descargados (binarios externos; reproducibles con scripts/descargar_fixtures.py)
+tests/fixtures/docs/

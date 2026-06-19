@@ -10,6 +10,8 @@ incompleta / no admisible / lista para revisión).
 
 from __future__ import annotations
 
+import os
+from pathlib import Path
 from typing import Any
 
 from ai_agents.parser import parse_trigger
@@ -412,15 +414,48 @@ def _cotejar_single(state: CasoState) -> dict[str, Any]:
                              score_detalle=sim["detalle"], campos=campos, zonas_resultado=zonas_res)
 
 
+def _revision_max_pages() -> int:
+    """Páginas que cubre la REVISIÓN de contenido (independiente del cap del gate `SIM_MAX_PAGES`).
+    0 = todas. La revisión corre como 2º paso (con progreso), así que puede permitirse más."""
+    try:
+        return int(os.getenv("REVISION_MAX_PAGES", "0"))
+    except ValueError:
+        return 0
+
+
+def _extraer_tablas(pdf_path: str | None) -> list[dict[str, Any]]:
+    """Tablas del PDF (pdfplumber) para las reglas Tier 2, sobre TODAS las páginas (o REVISION_MAX_PAGES).
+    [] si no es PDF o no hay. Best-effort: en planos suele no haber tablas reales → `tabla` → no_verificable."""
+    if not pdf_path:
+        return []
+    p = Path(pdf_path)
+    if p.suffix.lower() != ".pdf" or not p.exists():
+        return []
+    try:
+        import pdfplumber
+
+        cap = _revision_max_pages()
+        out: list[dict[str, Any]] = []
+        with pdfplumber.open(str(p)) as pdf:
+            paginas = pdf.pages if cap <= 0 else pdf.pages[:cap]
+            for i, pg in enumerate(paginas):
+                for t in (pg.extract_tables() or []):
+                    if t:
+                        out.append({"pagina": i + 1, "filas": t})
+        return out
+    except Exception:
+        return []
+
+
 def extractor_node(state: CasoState) -> dict[str, Any]:
     """Revisión Fase 1 — extrae contenido estructurado del doc admitido para los tiers.
-    En esta rebanada (Tier 1) es liviano: texto/render ya vienen del parser; deja un extracto
-    observable (nº de páginas, tamaño de texto) y, best-effort, las tablas para tiers futuros."""
+    Texto/render ya vienen del parser; acá se suman las TABLAS (pdfplumber) para las reglas Tier 2."""
     docs_ = state.get("documentos", [])
     doc = docs_[-1] if docs_ else {}
     extracto: dict[str, Any] = {
         "n_paginas": len(doc.get("imagenes") or []),
         "texto_chars": len(doc.get("contenido") or ""),
+        "tablas": _extraer_tablas(doc.get("path")),
     }
     return {"revision_extracto": extracto}
 
@@ -440,7 +475,7 @@ def revisor_node(state: CasoState) -> dict[str, Any]:
     if not cfg or not doc:
         return {"hallazgos": [], "verdicto_revision": None, "severidad_max": None}
 
-    hallazgos = revisar(doc, cfg)
+    hallazgos = revisar(doc, cfg, state.get("revision_extracto") or {})
     agg = agregar_revision(hallazgos)
     doc2 = {**doc, "hallazgos": hallazgos, "verdicto_revision": agg["verdicto"],
             "severidad_max": agg["severidad_max"]}

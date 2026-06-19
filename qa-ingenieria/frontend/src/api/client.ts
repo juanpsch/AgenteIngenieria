@@ -60,6 +60,7 @@ export interface Hallazgo {
   razonamiento: string;
   sugerencia?: string;
   fuente: "deterministico" | "reglas" | "vlm";
+  norma_ref?: string;
 }
 export interface RevisionBlock {
   verdicto: VerdictoRevision | null;
@@ -85,6 +86,7 @@ export interface ValidarResp {
   revision: RevisionBlock | null;
   imagen: string | null;
   imagenes: string[];
+  n_paginas: number;
   documento_panel: { titulo?: string; [k: string]: unknown } | null;
 }
 export interface Tipo {
@@ -169,6 +171,7 @@ export const api = {
   getCaso: (threadId: string) => req<ValidarResp & { decision: string | null }>("GET", `/casos/${threadId}`),
   decision: (threadId: string, decision: "approved" | "rejected") => req<any>("POST", `/casos/${threadId}/decision`, { decision }),
   revisarCaso: (threadId: string) => req<ValidarResp & { decision: string | null }>("POST", `/casos/${threadId}/revisar`),
+  casoPaginaUrl: (threadId: string, page = 1) => `/api/casos/${threadId}/pagina/${page}`,  // preview on-demand (no payload)
   revisionDecision: (threadId: string, decision: VerdictoRevision | "escalar_senior", notas?: string) =>
     req<{ verdicto: string; resuelta: boolean }>("POST", `/casos/${threadId}/revision/decision`, { decision, notas }),
   promover: (id: string, threadId: string, promote: boolean) => req<any>("POST", `/tipos/${id}/referencias/promover`, { thread_id: threadId, promote }),

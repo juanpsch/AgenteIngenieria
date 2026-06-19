@@ -10,6 +10,10 @@ const PASOS = [
   "Extrayendo texto (OCR)", "Detectando rótulo / cajetín", "Cotejando identidad (empresa · tipo)",
   "Verificando campos obligatorios", "Calculando score de similitud",
 ];
+const REV_PASOS = [
+  "Extrayendo tablas y secciones (todo el doc)", "Midiendo legibilidad por página",
+  "Detectando la norma aplicable", "Chequeando reglas y normas", "Resolviendo veredicto de revisión",
+];
 
 export function Validar() {
   const [tipos, setTipos] = useState<Tipo[]>([]);
@@ -20,6 +24,7 @@ export function Validar() {
   const [res, setRes] = useState<ValidarResp | null>(null);
   const [decision, setDecision] = useState<null | "approved" | "rejected">(null);
   const [revisarAuto, setRevisarAuto] = useState(true);
+  const [revisando, setRevisando] = useState(false);
   const [promote, setPromote] = useState(true);
   const [promoted, setPromoted] = useState<{ refs_count: number; maturity: string } | null>(null);
   const [err, setErr] = useState("");
@@ -38,8 +43,16 @@ export function Validar() {
     if (!file || !tipoDoc) return;
     setStage("processing"); setErr(""); setDecision(null); setPromoted(null); setRes(null);
     try {
-      const r = await run("Validar documento", () => api.validar(file, tipoDoc, { revisar: revisarAuto }), PASOS);
+      // Paso 1 — Gate (admisión): rápido, se muestra enseguida.
+      const r = await run("Validar (admisión)", () => api.validar(file, tipoDoc, { revisar: false }), PASOS);
       setRes(r); setStage("result");
+      // Paso 2 — Revisión de contenido (todo el doc): corre después, con progreso; ya leés el gate.
+      if (revisarAuto && r.veredicto === "valido") {
+        setRevisando(true);
+        try { setRes(await run("Revisión de contenido", () => api.revisarCaso(r.thread_id), REV_PASOS)); }
+        catch (e) { setErr("La admisión salió, pero la revisión de contenido falló: " + errMsg(e)); }
+        finally { setRevisando(false); }
+      }
     } catch (e) { setErr(errMsg(e)); setStage("upload"); }
   }
   async function decidir(d: "approved" | "rejected") {
@@ -50,9 +63,10 @@ export function Validar() {
   }
   async function revisarAhora() {
     if (!res) return;
-    setErr("");
-    try { setRes(await run("Revisar contenido", () => api.revisarCaso(res.thread_id))); }
+    setErr(""); setRevisando(true);
+    try { setRes(await run("Revisión de contenido", () => api.revisarCaso(res.thread_id), REV_PASOS)); }
     catch (e) { setErr("No se pudo revisar el contenido: " + errMsg(e)); }
+    finally { setRevisando(false); }
   }
   async function confirmarPromo() {
     if (!res) return;
@@ -62,7 +76,7 @@ export function Validar() {
   }
   function reiniciar() {
     setStage("upload"); setFile(null); setTipoDoc("");
-    setRes(null); setDecision(null); setPromoted(null); setErr("");
+    setRes(null); setDecision(null); setPromoted(null); setErr(""); setRevisando(false);
   }
 
   const tSel = tipos.find((t) => t.tipo_doc === tipoDoc);
@@ -139,8 +153,15 @@ export function Validar() {
     <div className="ct-fade" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       <ResultadoDetalle res={res} fileName={file?.name} />
 
+      {/* Paso 2 en curso: el gate ya se ve; la revisión de contenido corre con progreso */}
+      {revisando && (
+        <div className="card" style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div className="spinner" />
+          <div className="muted" style={{ fontSize: 12.5 }}>Revisando el contenido (todo el documento)… podés ir leyendo la admisión de arriba.</div>
+        </div>
+      )}
       {/* Revisión en modo manual: el toggle quedó off → ofrecer correrla a pedido */}
-      {!res.revision && res.veredicto === "valido" && (
+      {!revisando && !res.revision && res.veredicto === "valido" && (
         <div className="card" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
           <div className="muted" style={{ fontSize: 12.5 }}>El contenido aún no se revisó (revisión en modo manual).</div>
           <button className="btn btn-primary" style={{ padding: "5px 12px" }} onClick={revisarAhora}>Revisar contenido ahora</button>

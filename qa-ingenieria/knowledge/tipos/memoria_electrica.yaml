@@ -1,0 +1,34 @@
+tipo_doc: memoria_electrica
+nombre: Memoria de cálculo eléctrica
+disciplinas:
+- electrica
+formatos_archivo:
+- pdf
+cajetin:
+  requerido: false
+  campos_requeridos: []
+  reglas: []
+secciones_requeridas: []
+columnas_requeridas: []
+caracteristicas:
+- Memoria de cálculo de instalación eléctrica con cuadro de cargas, secciones y protecciones
+- Cita la reglamentación aplicable (AEA 90364 / IEC / IRAM)
+nomenclatura: ''
+bloqueante:
+- archivo fuera de formatos_archivo
+- no es una memoria de cálculo eléctrica
+senales_reconocimiento: 'Documento de cálculo con sección de normas, cuadro de cargas,
+  caída de tensión, secciones de conductor y protecciones.'
+criterios_aceptacion: 'Memoria que cita la norma aplicable e incluye el cálculo de circuitos.'
+no_corresponde: 'Planos puramente gráficos, documentos de otras disciplinas, presupuestos.'
+zonas: []
+revision:
+  normas:
+  - aea-90364
+  legibilidad:
+    blur_var_min: 80
+    ocr_conf_min: 0.6
+  contenido_requerido:
+  - id: seccion_normas
+    detectar: normas y reglamentos
+    severidad_si_falta: mayor
