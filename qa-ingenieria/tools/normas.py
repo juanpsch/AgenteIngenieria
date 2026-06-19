@@ -106,6 +106,17 @@ def requisito_por_id(req_id: str) -> dict[str, Any] | None:
     return next((q for q in catalogo_requisitos() if q.get("req_id") == req_id), None)
 
 
+def vlm_de_normas(ids: list[str]) -> list[dict[str, Any]]:
+    """Criterios interpretativos (bloque `vlm`) de las normas dadas, para el Tier 3 (observación VLM)."""
+    cat = cargar_normas()
+    out: list[dict[str, Any]] = []
+    for nid in ids or []:
+        v = (cat.get(nid) or {}).get("vlm")
+        if v and v.get("criterios"):
+            out.append({"norma_ref": v.get("norma_ref") or nid, "criterios": v.get("criterios")})
+    return out
+
+
 def resolver_requisitos(revision: dict | None) -> list[dict[str, Any]]:
     """Conjunto FINAL de requisitos (reglas) a evaluar para una familia, a partir de su bloque
     `revision`:  expand(`normas`) ∪ `requisitos`(por id global) ∪ `reglas`(inline del template) − `excluir`.

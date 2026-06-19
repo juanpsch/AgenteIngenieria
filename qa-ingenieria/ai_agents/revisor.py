@@ -163,15 +163,68 @@ def _tier2_reglas(doc: dict, cfg: dict, extracto: dict) -> list[Hallazgo]:
     return out
 
 
+_DIMS = ("legibilidad", "norma", "contenido", "consistencia")
+_SEVS = ("bloqueante", "mayor", "menor", "observacion")
+
+
+def _a_hallazgos_vlm(observaciones: list) -> list[Hallazgo]:
+    """Convierte las observaciones del VLM en hallazgos. estado='advertencia' + fuente='vlm' →
+    la agregación nunca las deja bloquear por sí solas (§2.2). Pura (testeable)."""
+    out: list[Hallazgo] = []
+    for i, o in enumerate(observaciones or []):
+        if not isinstance(o, dict):
+            continue
+        desc = (o.get("observacion") or o.get("descripcion") or "").strip()
+        if not desc:
+            continue
+        sev = o.get("severidad") if o.get("severidad") in _SEVS else "observacion"
+        dim = o.get("dimension") if o.get("dimension") in _DIMS else "norma"
+        pag = o.get("pagina")
+        ubic = {"pagina": int(pag)} if isinstance(pag, (int, float)) else None
+        out.append(mk(f"vlm:{o.get('id') or i + 1}", dim, sev, "advertencia", fuente="vlm",
+                      evidencia=desc[:300], razonamiento=(o.get("razonamiento") or "Observación del revisor (visión)."),
+                      sugerencia=(o.get("sugerencia") or ""), ubicacion=ubic, norma_ref=o.get("norma_ref")))
+    return out
+
+
+def _tier3_vlm(doc: dict, cfg: dict) -> list[Hallazgo]:
+    """Tier 3 (cualitativo): un VLM observa lo interpretativo con los criterios de la(s) norma(s) +
+    `observacion_vlm.instrucciones`. Observaciones no bloqueantes. Degrada con gracia (LLM no disponible
+    o `REVISION_VLM=0` → [])."""
+    if (os.getenv("REVISION_VLM", "1") or "1").strip() == "0":
+        return []
+    instrucciones = ((cfg.get("observacion_vlm") or {}).get("instrucciones") or "").strip()
+    norma_ids = sorted({r.get("norma_id") for r in normas.resolver_requisitos(cfg) if r.get("norma_id")}
+                       | set(cfg.get("normas") or []))
+    criterios = normas.vlm_de_normas(norma_ids)
+    if not instrucciones and not criterios:
+        return []
+    try:
+        from ai_agents.provider import build_agent
+        from ai_agents.util import build_input, extract_json, load_prompt, run_agent
+
+        partes = ["## Instrucciones de revisión (observación, NO bloqueante)"]
+        if instrucciones:
+            partes.append(instrucciones)
+        for v in criterios:
+            partes.append(f"### Criterios — {v['norma_ref']}\n{v['criterios']}")
+        partes += ["", "## Texto del documento", (doc.get("contenido") or "")[:8000] or "(ver imágenes)"]
+        agent = build_agent("revisor-qa", instructions=load_prompt("revisor"))
+        out = run_agent(agent, build_input("\n".join(partes), doc.get("imagenes") or []))
+        return _a_hallazgos_vlm(extract_json(out, {"observaciones": []}).get("observaciones") or [])
+    except Exception:
+        return []
+
+
 def revisar(doc: dict, cfg: dict, extracto: dict | None = None) -> list[Hallazgo]:
     """Corre los tiers disponibles sobre un documento admitido y devuelve los hallazgos.
     `cfg` = bloque `revision:` del template; `extracto` = lo que dejó el extractor (tablas, etc.).
-    Tier 1 (legibilidad/presencia) + Tier 2 (reglas/normas). Tier 3 (VLM) se enchufa acá."""
+    Tier 1 (legibilidad/presencia) + Tier 2 (reglas/normas) + Tier 3 (observación VLM, no bloqueante)."""
     if not cfg:
         return []
     hallazgos: list[Hallazgo] = []
     hallazgos += _tier1_legibilidad(doc, cfg)
     hallazgos += _tier1_presencia(doc, cfg)
     hallazgos += _tier2_reglas(doc, cfg, extracto or {})
-    # Tier 3 (VLM, observación no bloqueante): se enchufa aquí en el próximo incremento.
+    hallazgos += _tier3_vlm(doc, cfg)
     return hallazgos

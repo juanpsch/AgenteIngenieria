@@ -57,12 +57,13 @@ Tras la **admisión** (gate Fase 0 → `EN_REVISION`), un cotejo single-doc pued
 
 - **`extractor_node`** — extrae contenido para los tiers (texto/render ya vienen del parser; deja un
   `revision_extracto` observable; tablas/pdfplumber para tiers futuros).
-- **`revisor_node`** — corre los tiers (**Tier 1 + Tier 2**) vía `ai_agents/revisor.revisar` y agrega la
+- **`revisor_node`** — corre los tiers (**Tier 1 + Tier 2 + Tier 3**) vía `ai_agents/revisor.revisar` y agrega la
   severidad en un veredicto con `graph/revision.agregar_revision`. **La admisión NO se toca**: `status`
   queda `EN_REVISION`; el veredicto de revisión va aparte en `verdicto_revision` (no pisa el chip de
   admisión). Motor por tiers (spec `docs/spec/SPEC_Cotejar_Fase1_Revision.md`): lo mecánico se **mide**
   (Tier 1, determinista), lo semántico con **reglas/normas** (Tier 2, determinista), lo difuso al **VLM**
-  (Tier 3, pendiente; nunca decide un bloqueante solo).
+  (Tier 3: observaciones `fuente:vlm`/`advertencia` con los `vlm.criterios` de la norma + `observacion_vlm`
+  del template en el prompt; **nunca decide un bloqueante solo**; `REVISION_VLM=0` lo desactiva).
 
 #### Vínculo documento ↔ norma (Tier 2)
 
@@ -121,8 +122,8 @@ mergea y deduplica por `(dimension, label)` — el check autoritativo va primero
   `score_grupos`/`detalle_score`/`umbrales_calibrados`, `recortar_bbox(img, zona, pad)`,
   `region`-helpers y `detectar_zona_identidad()` (visión LLM, solo localización).
 - **`revisor.py`** — orquestador de la **revisión de contenido** (Fase 1): `revisar(doc, cfg)` corre
-  los tiers (hoy Tier 1 determinístico vía `tools/legibilidad`) y devuelve `hallazgos[]`. Los Tier 2
-  (reglas/tablas) y Tier 3 (VLM) se enchufan acá sin tocar el grafo.
+  Tier 1 (`tools/legibilidad`) + Tier 2 (`tools/reglas_revision`+`normas`) + Tier 3 (observación VLM,
+  `prompts/revisor.txt`) y devuelve `hallazgos[]`.
 - **`util.py`** — `run_agent` (sync, vía `asyncio.run`; política de event loop Selector en Windows),
   `build_input` (multimodal), `extract_json`, `load_prompt`.
 

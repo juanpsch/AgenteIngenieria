@@ -30,10 +30,18 @@
 > `scripts/descargar_fixtures.py`) para probar casos válidos/ inválidos. Template piloto:
 > `knowledge/tipos/memoria_electrica.yaml` (referencia AEA 90364).
 >
-> **PENDIENTE** (se enchufan en `ai_agents/revisor.py` sin tocar el grafo): **Tier 3** (observación VLM,
-> §3.3, con `norma_ref`/criterios del catálogo en el prompt), `norma_lookup` con join contra `lookups`
-> (tablas de la norma), compliance símbolo-por-símbolo (§11), informe Doc/PDF + write-back, aprobación
-> senior real (solo el *hook* `pendiente_senior`).
+> **Tier 3 (observación VLM) IMPLEMENTADO:** `ai_agents/revisor._tier3_vlm` + `prompts/revisor.txt` —
+> un VLM observa lo interpretativo con los `vlm.criterios` de la(s) norma(s) + `observacion_vlm.instrucciones`
+> del template; emite observaciones `fuente:vlm`/`advertencia` que **nunca bloquean solas** (§2.2).
+> Toggle `REVISION_VLM` (default 1; 0 = off). Degrada con gracia si no hay LLM.
+>
+> **Requisitos chequeables (capa de aplicabilidad) IMPLEMENTADA** — ver
+> [DISENO_Normas_Requisitos.md](DISENO_Normas_Requisitos.md) (Pasos 1-6: resolvedor, catálogo, grilla con
+> juicio por regla, asignación, aprendedor, perfiles).
+>
+> **PENDIENTE:** `norma_lookup` con join contra `lookups` (tablas de la norma), compliance
+> símbolo-por-símbolo (§11), informe Doc/PDF + write-back, aprobación senior real (solo el *hook*
+> `pendiente_senior`).
 
 ## 0. Relación con el gate (no confundir las dos preguntas)
 - **Gate (Fase 0, ya especificado):** *identidad + completitud*. "¿Es un plano tipo X de ABC y trae los campos/secciones requeridos?" → veredicto `VÁLIDO` / `REVISIÓN MANUAL` / `INVÁLIDO`.
