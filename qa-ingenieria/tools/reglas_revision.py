@@ -9,6 +9,8 @@ Opera sobre el TEXTO y las TABLAS extraídas del documento. Cada regla devuelve 
                          (p. ej. caída de tensión ≤ 5%, sección ≥ 1,5 mm²).
   - `tabla`            : una tabla con las `columnas` requeridas. Si no se extrajo tabla → no_verificable
                          (las tablas dibujadas no se tabulan — no se inventa un ok/fallo).
+  - `vlm`              : regla INTERPRETATIVA (¿hay una leyenda real?, ¿los símbolos son coherentes?).
+                         Por texto NO se juzga → no_verificable; la decide la observación visual (IA).
 Lo no medible cae a `no_verificable` (nunca un `ok` inventado).
 """
 
@@ -20,7 +22,7 @@ from typing import Any
 from graph.revision import Hallazgo, mk
 
 _DIM_DEFAULT = {"presencia": "contenido", "presencia_unidad": "norma", "patron": "norma",
-                "norma_lookup": "norma", "tabla": "consistencia"}
+                "norma_lookup": "norma", "tabla": "consistencia", "vlm": "norma"}
 
 
 def _compilar(patron: str) -> re.Pattern:
@@ -119,8 +121,16 @@ def _tabla(r: dict, tablas: list, m: dict) -> Hallazgo:
               "Verificar que la tabla incluya todas las columnas requeridas.")
 
 
+def _interpretativo(r: dict, texto: str, m: dict) -> Hallazgo:
+    """Regla que el texto NO puede juzgar (¿hay leyenda real?, ¿símbolos coherentes?). Queda
+    `no_verificable` y la resuelve la observación visual (IA), que mira el dibujo."""
+    return _h(m, "no_verificable",
+              f"requiere observación visual (IA): «{m['desc']}» se juzga sobre el dibujo, no por texto",
+              "Pedí la observación visual (IA) para verificarla.")
+
+
 _DISPATCH = {"presencia": _presencia, "presencia_unidad": _presencia_unidad, "patron": _patron,
-             "norma_lookup": _norma_lookup}
+             "norma_lookup": _norma_lookup, "vlm": _interpretativo}
 
 
 def evaluar_regla(regla: dict, texto: str, tablas: list | None = None) -> Hallazgo:

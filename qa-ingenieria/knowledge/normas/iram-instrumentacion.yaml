@@ -26,9 +26,8 @@ reglas:
     min: 3
     severidad: mayor
   - id: leyenda_simbolos
-    tipo: presencia
-    descripcion: "Leyenda/simbología presente (toda letra ‘a elección’ del usuario debe definirse) — ISA-5.1"
-    patron: 'leyenda|simbolog[ií]a|s[ií]mbolos|legend|symbols'
+    tipo: vlm   # interpretativa: la juzga la observación visual (no basta con que aparezca la palabra)
+    descripcion: "Hay una LEYENDA que DEFINE los símbolos/letras usados (no solo que figure la palabra) — ISA-5.1"
     severidad: mayor
   - id: lista_instrumentos
     tipo: tabla

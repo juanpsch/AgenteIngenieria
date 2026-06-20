@@ -15,6 +15,18 @@ def test_presencia_unidad_tolera_simbolo():
     assert evaluar_regla(r, "no hay secciones", [])["estado"] == "fallo"
 
 
+def test_regla_vlm_es_no_verificable_por_texto():
+    # una regla interpretativa NO se juzga por texto, aunque aparezca la palabra: queda no_verificable
+    r = {"id": "leyenda", "tipo": "vlm", "descripcion": "hay leyenda que define los símbolos", "severidad": "mayor"}
+    assert evaluar_regla(r, "symbols leyenda simbología", [])["estado"] == "no_verificable"
+
+
+def test_leyenda_simbolos_es_interpretativa():
+    from tools import normas
+    r = next(x for x in normas.reglas_de_normas(["iram-instrumentacion"]) if x["id"] == "leyenda_simbolos")
+    assert r["tipo"] == "vlm"   # ya no es un match de palabra
+
+
 def test_patron_min_ocurrencias():
     r = {"id": "refs", "tipo": "patron", "patron": r"\b[RCU]\d{1,3}\b", "min": 3}
     assert evaluar_regla(r, "R1 C2 U3 R4", [])["estado"] == "ok"
