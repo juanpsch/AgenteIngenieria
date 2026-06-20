@@ -187,11 +187,11 @@ def _a_hallazgos_vlm(observaciones: list) -> list[Hallazgo]:
     return out
 
 
-def _tier3_vlm(doc: dict, cfg: dict) -> list[Hallazgo]:
+def _tier3_vlm(doc: dict, cfg: dict, forzar: bool = False) -> list[Hallazgo]:
     """Tier 3 (cualitativo): un VLM observa lo interpretativo con los criterios de la(s) norma(s) +
     `observacion_vlm.instrucciones`. Observaciones no bloqueantes. Degrada con gracia (LLM no disponible
-    o `REVISION_VLM=0` → [])."""
-    if (os.getenv("REVISION_VLM", "1") or "1").strip().lower() in ("0", "false", "no", "off"):
+    o `REVISION_VLM=0` → []). `forzar=True` ignora el flag (lo usa la observación A PEDIDO)."""
+    if not forzar and (os.getenv("REVISION_VLM", "1") or "1").strip().lower() in ("0", "false", "no", "off"):
         return []
     instrucciones = ((cfg.get("observacion_vlm") or {}).get("instrucciones") or "").strip()
     norma_ids = sorted({r.get("norma_id") for r in normas.resolver_requisitos(cfg) if r.get("norma_id")}
@@ -216,15 +216,23 @@ def _tier3_vlm(doc: dict, cfg: dict) -> list[Hallazgo]:
         return []
 
 
+def observar_vlm(doc: dict, cfg: dict) -> list[Hallazgo]:
+    """Observación visual (Tier 3) A PEDIDO: corre el VLM ignorando el flag `REVISION_VLM`.
+    Pensado para que el revisor pida la 'mirada del VLM' con un botón (caro → no corre solo)."""
+    if not cfg:
+        return []
+    return _tier3_vlm(doc, cfg, forzar=True)
+
+
 def revisar(doc: dict, cfg: dict, extracto: dict | None = None) -> list[Hallazgo]:
-    """Corre los tiers disponibles sobre un documento admitido y devuelve los hallazgos.
+    """Corre los tiers DETERMINISTAS sobre un documento admitido y devuelve los hallazgos.
     `cfg` = bloque `revision:` del template; `extracto` = lo que dejó el extractor (tablas, etc.).
-    Tier 1 (legibilidad/presencia) + Tier 2 (reglas/normas) + Tier 3 (observación VLM, no bloqueante)."""
+    Tier 1 (legibilidad/presencia) + Tier 2 (reglas/normas). El Tier 3 (observación VLM) NO corre acá:
+    es a pedido vía `observar_vlm` (es caro y cualitativo)."""
     if not cfg:
         return []
     hallazgos: list[Hallazgo] = []
     hallazgos += _tier1_legibilidad(doc, cfg)
     hallazgos += _tier1_presencia(doc, cfg)
     hallazgos += _tier2_reglas(doc, cfg, extracto or {})
-    hallazgos += _tier3_vlm(doc, cfg)
     return hallazgos

@@ -195,6 +195,7 @@ export const api = {
     req<{ pagina: number; rects: BBox[] }[]>("GET", `/casos/${threadId}/buscar?q=${encodeURIComponent(q)}`),
   revisionDecision: (threadId: string, decision: VerdictoRevision | "escalar_senior", notas?: string) =>
     req<{ verdicto: string; resuelta: boolean }>("POST", `/casos/${threadId}/revision/decision`, { decision, notas }),
+  revisionVlm: (threadId: string) => req<RevisionBlock>("POST", `/casos/${threadId}/revision/vlm`),
   catalogoRequisitos: () => req<CatalogoRequisito[]>("GET", "/normas/catalogo"),
   putRequisitos: (id: string, requisitos: string[]) =>
     req<{ ok: boolean; requisitos_resueltos: string[] }>("PUT", `/tipos/${id}/requisitos`, { requisitos }),

@@ -96,6 +96,15 @@ ajustar umbrales, se edita ese YAML; para asociarla a un tipo, se agrega a `revi
 Detalle técnico en [ARCHITECTURE.md](ARCHITECTURE.md) y el spec
 [SPEC_Cotejar_Fase1_Revision.md](spec/SPEC_Cotejar_Fase1_Revision.md).
 
+## Observación visual (IA) — a pedido
+
+La revisión automática corre solo lo **determinista** (Tier 1 legibilidad + Tier 2 reglas/normas). La
+**mirada del VLM** (Tier 3) es **a pedido**: en la sección *"Observación visual (IA)"* hay un botón
+**"Pedir observación visual (IA)"**. Al apretarlo, un VLM mira el documento con los criterios de la norma
+(símbolos, líneas, prolijidad, coherencia) y lista observaciones **no bloqueantes** (no cambian el veredicto
+por sí solas; aparecen aparte de la grilla). Es deliberado porque es **caro/lento** — sobre todo útil en
+**P&ID y planos** donde los datos viven en el dibujo y las reglas de texto no alcanzan.
+
 ## Probarlo
 
 1. (una vez) Bajá documentos de ejemplo: `uv run python scripts/descargar_fixtures.py`.

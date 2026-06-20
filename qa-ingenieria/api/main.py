@@ -435,6 +435,30 @@ def revisar_caso(thread_id: str):
     return resp
 
 
+@app.post("/api/casos/{thread_id}/revision/vlm")
+def revision_vlm(thread_id: str):
+    """Observación visual (VLM, Tier 3) A PEDIDO: corre el VLM sobre el doc y la mergea en la revisión."""
+    from ai_agents.revisor import observar_vlm
+    from graph.revision import agregar_revision
+
+    st = _state_de(thread_id)
+    if not st:
+        raise HTTPException(404, "no se encontró el estado del caso")
+    docs_ = st.get("documentos") or []
+    doc = docs_[-1] if docs_ else {}
+    tpl = cargar_tipos().get(st.get("tipo_objetivo")) if st.get("tipo_objetivo") else None
+    cfg = (tpl or {}).get("revision")
+    if not doc or not cfg:
+        raise HTTPException(409, "el caso no tiene revisión configurada")
+    vlm = observar_vlm(doc, cfg)
+    hall = [h for h in (st.get("hallazgos") or []) if h.get("fuente") != "vlm"] + vlm  # reemplaza VLM previa
+    agg = agregar_revision(hall)
+    upd = {"hallazgos": hall, "verdicto_revision": agg["verdicto"],
+           "severidad_max": agg["severidad_max"], "revision_confiabilidad": agg["confiabilidad"]}
+    get_compiled_graph().update_state({"configurable": {"thread_id": thread_id}}, upd)
+    return _map_revision({**st, **upd})
+
+
 @app.get("/api/casos/{thread_id}/pagina/{page}")
 def caso_pagina(thread_id: str, page: int = 1):
     """Render PNG de la página N del documento del caso, on-demand desde el archivo guardado
