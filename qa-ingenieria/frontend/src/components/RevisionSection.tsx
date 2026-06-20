@@ -49,7 +49,14 @@ export function RevisionSection({ rev, threadId, nPaginas, imagenes, feedback }:
     if (!threadId) return;
     setErr(""); setVlmCargando(true);
     try {
-      const nuevo = await run("Observación visual (IA)", () => api.revisionVlm(threadId));
+      const nuevo = await run("Observación visual (IA)", async () => {
+        try {
+          return await api.revisionVlm(threadId);
+        } catch {                                   // blip transitorio del proxy de dev (connect ETIMEDOUT) → reintento 1 vez
+          await new Promise((r) => setTimeout(r, 1500));
+          return await api.revisionVlm(threadId);
+        }
+      });
       setR(nuevo); setVlmPedido(true);
     } catch (e) { setErr(errMsg(e)); }
     finally { setVlmCargando(false); }

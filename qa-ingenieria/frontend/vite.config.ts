@@ -8,7 +8,8 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      "/api": { target: API, changeOrigin: true },
+      // timeouts holgados: las llamadas del VLM (LLM + imagen) tardan varios segundos
+      "/api": { target: API, changeOrigin: true, timeout: 600000, proxyTimeout: 600000 },
     },
   },
 });
