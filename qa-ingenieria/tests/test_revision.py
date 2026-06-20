@@ -96,6 +96,25 @@ def test_extractor_node_da_extracto():
     assert "tablas" in out["revision_extracto"]   # Tier 2 las usa
 
 
+def test_imagen_dominante_degrada_fallos_a_no_verificable():
+    # doc tipo P&ID: casi sin texto + 1 imagen -> los fallos por ausencia pasan a no_verificable
+    from ai_agents.revisor import _tier2_reglas
+    from graph.revision import agregar_revision
+    doc = {"contenido": "P&ID de proceso", "imagenes": ["data:img"], "path": None}
+    h = _tier2_reglas(doc, {"normas": ["iram-instrumentacion"]}, {"tablas": []})
+    assert not any(x["estado"] == "fallo" for x in h)          # nada queda en fallo (todo no_verificable)
+    assert any(x["estado"] == "no_verificable" for x in h)
+    assert agregar_revision(h)["confiabilidad"] == "parcial"   # confiabilidad honesta: no se pudo leer
+
+
+def test_doc_con_texto_no_se_degrada():
+    # con suficiente capa de texto, un requisito ausente sigue siendo fallo real (no se degrada)
+    from ai_agents.revisor import _tier2_reglas
+    doc = {"contenido": "memoria " * 1000, "imagenes": ["a"], "path": None}
+    h = _tier2_reglas(doc, {"normas": ["iram-instrumentacion"]}, {"tablas": []})
+    assert any(x["estado"] == "fallo" for x in h)
+
+
 def test_paginas_utiles_recorta_blancos_al_final():
     import os
     import pytest

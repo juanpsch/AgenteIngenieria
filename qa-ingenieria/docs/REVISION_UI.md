@@ -74,7 +74,10 @@ El visor además tiene un **buscador** que busca el texto en **todo el documento
 El sistema **nunca inventa un "cumple"**. Si no puede medir algo, lo marca **no verificable**, por ejemplo:
 - el **cuadro de cargas está dibujado** (no es una tabla real) → no se puede leer la columna;
 - un **valor vive solo en la imagen** y no hay OCR;
-- la hoja no se pudo renderizar.
+- la hoja no se pudo renderizar;
+- el documento es **casi puro dibujo** (P&ID/plano sin capa de texto): las reglas de texto que fallan por
+  *ausencia* se degradan a `no_verificable` (no a `fallo`) → la confiabilidad queda **parcial** e invita a
+  la observación visual, en vez de inflar el veredicto con falsos negativos. (umbral: `REVISION_MIN_CHARS_PAGINA`)
 
 Un `no_verificable` **no cuenta como fallo**, pero **baja la confianza** y empuja a que un humano lo mire.
 

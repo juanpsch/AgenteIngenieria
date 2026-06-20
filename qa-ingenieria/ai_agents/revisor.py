@@ -134,13 +134,39 @@ def _tier1_presencia(doc: dict, cfg: dict) -> list[Hallazgo]:
     return out
 
 
+_TIPOS_AUSENCIA = {"presencia", "presencia_unidad", "patron", "tabla"}  # fallan por AUSENCIA de texto
+
+
+def _imagen_dominante(doc: dict) -> bool:
+    """¿El documento es casi puro dibujo? (poca capa de texto por página). En ese caso un `fallo` de una
+    regla de texto por AUSENCIA es en realidad 'no verificable por este medio' → hay que mirarlo con el VLM.
+    Umbral configurable con REVISION_MIN_CHARS_PAGINA (default 600)."""
+    imgs = doc.get("imagenes") or []
+    if not imgs:                       # sin imágenes no hay "dibujo" que domine: es texto (o doc vacío)
+        return False
+    umbral = int(os.getenv("REVISION_MIN_CHARS_PAGINA", "600") or "600")
+    return len(doc.get("contenido") or "") < umbral * len(imgs)
+
+
+def _degradar_no_verificable(h: Hallazgo) -> Hallazgo:
+    """Convierte un `fallo` por ausencia de texto en `no_verificable` (el dato puede estar en el dibujo)."""
+    base = (h.get("evidencia") or "").rstrip(". ")
+    return {**h, "estado": "no_verificable",
+            "evidencia": (f"{base} — no verificable por texto (el documento casi no tiene capa de texto; "
+                          "el dato suele estar en el dibujo)").lstrip(" —"),
+            "sugerencia": "Pedí la observación visual (IA) para verificarlo sobre el dibujo."}
+
+
 def _tier2_reglas(doc: dict, cfg: dict, extracto: dict) -> list[Hallazgo]:
     """Tier 2 (determinista): vínculo doc↔norma + reglas sobre texto/tablas.
     1) Detección: ¿el doc DECLARA las normas que el template espera? (declarar la norma es un check).
-    2) Aplicación: reglas del template + reglas de las normas (merge; el template pisa por id)."""
+    2) Aplicación: reglas del template + reglas de las normas (merge; el template pisa por id).
+    Si el doc es 'dominado por imagen', los fallos por AUSENCIA de texto se degradan a `no_verificable`
+    (la confiabilidad baja a parcial e invita a la observación visual, en vez de inflar el veredicto)."""
     out: list[Hallazgo] = []
     texto = doc.get("contenido") or ""
     tablas = (extracto or {}).get("tablas") or []
+    dominante = _imagen_dominante(doc)
 
     # Conjunto final de requisitos (atajo `normas` + granular `requisitos` + inline − `excluir`).
     reglas = normas.resolver_requisitos(cfg)
@@ -149,17 +175,23 @@ def _tier2_reglas(doc: dict, cfg: dict, extracto: dict) -> list[Hallazgo]:
     esperadas = sorted({*(cfg.get("normas") or []), *(r.get("norma_id") for r in reglas if r.get("norma_id"))})
     for det in normas.detectar_normas(texto, esperadas):
         declarada = det.get("declarada")
-        out.append(mk(f"norma_declarada:{det['id']}", "norma", det.get("severidad", "mayor"),
-                      "ok" if declarada else "fallo", fuente="reglas",
-                      evidencia=(f"el documento declara «{det['nombre']}»" if declarada
-                                 else f"no se declara la norma esperada «{det['nombre']}»"),
-                      razonamiento="El documento debe citar la norma/código de diseño aplicable.",
-                      sugerencia="" if declarada else f"Citar «{det['nombre']}» en la sección de normas o el cajetín.",
-                      norma_ref=det.get("norma_ref")))
+        h = mk(f"norma_declarada:{det['id']}", "norma", det.get("severidad", "mayor"),
+               "ok" if declarada else "fallo", fuente="reglas",
+               evidencia=(f"el documento declara «{det['nombre']}»" if declarada
+                          else f"no se declara la norma esperada «{det['nombre']}»"),
+               razonamiento="El documento debe citar la norma/código de diseño aplicable.",
+               sugerencia="" if declarada else f"Citar «{det['nombre']}» en la sección de normas o el cajetín.",
+               norma_ref=det.get("norma_ref"))
+        if dominante and not declarada:   # no se puede confirmar la cita por texto → no_verificable
+            h = _degradar_no_verificable(h)
+        out.append(h)
 
     # 2) Aplicación de los requisitos resueltos (cada hallazgo cita su norma_ref).
     for r in reglas:
-        out.append(reglas_revision.evaluar_regla(r, texto, tablas))
+        h = reglas_revision.evaluar_regla(r, texto, tablas)
+        if dominante and h.get("estado") == "fallo" and r.get("tipo") in _TIPOS_AUSENCIA:
+            h = _degradar_no_verificable(h)
+        out.append(h)
     return out
 
 
