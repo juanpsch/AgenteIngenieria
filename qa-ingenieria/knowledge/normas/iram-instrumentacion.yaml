@@ -14,6 +14,7 @@ deteccion:
     - 'IRAM[ -]?IAP\s*550|IRAM\s*505|IRAM\s*457\d'
     - 'ISO\s*10628|ISO\s*14617'
   canales: [leyenda, notas, cajetin]
+  severidad: menor              # un P&ID rara vez CITA la norma en texto; el cumplimiento está en símbolos/tags
 
 # DETERMINISTA sobre texto/tablas. La forma de los símbolos (círculo/cuadrado/rombo) y las líneas de
 # señal son interpretativas → VLM.

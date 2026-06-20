@@ -76,9 +76,10 @@ def test_resolver_template_inline_pisa_a_norma():
 
 def test_deteccion_severidad_configurable():
     # 'declarar la norma' es MENOR en dibujo (los planos no la citan) y MAYOR por defecto (memorias)
-    det = {d["id"]: d for d in normas.detectar_normas("texto", ["iram-dibujo", "aea-90364"])}
-    assert det["iram-dibujo"]["severidad"] == "menor"
-    assert det["aea-90364"]["severidad"] == "mayor"
+    det = {d["id"]: d for d in normas.detectar_normas("texto", ["iram-dibujo", "iram-instrumentacion", "aea-90364"])}
+    assert det["iram-dibujo"]["severidad"] == "menor"           # los planos no citan IRAM
+    assert det["iram-instrumentacion"]["severidad"] == "menor"  # los P&ID no citan ISA/IRAM
+    assert det["aea-90364"]["severidad"] == "mayor"             # las memorias sí deben citar AEA
 
 
 def test_iram_catalogos_deteccion_y_reglas():
