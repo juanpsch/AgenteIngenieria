@@ -40,6 +40,19 @@ reglas:
     descripcion: "Numeración de hoja en el cajetín (hoja X de N) — ISO 10628-1 / ISO 7200"
     patron: 'hoja\s*\d+\s*de\s*\d+|sheet\s*\d+\s*of\s*\d+'
     severidad: menor
+  # --- Interpretativas: las juzga la observación visual (IA), no el texto ---
+  - id: simbolos_coherentes
+    tipo: vlm
+    descripcion: "Los símbolos siguen la norma (círculo=instrumento de campo, con línea=sala de control, cuadrado/rombo=PLC/lógica; válvulas y equipos correctos)"
+    severidad: menor
+  - id: lineas_senal
+    tipo: vlm
+    descripcion: "Líneas diferenciadas por tipo (proceso vs señal eléctrica/neumática/datos) y dirección de flujo clara"
+    severidad: observacion
+  - id: identificacion_por_funcion
+    tipo: vlm
+    descripcion: "Los instrumentos se identifican por FUNCIÓN, no por construcción (1ª letra=variable, sucesivas=función)"
+    severidad: observacion
 
 # Datos de la norma (ISA-5.1) para validación/lookup futuro de tags.
 lookups:

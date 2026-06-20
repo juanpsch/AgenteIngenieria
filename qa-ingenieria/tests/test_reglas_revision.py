@@ -27,6 +27,17 @@ def test_leyenda_simbolos_es_interpretativa():
     assert r["tipo"] == "vlm"   # ya no es un match de palabra
 
 
+def test_reglas_interpretativas_son_vlm():
+    # lo que sólo el ojo puede juzgar quedó como regla `vlm` (la decide la observación visual)
+    from tools import normas
+    casos = {"iram-instrumentacion": {"simbolos_coherentes", "lineas_senal", "identificacion_por_funcion"},
+             "iram-dibujo": {"iram_proyeccion", "iram_tipos_linea", "iram_acotacion_prolija"}}
+    for nid, ids in casos.items():
+        reglas = {r["id"]: r for r in normas.reglas_de_normas([nid])}
+        for i in ids:
+            assert reglas[i]["tipo"] == "vlm", f"{nid}:{i} debería ser vlm"
+
+
 def test_patron_min_ocurrencias():
     r = {"id": "refs", "tipo": "patron", "patron": r"\b[RCU]\d{1,3}\b", "min": 3}
     assert evaluar_regla(r, "R1 C2 U3 R4", [])["estado"] == "ok"

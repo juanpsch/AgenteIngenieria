@@ -42,10 +42,18 @@ reglas:
     patron: '\bmm\b|mil[ií]metro'
     severidad: menor
   - id: iram_proyeccion
-    tipo: presencia
-    descripcion: "Método de proyección declarado (primer diedro / ISO E) — IRAM 4501 [verificar]"
-    patron: 'primer diedro|m[eé]todo iso|iso\s*\(?e\)?'
+    tipo: vlm   # el método se indica con un SÍMBOLO (cono ISO E/A), no con texto → lo juzga la visión
+    descripcion: "Método de proyección indicado (símbolo de primer diedro / ISO E) — IRAM 4501"
     severidad: menor
+  # --- Interpretativas: las juzga la observación visual (IA) ---
+  - id: iram_tipos_linea
+    tipo: vlm
+    descripcion: "Tipos y espesores de línea diferenciados (visible / oculto / eje) — IRAM 4502"
+    severidad: observacion
+  - id: iram_acotacion_prolija
+    tipo: vlm
+    descripcion: "Acotación prolija: sin cotas redundantes ni superpuestas, flechas uniformes — IRAM 4513"
+    severidad: observacion
 
 # Tablas de la norma como DATO (para checks geométricos/lookup futuros).
 lookups:
