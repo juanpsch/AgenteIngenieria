@@ -100,7 +100,7 @@ def test_paginas_utiles_recorta_blancos_al_final():
     import os
     import pytest
     from tools import docs
-    p = "tests/fixtures/docs/aea_memoria_unrn.pdf"
+    p = "tests/fixtures/docs/electrica/aea_memoria_unrn.pdf"
     if not os.path.exists(p):
         pytest.skip("fixture no descargado (scripts/descargar_fixtures.py)")
     # el doc tiene 14 páginas pero 11–14 están en blanco -> el preview debe mostrar 10
@@ -113,7 +113,7 @@ def test_buscar_texto_degrada_y_encuentra():
     import pytest
     from tools import docs
     assert docs.buscar_texto("no_existe.pdf", "x") == []      # archivo inexistente
-    p = "tests/fixtures/docs/aea_memoria_unrn.pdf"
+    p = "tests/fixtures/docs/electrica/aea_memoria_unrn.pdf"
     if not os.path.exists(p):
         pytest.skip("fixture no descargado")
     assert docs.buscar_texto(p, "") == []                     # query vacía

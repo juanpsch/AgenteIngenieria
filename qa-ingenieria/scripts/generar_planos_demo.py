@@ -1,5 +1,5 @@
 """Genera planos sintéticos (PDF con capa de texto) para PROBAR la norma iram-dibujo en distintos
-niveles de cumplimiento. Salida en tests/fixtures/docs/ (gitignored). Reproducible:
+niveles de cumplimiento. Salida en tests/fixtures/docs/_sinteticos/ (gitignored). Reproducible:
     uv run python scripts/generar_planos_demo.py
 
 - plano_cumple.pdf       → cumple todo (rótulo, escala normalizada, cotas mm, proyección)
@@ -12,7 +12,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-_DEST = Path(__file__).resolve().parent.parent / "tests" / "fixtures" / "docs"
+_DEST = Path(__file__).resolve().parent.parent / "tests" / "fixtures" / "docs" / "_sinteticos"
 
 PLANOS = {
     "plano_cumple.pdf": [

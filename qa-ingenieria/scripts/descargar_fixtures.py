@@ -42,6 +42,7 @@ def main() -> int:
     ok = 0
     for d in manifest.get("docs", []):
         dest = _DOCS / d["archivo"]
+        dest.parent.mkdir(parents=True, exist_ok=True)  # archivo lleva subcarpeta por disciplina
         if dest.exists() and dest.stat().st_size > 0:
             print(f"  [==] {d['archivo']} (ya existe)")
             ok += 1

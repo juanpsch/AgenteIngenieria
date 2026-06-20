@@ -103,7 +103,7 @@ Detalle técnico en [ARCHITECTURE.md](ARCHITECTURE.md) y el spec
 3. Vas a ver el **gate** y, enseguida, la **revisión** con los checks de **AEA 90364** y dónde falla.
 
 ### Planos de prueba (norma IRAM dibujo técnico, espectro de cumplimiento)
-`uv run python scripts/generar_planos_demo.py` crea 3 planos sintéticos en `tests/fixtures/docs/`:
+`uv run python scripts/generar_planos_demo.py` crea 3 planos sintéticos en `tests/fixtures/docs/_sinteticos/`:
 - **plano_cumple.pdf** → debería dar **aprobado** (rótulo, escala 1:50, cotas mm, proyección).
 - **plano_parcial.pdf** → **aprobado con notas** (escala 1:30 no normalizada, cotas en cm, sin proyección).
 - **plano_no_cumple.pdf** → **observado** (no declara IRAM, sin rótulo, sin escala, sin mm).
