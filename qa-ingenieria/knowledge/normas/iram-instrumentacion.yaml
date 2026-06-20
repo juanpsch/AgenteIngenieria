@@ -1,0 +1,66 @@
+id: iram-instrumentacion
+nombre: Instrumentación y procesos (IRAM-IAP 550 ↔ ISA-5.1 / ISO 10628)
+organismo: IRAM / ISA / ISO
+region: Argentina
+version: "IRAM-IAP 550 (1972/73); ISA-5.1; ISO 10628 [verificar adopción IRAM-ISO]"
+
+aplica_a:
+  disciplinas: [instrumentacion, procesos]
+  jurisdiccion: [AR]
+
+deteccion:
+  anclas:
+    - 'ISA[ -]?5\.1|ANSI/ISA|S5\.[1345]'
+    - 'IRAM[ -]?IAP\s*550|IRAM\s*505|IRAM\s*457\d'
+    - 'ISO\s*10628|ISO\s*14617'
+  canales: [leyenda, notas, cajetin]
+
+# DETERMINISTA sobre texto/tablas. La forma de los símbolos (círculo/cuadrado/rombo) y las líneas de
+# señal son interpretativas → VLM.
+reglas:
+  - id: isa_tags_instrumento
+    tipo: patron
+    descripcion: "Tags de instrumento con la convención ISA-5.1 (variable+función+nº de lazo, p.ej. TIC-101)"
+    patron: '\b\d{0,3}-?[A-Z]{2,4}-?\d{2,4}[A-Z]?\b'
+    min: 3
+    severidad: mayor
+  - id: leyenda_simbolos
+    tipo: presencia
+    descripcion: "Leyenda/simbología presente (toda letra ‘a elección’ del usuario debe definirse) — ISA-5.1"
+    patron: 'leyenda|simbolog[ií]a|s[ií]mbolos|legend|symbols'
+    severidad: mayor
+  - id: lista_instrumentos
+    tipo: tabla
+    descripcion: "Índice/lista de instrumentos con columnas mínimas"
+    tabla: índice de instrumentos
+    columnas: [tag, servicio]
+    severidad: menor
+  - id: cajetin_hoja
+    tipo: presencia
+    descripcion: "Numeración de hoja en el cajetín (hoja X de N) — ISO 10628-1 / ISO 7200"
+    patron: 'hoja\s*\d+\s*de\s*\d+|sheet\s*\d+\s*of\s*\d+'
+    severidad: menor
+
+# Datos de la norma (ISA-5.1) para validación/lookup futuro de tags.
+lookups:
+  isa_primera_letra:    # variable medida (1ª letra)
+    A: análisis
+    F: caudal
+    L: nivel
+    P: presión
+    T: temperatura
+    S: velocidad/frecuencia
+    Q: cantidad
+    "V": vibración
+    W: peso/fuerza
+  isa_letras_sucesivas: { I: indica, C: control, T: transmite, R: registra, A: alarma, S: switch, V: válvula, E: elemento }
+  isa_max_letras: 4
+
+vlm:
+  norma_ref: ISA-5.1 / ISO 10628
+  criterios: >
+    Forma de los símbolos coherente con la norma (círculo=instrumento discreto, cuadrado/círculo=DCS,
+    cuadrado/rombo=PLC, hexágono=computadora, rombo=lógica); líneas de ubicación de la burbuja
+    (campo/sala de control/panel); estilos de líneas de señal (proceso/eléctrica/neumática/datos);
+    dirección de flujo; identificación por FUNCIÓN y no por construcción; cada símbolo referenciado
+    figura en la leyenda.

@@ -1,0 +1,67 @@
+id: iram-dibujo
+nombre: IRAM Dibujo Técnico (serie 45xx) — formatos, rótulo, escalas, acotación
+organismo: IRAM
+region: Argentina
+version: "4504/4508/4505/4513/4502/4501/4503 (ed. varias)"
+
+# Transversal: el dibujo técnico aplica a TODAS las disciplinas (como ISO 128/5457).
+aplica_a:
+  disciplinas: ["*"]
+  jurisdiccion: [AR]
+
+deteccion:
+  anclas:
+    - 'IRAM\s*45\d{2}'           # 4501/4502/4503/4504/4505/4508/4513…
+    - 'dibujo t[eé]cnico'
+    - 'm[eé]todo iso\s*\(?e\)?|primer diedro'
+  canales: [cajetin, notas, seccion_normas]
+
+# Reglas DETERMINISTAS sobre la capa de texto (lo geométrico — tamaño de lámina, tipos de línea — va al VLM).
+reglas:
+  - id: iram_rotulo_responsables
+    tipo: patron
+    descripcion: "Rótulo con responsables (dibujó/proyectó/revisó/aprobó) — IRAM 4508"
+    patron: 'dibuj\w*|proyect\w*|revis\w*|aprob\w*'
+    min: 2
+    severidad: mayor
+  - id: iram_escala_declarada
+    tipo: presencia
+    descripcion: "Escala declarada en el rótulo — IRAM 4505"
+    patron: 'escala|\b\d+\s*:\s*\d+\b'
+    severidad: mayor
+  - id: iram_escala_normalizada
+    tipo: patron
+    descripcion: "Escala de la serie normalizada IRAM 4505 / ISO 5455 [verificar lista vs norma comprada]"
+    patron: '1\s*:\s*(1|2|2[.,]5|5|7[.,]5|10|20|25|50|100|200|500|1000)\b|\b(2|2[.,]5|5|7[.,]5|10|20|50)\s*:\s*1'
+    min: 1
+    severidad: menor
+  - id: iram_acotacion_mm
+    tipo: presencia
+    descripcion: "Acotación en milímetros — IRAM 4513 (la unidad mm no se rotula; otra unidad debe indicarse)"
+    patron: '\bmm\b|mil[ií]metro'
+    severidad: menor
+  - id: iram_proyeccion
+    tipo: presencia
+    descripcion: "Método de proyección declarado (primer diedro / ISO E) — IRAM 4501 [verificar]"
+    patron: 'primer diedro|m[eé]todo iso|iso\s*\(?e\)?'
+    severidad: menor
+
+# Tablas de la norma como DATO (para checks geométricos/lookup futuros).
+lookups:
+  formatos_mm:          # serie A (IRAM 4504, Tabla I) — ancho x alto en mm
+    - { f: A4, w: 210, h: 297 }
+    - { f: A3, w: 297, h: 420 }
+    - { f: A2, w: 420, h: 594 }
+    - { f: A1, w: 594, h: 841 }
+    - { f: A0, w: 841, h: 1189 }
+  escalas_reduccion: ["1:1", "1:2", "1:2.5", "1:5", "1:10", "1:20", "1:25", "1:50", "1:100", "1:200", "1:500", "1:1000"]
+  escalas_ampliacion: ["2:1", "5:1", "10:1", "20:1", "50:1"]
+  rotulo_campos_min: [denominación, "n° de plano", escala, fecha, dibujó, revisó]
+
+vlm:
+  norma_ref: IRAM 4504/4513 (dibujo técnico)
+  criterios: >
+    Lámina con recuadro y margen de archivado a la izquierda; rótulo completo y legible en el ángulo
+    inferior derecho; acotación prolija (sin redundancias ni cotas superpuestas, flechas uniformes);
+    tipos y espesores de línea diferenciados (visible/oculto/eje); coherencia de vistas (primer diedro);
+    textos legibles. Formato de lámina coherente con lo declarado.

@@ -74,6 +74,21 @@ def test_resolver_template_inline_pisa_a_norma():
     assert len(caida) == 1 and caida[0]["tipo"] == "presencia"  # el template gana
 
 
+def test_iram_catalogos_deteccion_y_reglas():
+    from tools import reglas_revision as rr
+    cat = normas.cargar_normas()
+    assert {"iram-dibujo", "iram-instrumentacion"} <= set(cat)
+    # transversal: dibujo aplica a todas las disciplinas
+    assert (cat["iram-dibujo"].get("aplica_a") or {}).get("disciplinas") == ["*"]
+    # detección por anclas
+    t = "Plano según IRAM 4504. Escala 1:50. Simbología ISA-5.1. TIC-101 FT-203 LIC-205."
+    det = {d["id"]: d["declarada"] for d in normas.detectar_normas(t, ["iram-dibujo", "iram-instrumentacion"])}
+    assert det["iram-dibujo"] and det["iram-instrumentacion"]
+    # todas las reglas IRAM compilan y evalúan sin romper
+    for r in normas.reglas_de_normas(["iram-dibujo", "iram-instrumentacion"]):
+        assert rr.evaluar_regla(r, t, [])["estado"] in ("ok", "fallo", "no_verificable")
+
+
 def test_ancla_con_regex_invalido_no_rompe():
     # un ancla mal escrita (paréntesis sin cerrar) no debe crashear la detección
     assert normas._ancla_match("(AEA sin cerrar", "texto (AEA sin cerrar aquí") is True
