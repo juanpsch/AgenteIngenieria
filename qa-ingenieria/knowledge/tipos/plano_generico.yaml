@@ -1,0 +1,31 @@
+tipo_doc: plano_generico
+nombre: Plano genérico (dibujo técnico)
+disciplinas:
+- civil
+- mecanica
+- electrica
+formatos_archivo:
+- pdf
+cajetin:
+  requerido: false
+  campos_requeridos: []
+  reglas: []
+secciones_requeridas: []
+columnas_requeridas: []
+caracteristicas:
+- Lámina de dibujo técnico con rótulo, escala y acotación
+- Sigue las normas IRAM de dibujo técnico (4504/4505/4513)
+nomenclatura: ''
+bloqueante:
+- archivo fuera de formatos_archivo
+- no es una lámina de dibujo técnico
+senales_reconocimiento: 'Lámina con rótulo (denominación, escala, dibujó/revisó), cotas y vistas.'
+criterios_aceptacion: 'Documento que sea una lámina/plano de dibujo técnico.'
+no_corresponde: 'Memorias de texto, hojas de datos, presupuestos.'
+zonas: []
+revision:
+  normas:
+  - iram-dibujo
+  legibilidad:
+    blur_var_min: 80
+    ocr_conf_min: 0.6
