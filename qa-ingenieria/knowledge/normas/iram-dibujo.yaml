@@ -15,6 +15,7 @@ deteccion:
     - 'dibujo t[eé]cnico'
     - 'm[eé]todo iso\s*\(?e\)?|primer diedro'
   canales: [cajetin, notas, seccion_normas]
+  severidad: menor              # los planos rara vez CITAN la norma; el cumplimiento está en rótulo/escala/cotas
 
 # Reglas DETERMINISTAS sobre la capa de texto (lo geométrico — tamaño de lámina, tipos de línea — va al VLM).
 reglas:

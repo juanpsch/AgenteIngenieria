@@ -49,3 +49,24 @@ docs:
     disciplina: instrumentacion
     norma_esperada: isa-5.1
     caso: valido
+
+  # --- Planos REALES IRAM/AEA/ISA (deep research, verificados con pdftotext) ---
+  # Dibujo técnico (iram-dibujo)
+  - { id: plano_mec_cinta, archivo: plano_mec_cinta.pdf, tipo: plano_mecanico, disciplina: mecanica, norma_esperada: iram-dibujo, caso: valido,
+      url: "https://ria.utn.edu.ar/server/api/core/bitstreams/018fe7d1-2a45-45c4-95f8-356d56c5458c/content" }
+  - { id: plano_mec_eje, archivo: plano_mec_eje.pdf, tipo: plano_mecanico, disciplina: mecanica, norma_esperada: iram-dibujo, caso: valido,
+      url: "https://ria.utn.edu.ar/server/api/core/bitstreams/bd218175-b7f0-48ab-bbcd-0409b45f2ea3/content" }
+  - { id: plano_arq_oasis, archivo: plano_arq_oasis.pdf, tipo: plano_arquitectura, disciplina: civil, norma_esperada: iram-dibujo, caso: valido,
+      url: "https://www.ipvmendoza.gov.ar/wp-content/uploads/2021/01/01-prot_OASIS-5.pdf" }
+  - { id: plano_arq_oliva, archivo: plano_arq_oliva.pdf, tipo: plano_arquitectura, disciplina: civil, norma_esperada: iram-dibujo, caso: parcial,
+      url: "https://ciudaddeoliva.gov.ar/sys/file/decretos/2021102918912.pdf" }
+  # Eléctrica (aea-90364)
+  - { id: elec_copaipa_unifilar, archivo: elec_copaipa_unifilar.pdf, tipo: unifilar, disciplina: electrica, norma_esperada: aea-90364, caso: valido,
+      url: "https://electrico.copaipa.org.ar/attachments/061_Relevamiento%20ejemplo%202021.pdf" }
+  - { id: elec_unr_proyecto, archivo: elec_unr_proyecto.pdf, tipo: memoria_calculo_electrica, disciplina: electrica, norma_esperada: aea-90364, caso: valido,
+      url: "https://www.fceia.unr.edu.ar/de-sire/Apunte_ProyectoInstalacionesElectricas.pdf" }
+  # Instrumentación (iram-instrumentacion / ISA-5.1)
+  - { id: instr_isa_ch7, archivo: instr_isa_ch7.pdf, tipo: pid, disciplina: instrumentacion, norma_esperada: iram-instrumentacion, caso: valido,
+      url: "https://www.isa.org/getmedia/e122051e-8c8c-48be-97ef-5d344c585771/Chapter7_ControlLoop-1.pdf" }
+  - { id: instr_utn_frrq, archivo: instr_utn_frrq.pdf, tipo: pid, disciplina: instrumentacion, norma_esperada: iram-instrumentacion, caso: valido,
+      url: "https://frrq.cvg.utn.edu.ar/pluginfile.php/14076/mod_resource/content/0/304_Norma_ISA_PID.pdf" }

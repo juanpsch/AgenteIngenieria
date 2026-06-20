@@ -59,10 +59,11 @@ def detectar_normas(texto: str, ids_esperados: list[str] | None = None) -> list[
         if not n:
             out.append({"id": nid, "nombre": nid, "declarada": False, "desconocida": True})
             continue
-        anclas = (n.get("deteccion") or {}).get("anclas") or []
-        declarada = any(_ancla_match(a, t) for a in anclas)
+        det = n.get("deteccion") or {}
+        declarada = any(_ancla_match(a, t) for a in det.get("anclas") or [])
         out.append({"id": nid, "nombre": n.get("nombre", nid), "declarada": declarada,
-                    "norma_ref": _norma_ref(n), "version": n.get("version")})
+                    "norma_ref": _norma_ref(n), "version": n.get("version"),
+                    "severidad": det.get("severidad", "mayor")})  # qué tan grave es NO declararla
     return out
 
 

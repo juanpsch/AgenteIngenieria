@@ -19,16 +19,21 @@ _UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like
 
 
 def descargar(url: str, dest: Path) -> tuple[bool, str]:
-    try:
-        req = urllib.request.Request(url, headers={"User-Agent": _UA})
-        with urllib.request.urlopen(req, timeout=60) as r:  # noqa: S310 (URLs del manifest, no input)
-            data = r.read()
-        if not data:
-            return False, "vacío"
-        dest.write_bytes(data)
-        return True, f"{len(data) / 1024:.0f} KB"
-    except Exception as exc:  # red flaky / 403 / 404
-        return False, str(exc)[:80]
+    import ssl
+
+    req = urllib.request.Request(url, headers={"User-Agent": _UA, "Referer": url})
+    last = "?"
+    for ctx in (None, ssl._create_unverified_context()):  # reintenta sin verificar si la cadena TLS está rota
+        try:
+            with urllib.request.urlopen(req, timeout=90, context=ctx) as r:  # noqa: S310 (URLs del manifest)
+                data = r.read()
+            if not data:
+                return False, "vacío"
+            dest.write_bytes(data)
+            return True, f"{len(data) / 1024:.0f} KB"
+        except Exception as exc:  # red flaky / 403 / 404 / TLS → probar próximo contexto
+            last = str(exc)[:80]
+    return False, last
 
 
 def main() -> int:

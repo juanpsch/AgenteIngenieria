@@ -74,6 +74,13 @@ def test_resolver_template_inline_pisa_a_norma():
     assert len(caida) == 1 and caida[0]["tipo"] == "presencia"  # el template gana
 
 
+def test_deteccion_severidad_configurable():
+    # 'declarar la norma' es MENOR en dibujo (los planos no la citan) y MAYOR por defecto (memorias)
+    det = {d["id"]: d for d in normas.detectar_normas("texto", ["iram-dibujo", "aea-90364"])}
+    assert det["iram-dibujo"]["severidad"] == "menor"
+    assert det["aea-90364"]["severidad"] == "mayor"
+
+
 def test_iram_catalogos_deteccion_y_reglas():
     from tools import reglas_revision as rr
     cat = normas.cargar_normas()

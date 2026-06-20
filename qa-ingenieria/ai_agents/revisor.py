@@ -149,7 +149,7 @@ def _tier2_reglas(doc: dict, cfg: dict, extracto: dict) -> list[Hallazgo]:
     esperadas = sorted({*(cfg.get("normas") or []), *(r.get("norma_id") for r in reglas if r.get("norma_id"))})
     for det in normas.detectar_normas(texto, esperadas):
         declarada = det.get("declarada")
-        out.append(mk(f"norma_declarada:{det['id']}", "norma", "mayor",
+        out.append(mk(f"norma_declarada:{det['id']}", "norma", det.get("severidad", "mayor"),
                       "ok" if declarada else "fallo", fuente="reglas",
                       evidencia=(f"el documento declara «{det['nombre']}»" if declarada
                                  else f"no se declara la norma esperada «{det['nombre']}»"),
