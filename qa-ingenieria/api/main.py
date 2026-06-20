@@ -437,8 +437,9 @@ def revisar_caso(thread_id: str):
 
 @app.post("/api/casos/{thread_id}/revision/vlm")
 def revision_vlm(thread_id: str):
-    """Observación visual (VLM, Tier 3) A PEDIDO: corre el VLM sobre el doc y la mergea en la revisión."""
-    from ai_agents.revisor import observar_vlm
+    """Observación visual (VLM, Tier 3) A PEDIDO: el VLM verifica las reglas que el texto no pudo y agrega
+    observaciones; se mergea en la revisión y se recalcula el veredicto."""
+    from ai_agents.revisor import verificar_reglas_vlm
     from graph.revision import agregar_revision
 
     st = _state_de(thread_id)
@@ -451,8 +452,7 @@ def revision_vlm(thread_id: str):
     if not doc or not cfg:
         raise HTTPException(409, "el caso no tiene revisión configurada")
     try:
-        vlm = observar_vlm(doc, cfg)
-        hall = [h for h in (st.get("hallazgos") or []) if h.get("fuente") != "vlm"] + vlm  # reemplaza VLM previa
+        hall = verificar_reglas_vlm(doc, cfg, st.get("hallazgos") or [])
         agg = agregar_revision(hall)
         upd = {"hallazgos": hall, "verdicto_revision": agg["verdicto"],
                "severidad_max": agg["severidad_max"], "revision_confiabilidad": agg["confiabilidad"]}

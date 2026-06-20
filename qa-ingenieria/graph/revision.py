@@ -31,6 +31,8 @@ class Hallazgo(TypedDict, total=False):
     fuente: str             # deterministico | reglas | vlm
     norma_ref: str          # norma/cláusula que origina el chequeo (trazabilidad del vínculo)
     req_id: str             # id global del requisito "<norma>:<id>" (para el feedback por regla)
+    estado_previo: str      # estado por TEXTO antes de que el VLM verificara la regla (marca el cambio)
+    nota_vlm: str           # qué concluyó el VLM al verificar la regla (trazabilidad del override)
 
 
 def mk(check_id: str, dimension: str, severidad: str, estado: str, *,

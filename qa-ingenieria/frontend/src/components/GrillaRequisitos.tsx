@@ -87,9 +87,15 @@ export function GrillaRequisitos({ hallazgos, threadId, feedbackInicial }: {
                         <div className="lab" style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                           <span>{h.razonamiento || h.check_id}</span>
                           {h.severidad && <span className={`chip ${SEV_CLS[h.severidad] || "mat-neutral"}`} style={{ fontSize: 9.5 }}>{h.severidad}</span>}
+                          {h.estado_previo && <span className="chip mat-info" style={{ fontSize: 9.5 }} title={h.nota_vlm || ""}>ⓘ verificado por IA</span>}
                           {h.ubicacion?.pagina && <span className="faint" style={{ fontSize: 10, fontWeight: 400 }}>pág {h.ubicacion.pagina}</span>}
                         </div>
                         {h.evidencia && <div className="det">{h.evidencia}</div>}
+                        {h.estado_previo && (
+                          <div className="det" style={{ color: "var(--info-ink, #2563eb)" }}>
+                            ⓘ El VLM cambió esto: {EST_GLYPH[h.estado_previo]} {h.estado_previo} → {EST_GLYPH[h.estado]} {h.estado}.{h.nota_vlm ? ` ${h.nota_vlm}` : ""}
+                          </div>
+                        )}
                         {/* Juicio humano por regla (solo requisitos con id global) */}
                         {h.req_id && threadId && (
                           <div style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 5, flexWrap: "wrap" }}>

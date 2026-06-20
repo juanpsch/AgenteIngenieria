@@ -58,3 +58,33 @@ def test_observar_vlm_fuerza_aunque_flag_off(monkeypatch):
     _mock_llm(monkeypatch, '{"observaciones":[{"observacion":"símbolo sin leyenda","severidad":"menor"}]}')
     h = observar_vlm({"contenido": "y", "imagenes": []}, {"normas": ["iram-instrumentacion"]})
     assert h and h[0]["fuente"] == "vlm" and h[0]["estado"] == "advertencia"
+
+
+def _regla_fallo():
+    from graph.revision import mk
+    return mk("isa_tags", "norma", "mayor", "fallo", razonamiento="tags ISA presentes",
+              fuente="reglas", req_id="iram-instrumentacion:isa_tags_instrumento", norma_ref="ISA-5.1")
+
+
+def test_verificar_reglas_vlm_actualiza_marca_y_recalcula(monkeypatch):
+    from ai_agents.revisor import verificar_reglas_vlm
+    from graph.revision import agregar_revision
+    _mock_llm(monkeypatch, '{"reglas":[{"id":"isa_tags","veredicto":"ok","razon":"se ven tags TIC/FT"}],"observaciones":[]}')
+    base = [_regla_fallo()]
+    assert agregar_revision(base)["verdicto"] == "observado"          # por texto: falla
+    out = verificar_reglas_vlm({"contenido": "x", "imagenes": []}, {"normas": ["iram-instrumentacion"]}, base)
+    h = next(x for x in out if x["check_id"] == "isa_tags")
+    assert h["estado"] == "ok" and h["estado_previo"] == "fallo" and h["nota_vlm"]  # cambió + marcado
+    assert h["fuente"] == "reglas"                                    # sigue siendo "dura"
+    assert agregar_revision(out)["verdicto"] in ("aprobado", "aprobado_con_notas")  # veredicto recalculado
+
+
+def test_verificar_reglas_vlm_idempotente(monkeypatch):
+    # re-pedir parte del estado por-texto: no acumula ni pierde la marca del cambio.
+    from ai_agents.revisor import verificar_reglas_vlm
+    _mock_llm(monkeypatch, '{"reglas":[{"id":"isa_tags","veredicto":"ok","razon":"ok"}],"observaciones":[]}')
+    cfg = {"normas": ["iram-instrumentacion"]}
+    once = verificar_reglas_vlm({"contenido": "x", "imagenes": []}, cfg, [_regla_fallo()])
+    twice = verificar_reglas_vlm({"contenido": "x", "imagenes": []}, cfg, once)
+    tags = [x for x in twice if x["check_id"] == "isa_tags"]
+    assert len(tags) == 1 and tags[0]["estado"] == "ok" and tags[0]["estado_previo"] == "fallo"

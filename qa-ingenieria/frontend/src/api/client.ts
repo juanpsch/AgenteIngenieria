@@ -62,6 +62,8 @@ export interface Hallazgo {
   fuente: "deterministico" | "reglas" | "vlm";
   norma_ref?: string;
   req_id?: string;
+  estado_previo?: EstadoRevision;   // estado por texto antes de que el VLM verificara la regla
+  nota_vlm?: string;                // qué concluyó el VLM (por qué cambió la regla)
 }
 export type Juicio = "de_acuerdo" | "no_aplica" | "regla_mal";
 export interface CatalogoRequisito {

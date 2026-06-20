@@ -187,33 +187,49 @@ def _a_hallazgos_vlm(observaciones: list) -> list[Hallazgo]:
     return out
 
 
-def _tier3_vlm(doc: dict, cfg: dict, forzar: bool = False) -> list[Hallazgo]:
-    """Tier 3 (cualitativo): un VLM observa lo interpretativo con los criterios de la(s) norma(s) +
-    `observacion_vlm.instrucciones`. Observaciones no bloqueantes. Degrada con gracia (LLM no disponible
-    o `REVISION_VLM=0` → []). `forzar=True` ignora el flag (lo usa la observación A PEDIDO)."""
-    if not forzar and (os.getenv("REVISION_VLM", "1") or "1").strip().lower() in ("0", "false", "no", "off"):
-        return []
+def _vlm_payload(doc: dict, cfg: dict, candidatas: list[Hallazgo]) -> dict:
+    """UNA llamada al VLM: verifica las reglas `candidatas` (las que el texto no pudo) + observaciones
+    cualitativas. Devuelve {'reglas': {check_id: {veredicto, razon}}, 'observaciones': [hallazgos]} o {}.
+    No mira `REVISION_VLM` (el gate vive en quien llama). Degrada con gracia (sin LLM/criterios → {})."""
     instrucciones = ((cfg.get("observacion_vlm") or {}).get("instrucciones") or "").strip()
     norma_ids = sorted({r.get("norma_id") for r in normas.resolver_requisitos(cfg) if r.get("norma_id")}
                        | set(cfg.get("normas") or []))
     criterios = normas.vlm_de_normas(norma_ids)
-    if not instrucciones and not criterios:
-        return []
+    if not candidatas and not criterios and not instrucciones:
+        return {}
     try:
         from ai_agents.provider import build_agent
         from ai_agents.util import build_input, extract_json, load_prompt, run_agent
 
-        partes = ["## Instrucciones de revisión (observación, NO bloqueante)"]
+        partes: list[str] = []
+        if candidatas:
+            partes.append("## Verificá estas reglas mirando las IMÁGENES. Para cada una: "
+                          "veredicto = ok | fallo | no_verificable, con una razón breve.")
+            for h in candidatas:
+                q = normas.requisito_por_id(h.get("req_id")) if h.get("req_id") else None
+                desc = (q or {}).get("descripcion") or h.get("razonamiento") or h.get("check_id")
+                ref = f" [{h.get('norma_ref')}]" if h.get("norma_ref") else ""
+                partes.append(f'- id="{h.get("check_id")}": {desc}{ref}')
         if instrucciones:
-            partes.append(instrucciones)
+            partes += ["", "## Instrucciones de observación (NO bloqueante)", instrucciones]
         for v in criterios:
             partes.append(f"### Criterios — {v['norma_ref']}\n{v['criterios']}")
-        partes += ["", "## Texto del documento", (doc.get("contenido") or "")[:8000] or "(ver imágenes)"]
+        partes += ["", "## Texto del documento", (doc.get("contenido") or "")[:6000] or "(ver imágenes)"]
         agent = build_agent("revisor-qa", instructions=load_prompt("revisor"))
         out = run_agent(agent, build_input("\n".join(partes), doc.get("imagenes") or []))
-        return _a_hallazgos_vlm(extract_json(out, {"observaciones": []}).get("observaciones") or [])
+        data = extract_json(out, {})
+        reglas = {r["id"]: r for r in (data.get("reglas") or []) if isinstance(r, dict) and r.get("id")}
+        return {"reglas": reglas, "observaciones": _a_hallazgos_vlm(data.get("observaciones") or [])}
     except Exception:
+        return {}
+
+
+def _tier3_vlm(doc: dict, cfg: dict, forzar: bool = False) -> list[Hallazgo]:
+    """Tier 3 (cualitativo): observaciones VLM no bloqueantes. [] si `REVISION_VLM` off (salvo `forzar`)
+    o si no hay LLM/criterios."""
+    if not forzar and (os.getenv("REVISION_VLM", "1") or "1").strip().lower() in ("0", "false", "no", "off"):
         return []
+    return _vlm_payload(doc, cfg, []).get("observaciones") or []
 
 
 def observar_vlm(doc: dict, cfg: dict) -> list[Hallazgo]:
@@ -222,6 +238,47 @@ def observar_vlm(doc: dict, cfg: dict) -> list[Hallazgo]:
     if not cfg:
         return []
     return _tier3_vlm(doc, cfg, forzar=True)
+
+
+def _restaurar_texto(hallazgos: list[Hallazgo]) -> list[Hallazgo]:
+    """Quita observaciones VLM previas y restaura el estado por-texto de las reglas que el VLM cambió.
+    Hace idempotente el re-pedido de la observación (siempre parte del resultado determinista)."""
+    base: list[Hallazgo] = []
+    for h in hallazgos or []:
+        if h.get("fuente") == "vlm":
+            continue
+        prev = h.get("estado_previo")
+        if prev is not None:
+            h = {k: v for k, v in h.items() if k not in ("estado_previo", "nota_vlm")}
+            h["estado"] = prev
+        base.append(h)
+    return base
+
+
+def verificar_reglas_vlm(doc: dict, cfg: dict, hallazgos: list[Hallazgo]) -> list[Hallazgo]:
+    """A PEDIDO: el VLM (1) verifica visualmente las reglas que el texto no pudo (estado fallo /
+    no_verificable) y (2) agrega observaciones cualitativas. Devuelve la lista de hallazgos ACTUALIZADA.
+    Las reglas que el VLM cambia quedan marcadas con `estado_previo` + `nota_vlm` ('el VLM cambió esto');
+    siguen siendo 'duras' (fuente reglas) → el veredicto se recalcula con el resultado del VLM."""
+    base = _restaurar_texto(hallazgos)
+    if not cfg:
+        return base
+    candidatas = [h for h in base if h.get("estado") in ("fallo", "no_verificable")]
+    payload = _vlm_payload(doc, cfg, candidatas)
+    if not payload:
+        return base
+    verdictos = payload.get("reglas") or {}
+    out: list[Hallazgo] = []
+    for h in base:
+        v = verdictos.get(h.get("check_id"))
+        ve = (v or {}).get("veredicto")
+        if v and ve in ("ok", "fallo", "no_verificable") and ve != h.get("estado"):
+            out.append({**h, "estado_previo": h.get("estado"), "estado": ve,
+                        "nota_vlm": (v.get("razon") or "Verificado por observación visual.")[:300]})
+        else:
+            out.append(h)
+    out += payload.get("observaciones") or []
+    return out
 
 
 def revisar(doc: dict, cfg: dict, extracto: dict | None = None) -> list[Hallazgo]:

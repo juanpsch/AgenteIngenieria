@@ -107,6 +107,7 @@ a { color: inherit; }
 .mat-amber { background: var(--amber-bg); color: var(--amber-ink); }
 .mat-neutral { background: var(--neutral-bg); color: var(--muted); }
 .mat-red { background: var(--red-bg); color: var(--red-ink); }
+.mat-info { background: #EAF1FF; color: #2563EB; }
 .nav-item:focus-visible, .tr.row:focus-visible { outline: 2px solid var(--teal); outline-offset: -2px; }
 
 /* ---------- Metrics strip ---------- */
