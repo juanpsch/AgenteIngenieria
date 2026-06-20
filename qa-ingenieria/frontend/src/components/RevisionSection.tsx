@@ -125,7 +125,7 @@ export function RevisionSection({ rev, threadId, nPaginas, imagenes, feedback }:
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
             <button className="btn btn-primary" style={{ padding: "5px 11px" }} onClick={() => resolver("aprobado")}>Aprobar</button>
             <button className="btn btn-ghost" style={{ padding: "5px 11px" }} onClick={() => resolver("aprobado_con_notas")}>Aprobar con notas</button>
-            <button className="btn btn-ghost" style={{ padding: "5px 11px" }} onClick={() => resolver("observado")}>Enviar a corrección</button>
+            <button className="btn btn-ghost" style={{ padding: "5px 11px" }} onClick={() => resolver("observado")} title="Deja el veredicto en OBSERVADO (hay algo mayor para corregir)">Dejar observado (a corrección)</button>
             <button className="btn btn-ghost" style={{ padding: "5px 11px" }} onClick={() => resolver("rechazado")}>Rechazar</button>
             <button className="btn btn-ghost" style={{ padding: "5px 11px", marginLeft: "auto" }} onClick={() => resolver("escalar_senior")}>Escalar a senior</button>
           </div>
