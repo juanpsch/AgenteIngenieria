@@ -7,13 +7,15 @@ import { InformeZonas } from "./InformeZonas";
 import { RevisionSection } from "./RevisionSection";
 import { useActivity } from "./Activity";
 import { errMsg } from "../design/tokens";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Lightbulb } from "lucide-react";
 
 /** Evidencia de un cotejo (en vivo o reconstruida del historial): veredicto, desglose del score,
  *  informe por zona, preview multipágina con overlays, checks por dimensión, y feedback de reglas.
- *  Solo lectura; la decisión/promoción la maneja la pantalla que lo usa. */
-export function ResultadoDetalle({ res, fileName }: { res: ValidarResp; fileName?: string }) {
+ *  Solo lectura; la decisión/promoción la maneja la pantalla que lo usa.
+ *  `decisionSlot`: bloque de decisión de ADMISIÓN (Fase 0), se renderiza justo después de la evidencia
+ *  de admisión y ANTES de la revisión de contenido (Fase 1). */
+export function ResultadoDetalle({ res, fileName, decisionSlot }: { res: ValidarResp; fileName?: string; decisionSlot?: ReactNode }) {
   const fname = fileName || res.documento_panel?.["titulo"] || res.tipo_doc || "documento";
   const ident = (res.checks || []).filter((c) => c.dimension === "identidad");
   const compl = (res.checks || []).filter((c) => c.dimension === "completitud");
@@ -31,6 +33,7 @@ export function ResultadoDetalle({ res, fileName }: { res: ValidarResp; fileName
       <InformeZonas zonas={res.zonas_resultado || []} />
       <Desglose ident={ident} compl={compl} preview={previewCard} />
       <FeedbackReglas res={res} />
+      {decisionSlot /* decisión de ADMISIÓN (Fase 0): va pegada a la admisión, antes de la revisión */}
       {res.revision && <RevisionSection rev={res.revision} threadId={res.thread_id} nPaginas={res.n_paginas} imagenes={imagenes} feedback={res.requisito_feedback} />}
       <details className="card" style={{ fontSize: 12.5 }}>
         <summary style={{ cursor: "pointer", fontWeight: 600 }}>¿Cómo se compara un documento?</summary>

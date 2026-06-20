@@ -157,9 +157,48 @@ export function Validar() {
 
   // result
   if (!res) return null;
+
+  // Decisión de ADMISIÓN (Fase 0): se inyecta en ResultadoDetalle, pegada a la evidencia de admisión.
+  const bloqueAdmision = (
+    <div className="card">
+      <div className="dim-h">Decisión de admisión (Fase 0)</div>
+      {err && <div style={{ color: "var(--red-ink)", marginBottom: 10 }}>{err}</div>}
+      {decision === null && (
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+          <div className="muted" style={{ fontSize: 12.5 }}>¿El documento es <b>admisible</b> (del tipo correcto)? Es la admisión — no el veredicto de contenido.</div>
+          <div className="row-actions">
+            <button className="btn btn-red-o" disabled={decidiendo} onClick={() => decidir("rejected")}><X size={15} /> No admitir</button>
+            <button className="btn btn-green" disabled={decidiendo} onClick={() => decidir("approved")}><Check size={15} /> Admitir documento</button>
+          </div>
+        </div>
+      )}
+      {decision === "rejected" && (
+        <div style={{ color: "var(--red-ink)" }}>✕ Documento no admitido · <button className="btn btn-ghost" style={{ padding: "2px 8px" }} onClick={() => setDecision(null)}>Deshacer</button></div>
+      )}
+      {decision === "approved" && !promoted && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ color: "var(--green-ink)" }}>✓ Admitido manualmente</div>
+          <div className="faint" style={{ fontSize: 12 }}>Promover este documento a referencia mejora la precisión del template (sube su madurez).</div>
+          <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <input type="checkbox" checked={promote} onChange={(e) => setPromote(e.target.checked)} />
+            Usar este documento para mejorar el template
+          </label>
+          <button className="btn btn-primary" style={{ alignSelf: "flex-start" }} onClick={confirmarPromo}>
+            {promote ? "Confirmar y promover" : "Confirmar sin promover"}
+          </button>
+        </div>
+      )}
+      {promoted && (
+        <div style={{ color: "var(--green-ink)" }}>
+          ✓ {promote ? `Agregado como referencia · el template ahora tiene ${promoted.refs_count} ejemplos (${maturityLabel(promoted.maturity)})` : "Confirmado sin promover"}
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="ct-fade" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      <ResultadoDetalle res={res} fileName={file?.name} />
+      <ResultadoDetalle res={res} fileName={file?.name} decisionSlot={bloqueAdmision} />
 
       {/* Paso 2 en curso: el gate ya se ve; la revisión de contenido corre con progreso */}
       {revisando && (
@@ -176,40 +215,6 @@ export function Validar() {
         </div>
       )}
 
-      {/* Footer: decisión + promoción */}
-      <div className="card">
-        {err && <div style={{ color: "var(--red-ink)", marginBottom: 10 }}>{err}</div>}
-        {decision === null && (
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
-            <div className="muted" style={{ fontSize: 12.5 }}>Revisá la evidencia de arriba. La decisión final la tomás vos.</div>
-            <div className="row-actions">
-              <button className="btn btn-red-o" disabled={decidiendo} onClick={() => decidir("rejected")}><X size={15} /> Rechazar</button>
-              <button className="btn btn-green" disabled={decidiendo} onClick={() => decidir("approved")}><Check size={15} /> Aprobar</button>
-            </div>
-          </div>
-        )}
-        {decision === "rejected" && (
-          <div style={{ color: "var(--red-ink)" }}>✕ Documento rechazado · <button className="btn btn-ghost" style={{ padding: "2px 8px" }} onClick={() => setDecision(null)}>Deshacer</button></div>
-        )}
-        {decision === "approved" && !promoted && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <div style={{ color: "var(--green-ink)" }}>✓ Aprobado manualmente</div>
-            <div className="faint" style={{ fontSize: 12 }}>Promover este documento a referencia mejora la precisión del template (sube su madurez).</div>
-            <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <input type="checkbox" checked={promote} onChange={(e) => setPromote(e.target.checked)} />
-              Usar este documento para mejorar el template
-            </label>
-            <button className="btn btn-primary" style={{ alignSelf: "flex-start" }} onClick={confirmarPromo}>
-              {promote ? "Confirmar y promover" : "Confirmar sin promover"}
-            </button>
-          </div>
-        )}
-        {promoted && (
-          <div style={{ color: "var(--green-ink)" }}>
-            ✓ {promote ? `Agregado como referencia · el template ahora tiene ${promoted.refs_count} ejemplos (${maturityLabel(promoted.maturity)})` : "Confirmado sin promover"}
-          </div>
-        )}
-      </div>
       <button className="btn btn-ghost" style={{ alignSelf: "flex-start" }} onClick={reiniciar}>← Validar otro documento</button>
     </div>
   );
