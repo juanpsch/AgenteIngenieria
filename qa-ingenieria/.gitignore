@@ -21,6 +21,8 @@ knowledge/refs/
 sandbox/uploads/
 uploads_api/
 tmp/
+# PIDs y logs de start.ps1 / stop.ps1
+.run/
 
 # Documentos de ingeniería reales (confidenciales — no publicar). Los .md de docs/ SÍ se versionan.
 docs/*.pdf
