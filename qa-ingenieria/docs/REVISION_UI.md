@@ -109,3 +109,11 @@ Detalle técnico en [ARCHITECTURE.md](ARCHITECTURE.md) y el spec
 - **plano_no_cumple.pdf** → **observado** (no declara IRAM, sin rótulo, sin escala, sin mm).
 Validalos contra el template **"Plano genérico (dibujo técnico)"** (referencia `iram-dibujo`). *Nota:* el
 gate (Fase 0) puede marcar el croquis como dudoso; si queda en revisión manual, aprobalo y la revisión corre.
+
+### Planos REALES (deep research, `scripts/descargar_fixtures.py`)
+En `tests/fixtures/manifest.yaml`, cada uno con su `caso` esperado.
+- **Cumplen**: `plano_mec_cinta/eje`, `plano_arq_oasis`, `plano_mec_surcos`, `elec_unr_proyecto`,
+  `instr_isa_ch7`, `instr_utn_frrq` → aprobado / con notas.
+- **No cumplen** (para probar fallos): `pid_kimray` (tags dentro del gráfico → **observado**, es trabajo del
+  VLM), `elec_ria_unifilar` (unifilar real que no cita AEA → **observado**), `plano_arq_oliva` (escala
+  `1 EN 100` no normalizada → con notas).

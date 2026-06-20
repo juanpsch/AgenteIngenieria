@@ -70,3 +70,14 @@ docs:
       url: "https://www.isa.org/getmedia/e122051e-8c8c-48be-97ef-5d344c585771/Chapter7_ControlLoop-1.pdf" }
   - { id: instr_utn_frrq, archivo: instr_utn_frrq.pdf, tipo: pid, disciplina: instrumentacion, norma_esperada: iram-instrumentacion, caso: valido,
       url: "https://frrq.cvg.utn.edu.ar/pluginfile.php/14076/mod_resource/content/0/304_Norma_ISA_PID.pdf" }
+
+  # --- Planos que NO cumplen / problemáticos (para probar fallos y los límites del texto) ---
+  # pid_kimray: P&ID real pero con los tags DENTRO del gráfico (no extraíbles) -> isa_tags falla -> OBSERVADO (camino VLM)
+  - { id: pid_kimray, archivo: pid_kimray.pdf, tipo: pid, disciplina: instrumentacion, norma_esperada: iram-instrumentacion, caso: no_cumple,
+      url: "https://kimray.com/sites/default/files/uploads/training-demos/Kimray%20How%20to%20Read%20an%20Oil%20&%20Gas%20P&ID%20Reference%20Guide.pdf" }
+  # elec_ria_unifilar: unifilar real que NO cita AEA -> norma_declarada + diferencial fallan -> OBSERVADO (límite de la detección por keyword)
+  - { id: elec_ria_unifilar, archivo: elec_ria_unifilar.pdf, tipo: unifilar, disciplina: electrica, norma_esperada: aea-90364, caso: no_cumple,
+      url: "https://ria.utn.edu.ar/server/api/core/bitstreams/73a68dec-86b2-482d-a3a7-dda5492b2baa/content" }
+  # plano_mec_surcos: el research lo dio como "escaneo" pero tiene capa de texto NATIVA (15k chars) -> pasa. Fixture dibujo extra.
+  - { id: plano_mec_surcos, archivo: plano_mec_surcos.pdf, tipo: plano_mecanico, disciplina: mecanica, norma_esperada: iram-dibujo, caso: valido,
+      url: "https://www.surcosistemas.com.ar/virtual/yuto/1_Sistemas_de_representacion/sistemas%20de%20representacion1.pdf" }
