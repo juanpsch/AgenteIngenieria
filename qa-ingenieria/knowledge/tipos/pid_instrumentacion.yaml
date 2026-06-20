@@ -1,0 +1,31 @@
+tipo_doc: pid_instrumentacion
+nombre: P&ID / Diagrama de instrumentación
+disciplinas:
+- instrumentacion
+- procesos
+formatos_archivo:
+- pdf
+cajetin:
+  requerido: false
+  campos_requeridos: []
+  reglas: []
+secciones_requeridas: []
+columnas_requeridas: []
+caracteristicas:
+- Diagrama de cañerías e instrumentación (P&ID) o diagrama de lazo
+- Tags de instrumento según ISA-5.1 y leyenda de símbolos
+nomenclatura: ''
+bloqueante:
+- archivo fuera de formatos_archivo
+- no es un P&ID / diagrama de instrumentación
+senales_reconocimiento: 'Burbujas de instrumento con tags (TIC, FT, LIC…), líneas de proceso/señal, leyenda ISA.'
+criterios_aceptacion: 'Diagrama P&ID o de lazo de instrumentación.'
+no_corresponde: 'Memorias de texto, planos de otra disciplina.'
+zonas: []
+revision:
+  normas:
+  - iram-instrumentacion   # tags ISA, leyenda, índice de instrumentos
+  # (iram-dibujo es transversal y se puede sumar si el P&ID es una lámina formal con rótulo)
+  legibilidad:
+    blur_var_min: 80
+    ocr_conf_min: 0.6

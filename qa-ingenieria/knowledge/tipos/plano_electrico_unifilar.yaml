@@ -1,0 +1,30 @@
+tipo_doc: plano_electrico_unifilar
+nombre: Plano eléctrico / unifilar
+disciplinas:
+- electrica
+formatos_archivo:
+- pdf
+cajetin:
+  requerido: false
+  campos_requeridos: []
+  reglas: []
+secciones_requeridas: []
+columnas_requeridas: []
+caracteristicas:
+- Esquema unifilar o plano de una instalación eléctrica
+- Tableros, protecciones (diferenciales/termomagnéticas), secciones de conductor, puesta a tierra
+nomenclatura: ''
+bloqueante:
+- archivo fuera de formatos_archivo
+- no es un plano/esquema eléctrico
+senales_reconocimiento: 'Unifilar con tableros, interruptores, diferenciales, secciones en mm², puesta a tierra.'
+criterios_aceptacion: 'Plano o esquema eléctrico de una instalación.'
+no_corresponde: 'Memorias de texto, planos de otra disciplina.'
+zonas: []
+revision:
+  normas:
+  - aea-90364      # contenido eléctrico: caída de tensión, secciones, 30 mA, puesta a tierra
+  - iram-dibujo    # como lámina: rótulo, escala, acotación (transversal)
+  legibilidad:
+    blur_var_min: 80
+    ocr_conf_min: 0.6

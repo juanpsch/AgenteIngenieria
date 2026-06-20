@@ -1,0 +1,33 @@
+tipo_doc: memoria_estructural
+nombre: Memoria de cálculo estructural
+disciplinas:
+- estructural
+formatos_archivo:
+- pdf
+cajetin:
+  requerido: false
+  campos_requeridos: []
+  reglas: []
+secciones_requeridas: []
+columnas_requeridas: []
+caracteristicas:
+- Memoria de cálculo de una estructura (hormigón armado / acero)
+- Cita CIRSOC; resistencias de materiales, secciones, armaduras, cargas
+nomenclatura: ''
+bloqueante:
+- archivo fuera de formatos_archivo
+- no es una memoria de cálculo estructural
+senales_reconocimiento: 'Cálculo estructural citando CIRSOC, resistencia del hormigón (f''c), armaduras, cargas.'
+criterios_aceptacion: 'Memoria de cálculo de estructura.'
+no_corresponde: 'Planos, memorias de otra disciplina.'
+zonas: []
+revision:
+  normas:
+  - cirsoc-201
+  legibilidad:
+    blur_var_min: 80
+    ocr_conf_min: 0.6
+  contenido_requerido:
+  - id: seccion_normas
+    detectar: normas y reglamentos
+    severidad_si_falta: mayor
