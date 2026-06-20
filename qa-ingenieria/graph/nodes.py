@@ -236,6 +236,7 @@ def _evaluar_similitud(tipo: str, doc: dict, bbox: dict | None = None, zonas: li
         return _res(dict(_SIM_CHECK), None, True)
 
     ref_groups = refs.vectores_por_referencia(tipo)
+    neg_groups = refs.vectores_negativos(tipo)   # contra-ejemplos (docs rechazados por el humano)
     cand_caj: list = []
     for z in zonas:
         pg = max(0, int(z.get("pagina", 1)) - 1)
@@ -248,7 +249,7 @@ def _evaluar_similitud(tipo: str, doc: dict, bbox: dict | None = None, zonas: li
             cand_caj.append(cv)
     cand: dict[str, list] = {"paginas": similarity.embed_images(imgs), "cajetin": cand_caj}
 
-    d = similarity.detalle_score(cand, ref_groups)
+    d = similarity.detalle_score(cand, ref_groups, neg_groups)
     s = d["score"]
     if s is None:
         return _res(dict(_SIM_CHECK), None, True)
@@ -265,6 +266,8 @@ def _evaluar_similitud(tipo: str, doc: dict, bbox: dict | None = None, zonas: li
         "peso_cajetin": round(wc, 2), "peso_pagina": round(wp, 2),
         "umbral_aprobacion": appr, "umbral_revision": rev, "umbrales_auto": auto_um is not None,
         "n_referencias": len(ref_groups), "ref_top": top, "decisivo": mat == "calibrado",
+        "n_negativos": len(neg_groups), "negativos": d.get("negativos"),
+        "score_positivos": d.get("score_positivos"),
     }
 
     if mat == "calibrado":

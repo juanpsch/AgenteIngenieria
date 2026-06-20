@@ -73,7 +73,14 @@ export function ScoreBreakdown({ d }: { d: ScoreDetalle | null }) {
         {ref_top?.filename && (
           <> · más parecido: <span className="mono">{ref_top.filename}</span>{ref_top.score != null && <> ({ref_top.score}%)</>}</>
         )}
+        {!!d.n_negativos && <> · {d.n_negativos} contra-ejemplo{d.n_negativos === 1 ? "" : "s"} (rechazados)</>}
       </div>
+      {d.negativos != null && d.score_positivos != null && d.score_positivos > score && (
+        <div style={{ fontSize: 11.5, marginTop: 4, color: "var(--red-ink)" }}>
+          ⚠ Penalizado: se parece a un documento rechazado ({d.negativos}%) más que a los aprobados
+          ({d.score_positivos}%) → score bajado de {d.score_positivos}% a {score}%.
+        </div>
+      )}
     </div>
   );
 }

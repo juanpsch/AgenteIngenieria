@@ -173,9 +173,15 @@ def _pct(sim: Optional[float]) -> Optional[float]:
     return round(max(0.0, min(1.0, sim)) * 100, 1) if sim is not None else None
 
 
-def detalle_score(cand: dict, ref_groups: list[dict]) -> dict:
-    """Desglose observable del score: componentes (cajetín/página) y la referencia más
-    parecida. Para que el humano vea QUÉ se comparó, no solo el número final."""
+def _neg_lambda() -> float:
+    """Cuánto pesa parecerse a un contra-ejemplo (env SIM_NEG_LAMBDA, def. 1.0)."""
+    return float(os.getenv("SIM_NEG_LAMBDA", "1.0") or "1.0")
+
+
+def detalle_score(cand: dict, ref_groups: list[dict], neg_groups: list[dict] | None = None) -> dict:
+    """Desglose observable del score: componentes (cajetín/página) y la referencia más parecida.
+    Si hay contra-ejemplos (`neg_groups`), penaliza el score cuando el candidato se parece MÁS a un
+    negativo que a los positivos (margen) — un doc 'parecido pero rechazado' baja a revisión/rechazo."""
     cand_pag = cand.get("paginas") or []
     cand_caj = cand.get("cajetin") or []
     ref_pag = [v for g in ref_groups for v in (g.get("paginas") or [])]
@@ -187,8 +193,18 @@ def detalle_score(cand: dict, ref_groups: list[dict]) -> dict:
         if s is not None and (top_score is None or s > top_score):
             top_idx, top_score = i, s
 
+    score_pos = score_grupos(cand, ref_groups)
+    neg = score_grupos(cand, neg_groups) if neg_groups else None
+    score_final = score_pos
+    if score_pos is not None and neg is not None:
+        margen = neg - score_pos                       # se parece más a un rechazado que a un aprobado
+        if margen > 0:
+            score_final = round(max(0.0, score_pos - _neg_lambda() * margen), 1)
+
     return {
-        "score": score_grupos(cand, ref_groups),
+        "score": score_final,
+        "score_positivos": score_pos,
+        "negativos": neg,
         "cajetin": _pct(_topk_mean(cand_caj, ref_caj)),
         "pagina": _pct(_topk_mean(cand_pag, ref_pag)),
         "top_index": top_idx,

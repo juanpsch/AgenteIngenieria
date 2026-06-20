@@ -72,10 +72,11 @@ _IMG_EXT = ("png", "jpg", "jpeg", "webp", "bmp", "tif", "tiff")
 _MAX_PAGES = int(os.getenv("SIM_MAX_PAGES", "6"))  # páginas a renderizar (zonas multipágina)
 
 
-def _embeber_referencia(tipo_doc: str, ref_id: str, dest: Path) -> str | None:
-    """Renderiza el doc de referencia y persiste sus embeddings en <ref_id>.npz
-    (arrays `paginas` y `cajetin`). Degrada con gracia: None si no hay backend de
-    embeddings o no hay imágenes. El cajetín se localiza con visión (best-effort)."""
+def _embeber_referencia(tipo_doc: str, ref_id: str, dest: Path, out_dir: Path | None = None) -> str | None:
+    """Renderiza el doc de referencia y persiste sus embeddings en <out_dir>/<ref_id>.npz
+    (arrays `paginas` y `cajetin`). `out_dir` por defecto = carpeta del tipo (positivos); para los
+    negativos se pasa la subcarpeta. Degrada con gracia: None si no hay backend de embeddings o no hay
+    imágenes. El cajetín se localiza con visión (best-effort)."""
     try:
         import numpy as np
 
@@ -119,23 +120,24 @@ def _embeber_referencia(tipo_doc: str, ref_id: str, dest: Path) -> str | None:
         }
         for i, ze in enumerate(zona_embs):  # crops por zona, para el informe/eval por zona
             arrays[f"z{i}"] = np.asarray(ze, dtype=float) if ze else np.zeros((0, dim))
-        p = _dir(tipo_doc) / f"{ref_id}.npz"
+        dst_dir = out_dir or _dir(tipo_doc)
+        dst_dir.mkdir(parents=True, exist_ok=True)
+        p = dst_dir / f"{ref_id}.npz"
         np.savez(str(p), **arrays)
         return str(p)
     except Exception:
         return None
 
 
-def vectores_por_referencia(tipo_doc: str) -> list[dict[str, list]]:
-    """Embeddings agrupados por referencia: [{"paginas", "cajetin", "zonas": [[...zona0...], ...]}].
-    `zonas` está alineado a `zonas_visuales_de(template)` (para evaluar/comparar POR zona).
-    Lee el formato nuevo (.npz) y el legacy (.npy = solo páginas)."""
+def _vectores_de(items: list[dict]) -> list[dict[str, list]]:
+    """Embeddings agrupados por entrada: [{"paginas", "cajetin", "zonas": [[...zona0...], ...]}].
+    `zonas` está alineado a `zonas_visuales_de(template)`. Lee .npz (nuevo) y .npy (legacy = solo páginas)."""
     try:
         import numpy as np
     except Exception:
         return []
     out: list[dict[str, list]] = []
-    for r in listar_referencias(tipo_doc):
+    for r in items:
         ep = r.get("embed_path")
         if not ep or not Path(ep).exists():
             continue
@@ -155,6 +157,60 @@ def vectores_por_referencia(tipo_doc: str) -> list[dict[str, list]]:
         except Exception:
             continue
     return out
+
+
+def vectores_por_referencia(tipo_doc: str) -> list[dict[str, list]]:
+    """Embeddings de las referencias POSITIVAS del tipo."""
+    return _vectores_de(listar_referencias(tipo_doc))
+
+
+# ----------------------- Referencias NEGATIVAS (contra-ejemplos del gate) -----------------------
+# Un doc que el modelo dio admisible pero el humano NO admitió: "se parece pero NO es". Se guardan
+# aparte (knowledge/refs/<tipo>/negativos/) y el score los usa para penalizar (ver similarity).
+
+def _neg_dir(tipo_doc: str) -> Path:
+    return _dir(tipo_doc) / "negativos"
+
+
+def _neg_index_path(tipo_doc: str) -> Path:
+    return _neg_dir(tipo_doc) / "index.json"
+
+
+def listar_negativos(tipo_doc: str) -> list[dict[str, Any]]:
+    p = _neg_index_path(tipo_doc)
+    if p.exists():
+        try:
+            data = json.loads(p.read_text(encoding="utf-8"))
+            return data if isinstance(data, list) else []
+        except Exception:
+            return []
+    return []
+
+
+def negativos_count(tipo_doc: str) -> int:
+    return len(listar_negativos(tipo_doc))
+
+
+def agregar_negativo(tipo_doc: str, filename: str, data: bytes, origin: str = "rechazo_humano") -> dict[str, Any]:
+    """Guarda un contra-ejemplo (doc rechazado por el humano que el modelo daba admisible), con su
+    embedding, en knowledge/refs/<tipo>/negativos/."""
+    d = _neg_dir(tipo_doc)
+    d.mkdir(parents=True, exist_ok=True)
+    ref_id = uuid.uuid4().hex[:8]
+    dest = d / f"{ref_id}{Path(filename).suffix.lower()}"
+    dest.write_bytes(data)
+    embed_path = _embeber_referencia(tipo_doc, ref_id, dest, out_dir=d)
+    items = listar_negativos(tipo_doc)
+    entry = {"ref_id": ref_id, "filename": filename, "origin": origin, "path": str(dest), "embed_path": embed_path}
+    items.append(entry)
+    d.mkdir(parents=True, exist_ok=True)
+    _neg_index_path(tipo_doc).write_text(json.dumps(items, ensure_ascii=False, indent=2), encoding="utf-8")
+    return {"negativos_count": len(items), "ref": entry}
+
+
+def vectores_negativos(tipo_doc: str) -> list[dict[str, list]]:
+    """Embeddings de los contra-ejemplos (negativos) del tipo."""
+    return _vectores_de(listar_negativos(tipo_doc))
 
 
 def vectores_referencia(tipo_doc: str) -> list[list[float]]:

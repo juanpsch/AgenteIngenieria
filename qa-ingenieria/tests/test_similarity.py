@@ -11,6 +11,35 @@ def test_cos():
     assert S._cos([0, 0], [1, 0]) == 0.0  # vector nulo -> 0, no NaN
 
 
+def test_negativo_cercano_baja_el_score(monkeypatch):
+    monkeypatch.setenv("SIM_NEG_LAMBDA", "1.0")
+    cand = {"paginas": [[0.3, 0.95]]}        # más cerca del negativo que del positivo
+    pos = [{"paginas": [[1.0, 0.0]]}]
+    neg = [{"paginas": [[0.0, 1.0]]}]
+    sin = S.detalle_score(cand, pos)
+    con = S.detalle_score(cand, pos, neg)
+    assert sin["negativos"] is None                      # sin contra-ejemplos no hay penalización
+    assert con["negativos"] > con["score_positivos"]     # se parece más a un rechazado
+    assert con["score"] < sin["score"]                   # => el score baja
+
+
+def test_negativo_lejano_no_penaliza():
+    cand = {"paginas": [[1.0, 0.05]]}        # cerca del positivo, lejos del negativo
+    pos = [{"paginas": [[1.0, 0.0]]}]
+    neg = [{"paginas": [[0.0, 1.0]]}]
+    assert S.detalle_score(cand, pos, neg)["score"] == S.detalle_score(cand, pos)["score"]
+
+
+def test_refs_negativos_roundtrip(tmp_path, monkeypatch):
+    from tools import refs
+    monkeypatch.setattr(refs, "_REFS_DIR", tmp_path)
+    assert refs.negativos_count("t1") == 0
+    r = refs.agregar_negativo("t1", "x.pdf", b"%PDF-fake", origin="rechazo_humano")
+    assert r["negativos_count"] == 1 and refs.negativos_count("t1") == 1
+    assert refs.listar_negativos("t1")[0]["origin"] == "rechazo_humano"
+    assert isinstance(refs.vectores_negativos("t1"), list)   # sin CLIP degrada a [] (sin embedding)
+
+
 def test_topk_mean(monkeypatch):
     monkeypatch.setenv("SIM_TOPK", "3")
     assert S._topk_mean([[1, 0]], [[1, 0], [0, 1]]) == pytest.approx(0.5)

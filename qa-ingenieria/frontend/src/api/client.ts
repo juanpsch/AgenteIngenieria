@@ -31,6 +31,9 @@ export interface ScoreDetalle {
   n_referencias: number;
   ref_top: { filename: string | null; score: number | null } | null;
   decisivo: boolean;
+  n_negativos?: number;             // contra-ejemplos (docs rechazados por el humano)
+  negativos?: number | null;        // cuánto se parece a un negativo (0–100)
+  score_positivos?: number | null;  // score contra positivos ANTES de penalizar
 }
 export type ZonaClase = "identidad" | "visual" | "regla";
 export interface ZonaResultado {
