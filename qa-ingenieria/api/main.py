@@ -450,13 +450,20 @@ def revision_vlm(thread_id: str):
     cfg = (tpl or {}).get("revision")
     if not doc or not cfg:
         raise HTTPException(409, "el caso no tiene revisión configurada")
-    vlm = observar_vlm(doc, cfg)
-    hall = [h for h in (st.get("hallazgos") or []) if h.get("fuente") != "vlm"] + vlm  # reemplaza VLM previa
-    agg = agregar_revision(hall)
-    upd = {"hallazgos": hall, "verdicto_revision": agg["verdicto"],
-           "severidad_max": agg["severidad_max"], "revision_confiabilidad": agg["confiabilidad"]}
-    get_compiled_graph().update_state({"configurable": {"thread_id": thread_id}}, upd)
-    return _map_revision({**st, **upd})
+    try:
+        vlm = observar_vlm(doc, cfg)
+        hall = [h for h in (st.get("hallazgos") or []) if h.get("fuente") != "vlm"] + vlm  # reemplaza VLM previa
+        agg = agregar_revision(hall)
+        upd = {"hallazgos": hall, "verdicto_revision": agg["verdicto"],
+               "severidad_max": agg["severidad_max"], "revision_confiabilidad": agg["confiabilidad"]}
+        try:
+            get_compiled_graph().update_state({"configurable": {"thread_id": thread_id}}, upd)
+        except Exception as exc:  # si no se pudo persistir, devolvemos igual la observación calculada
+            logging.getLogger("cotejar").warning("VLM: no se pudo persistir (%s): %s", thread_id, exc)
+        return _map_revision({**st, **upd})
+    except Exception as exc:
+        logging.getLogger("cotejar").exception("observación visual falló (%s)", thread_id)
+        raise HTTPException(500, f"observación visual falló: {exc}") from exc
 
 
 @app.get("/api/casos/{thread_id}/pagina/{page}")
