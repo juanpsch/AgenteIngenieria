@@ -111,6 +111,15 @@ def test_vlm_de_normas_expone_referencia_imagen():
     assert v and v[0].get("referencia_imagen")
 
 
+def test_familia_epa_wwtp_desde_un_juego():
+    # un juego de planos completo da norma (leyendas) + familia (P&IDs). La norma trae varias referencias.
+    from tools.tipos import cargar_tipos
+    assert "epa-wwtp" in normas.cargar_normas()
+    assert "pid_efluentes" in cargar_tipos()
+    ri = normas.vlm_de_normas(["epa-wwtp"])[0]["referencia_imagen"]
+    assert isinstance(ri, list) and len(ri) == 3   # 3 hojas de leyenda como ground-truth
+
+
 def test_cargar_referencia_degrada_si_falta(monkeypatch):
     from ai_agents.revisor import _cargar_referencia
     assert _cargar_referencia(None) is None

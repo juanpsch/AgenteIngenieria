@@ -18,6 +18,10 @@ _OUT = _BASE / "knowledge" / "normas" / "refs"
 REFS = [
     ("tests/fixtures/docs/instrumentacion/pid_validos/pid_camuzzi_simbologia.pdf", 1, "camuzzi_simbologia.png"),
     ("tests/fixtures/docs/instrumentacion/fuentes/camuzzi_glosario.pdf", 14, "camuzzi_glosario.png"),  # símbolos instrum./válvulas/actuadores
+    # EPA WWTP: hojas de leyenda del juego (P-001/002/003)
+    ("tests/fixtures/docs/instrumentacion/pid_validos/pid_epa_wwtp.pdf", 6, "epa_legend_1.png"),
+    ("tests/fixtures/docs/instrumentacion/pid_validos/pid_epa_wwtp.pdf", 7, "epa_legend_2.png"),
+    ("tests/fixtures/docs/instrumentacion/pid_validos/pid_epa_wwtp.pdf", 8, "epa_legend_3.png"),
 ]
 
 

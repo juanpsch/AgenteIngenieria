@@ -1,0 +1,50 @@
+id: epa-wwtp
+nombre: EPA / Brown & Caldwell — Estándar de dibujo P&ID (planta de efluentes)
+organismo: Brown & Caldwell / ISA
+region: EE.UU.
+version: "Pahala WWTP Design/Build (juego de planos) [verificar edición]"
+
+# Juego de planos auto-contenido: trae sus hojas de LEYENDA (P-001/002/003 = la norma) y sus hojas de
+# P&ID de proceso (P-201..P-211 = las muestras). Lo gráfico lo juzga el VLM contra esas leyendas.
+aplica_a:
+  disciplinas: [instrumentacion, procesos]
+  jurisdiccion: [US]
+
+deteccion:
+  anclas:
+    - 'brown.{0,8}caldwell'
+    - 'wastewater treatment'
+    - 'legends?,?\s*abbrev'
+  canales: [cajetin, leyenda]
+  severidad: menor
+
+reglas:
+  - id: epa_rotulo
+    tipo: presencia
+    descripcion: "Cajetín del juego (Brown & Caldwell / DESIGN-BUILD / código de hoja P-xxx)"
+    patron: 'brown.{0,8}caldwell|design.{0,3}build|\bP-\d{3}\b'
+    severidad: mayor
+  # --- Gráficas: las juzga el VLM contra las hojas de leyenda del juego (vlm.referencia_imagen) ---
+  - id: epa_simbolos_estandar
+    tipo: vlm
+    descripcion: "Los símbolos (instrumentos, válvulas, líneas) coinciden con la leyenda del juego (P-001/002/003)"
+    severidad: menor
+  - id: epa_lineas_senal
+    tipo: vlm
+    descripcion: "Las líneas de señal siguen la codificación de la leyenda (proceso/eléctrica/neumática/datos)"
+    severidad: observacion
+
+lookups:
+  hojas_leyenda: [P-001, P-002, P-003]
+  hojas_pid: [P-201, P-202, P-203, P-204, P-205, P-206, P-207, P-208, P-209, P-210, P-211]
+
+vlm:
+  norma_ref: EPA / Brown & Caldwell — Leyenda P&ID (ISA)
+  referencia_imagen:
+    - knowledge/normas/refs/epa_legend_1.png   # P-001 identificación funcional / líneas / cross-reference
+    - knowledge/normas/refs/epa_legend_2.png   # P-002
+    - knowledge/normas/refs/epa_legend_3.png   # P-003 abreviaturas / notas
+  criterios: >
+    Compará los símbolos y la codificación de líneas del P&ID contra las hojas de LEYENDA del juego
+    (P-001/002/003): identificación funcional de instrumentos, líneas de señal, símbolos de válvula y
+    abreviaturas. Señalá símbolos no definidos en la leyenda o usados de forma inconsistente.

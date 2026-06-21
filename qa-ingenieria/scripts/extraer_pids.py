@@ -31,6 +31,9 @@ EXTRACCIONES = [
     ("instrumentacion/fuentes/salliquelo_eia.pdf", [231], "instrumentacion/pid_validos/salliquelo_pid_1.pdf"),
     ("instrumentacion/fuentes/salliquelo_eia.pdf", [232], "instrumentacion/pid_validos/salliquelo_pid_2.pdf"),
     ("instrumentacion/fuentes/salliquelo_eia.pdf", [233], "instrumentacion/pid_validos/salliquelo_pid_3.pdf"),
+    # Juego EPA WWTP: hojas P&ID P-201..P-211 (págs 10-20) → positivos de la familia efluentes
+    *[("instrumentacion/pid_validos/pid_epa_wwtp.pdf", [pg],
+       f"instrumentacion/pid_efluentes/epa_pid_{pg-9:02d}.pdf") for pg in range(10, 21)],
 ]
 
 
