@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import { api, type Tipo, type Cobertura } from "../api/client";
 import { MaturityBadge, Dropzone } from "../components/ui";
 import { PreviewModal } from "../components/PreviewModal";
@@ -6,17 +6,49 @@ import { ZonaEditor } from "../components/ZonaEditor";
 import { RequisitosEditor } from "../components/RequisitosEditor";
 import { useActivity } from "../components/Activity";
 import { errMsg } from "../design/tokens";
-import { Plus, Trash2, ArrowLeft, Eye, Upload } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, Eye, Upload, ChevronDown, ChevronRight } from "lucide-react";
 
 const EJES: [string, string][] = [["organizacion", "Empresa"], ["tipo", "Tipo"], ["disciplina", "Disciplina"], ["jurisdiccion", "Jurisdicción"]];
 const ejeLabel = (e: string) => EJES.find(([k]) => k === e)?.[1] || e;
 const fval = (t: Tipo, eje: string) => (t.facetas || {})[eje] || "";
 
+// Filas aplanadas del pivot multinivel (grupos anidados + hojas), respetando colapso.
+type PivRow =
+  | { kind: "group"; key: string; depth: number; eje: string; valor: string; count: number }
+  | { kind: "leaf"; key: string; depth: number; t: Tipo };
+
+function pivotRows(items: Tipo[], path: string[], colapsado: Set<string>, depth = 0, prefix = ""): PivRow[] {
+  if (!path.length) return items.map((t) => ({ kind: "leaf", key: `${prefix}/${t.tipo_doc}`, depth, t }));
+  const [eje, ...rest] = path;
+  const groups: Record<string, Tipo[]> = {};
+  for (const t of items) (groups[fval(t, eje) || "— (sin valor)"] ??= []).push(t);
+  const rows: PivRow[] = [];
+  for (const [valor, its] of Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]))) {
+    const key = `${prefix}/${eje}=${valor}`;
+    rows.push({ kind: "group", key, depth, eje, valor, count: its.length });
+    if (!colapsado.has(key)) rows.push(...pivotRows(its, rest, colapsado, depth + 1, key));
+  }
+  return rows;
+}
+function pivotKeys(items: Tipo[], path: string[], prefix = ""): string[] {
+  if (!path.length) return [];
+  const [eje, ...rest] = path;
+  const groups: Record<string, Tipo[]> = {};
+  for (const t of items) (groups[fval(t, eje) || "— (sin valor)"] ??= []).push(t);
+  const ks: string[] = [];
+  for (const [valor, its] of Object.entries(groups)) {
+    const key = `${prefix}/${eje}=${valor}`;
+    ks.push(key, ...pivotKeys(its, rest, key));
+  }
+  return ks;
+}
+
 export function Templates() {
   const [tipos, setTipos] = useState<Tipo[]>([]);
   const [detail, setDetail] = useState<any | null>(null);
   const [showNew, setShowNew] = useState(false);
-  const [agruparPor, setAgruparPor] = useState("");                       // pivot: entrar por empresa/tipo/disciplina…
+  const [path, setPath] = useState<string[]>([]);                          // orden de ejes del pivot (anidado)
+  const [colapsado, setColapsado] = useState<Set<string>>(new Set());
   const [filtro, setFiltro] = useState<{ eje: string; valor: string }>({ eje: "", valor: "" });
 
   const load = () => api.listTipos().then(setTipos).catch(() => {});
@@ -25,30 +57,47 @@ export function Templates() {
   async function open(id: string) { setDetail(await api.getTipo(id)); }
   async function del(id: string) { await api.delTipo(id); load(); }
 
+  // Reordenar / quitar / agregar ejes del pivot.
+  const move = (i: number, dir: number) => setPath((p) => { const n = [...p]; const j = i + dir; if (j < 0 || j >= n.length) return p; [n[i], n[j]] = [n[j], n[i]]; return n; });
+  const remove = (eje: string) => setPath((p) => p.filter((e) => e !== eje));
+  const toggle = (k: string) => setColapsado((s) => { const n = new Set(s); n.has(k) ? n.delete(k) : n.add(k); return n; });
+
   const valoresDe = (eje: string) => [...new Set(tipos.map((t) => fval(t, eje)).filter(Boolean))].sort();
   const filtrados = useMemo(
     () => tipos.filter((t) => !filtro.eje || !filtro.valor || fval(t, filtro.eje) === filtro.valor),
     [tipos, filtro]);
-  const grupos: [string, Tipo[]][] = useMemo(() => {
-    if (!agruparPor) return [["", filtrados]];
-    const m: Record<string, Tipo[]> = {};
-    for (const t of filtrados) (m[fval(t, agruparPor) || "— (sin valor)"] ??= []).push(t);
-    return Object.entries(m).sort((a, b) => a[0].localeCompare(b[0]));
-  }, [filtrados, agruparPor]);
+  const rows = useMemo(() => pivotRows(filtrados, path, colapsado), [filtrados, path, colapsado]);
+  const allKeys = useMemo(() => pivotKeys(filtrados, path), [filtrados, path]);
 
   if (detail) return <Detalle d={detail} onBack={() => { setDetail(null); load(); }} reload={() => open(detail.tipo_doc)} />;
 
   const COLS = "2fr 1.2fr 1fr 1.1fr 80px";
+  const tiny: CSSProperties = { border: "none", background: "transparent", cursor: "pointer", padding: "0 2px", fontWeight: 700, color: "var(--muted)" };
   return (
     <div className="ct-fade">
-      {/* Pivot + filtros por faceta */}
+      {/* Tabla dinámica: elegís el ORDEN de los ejes (anidado) + filtro */}
+      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 6 }}>
+        <span className="faint" style={{ fontSize: 12 }}>Agrupar (en orden):</span>
+        {path.map((eje, i) => (
+          <span key={eje} className="chip mat-neutral" style={{ display: "inline-flex", gap: 3, alignItems: "center", fontSize: 11 }}>
+            <span className="faint" style={{ fontWeight: 700 }}>{i + 1}.</span> {ejeLabel(eje)}
+            <button title="mover ←" onClick={() => move(i, -1)} disabled={i === 0} style={{ ...tiny, opacity: i === 0 ? 0.3 : 1 }}>‹</button>
+            <button title="mover →" onClick={() => move(i, 1)} disabled={i === path.length - 1} style={{ ...tiny, opacity: i === path.length - 1 ? 0.3 : 1 }}>›</button>
+            <button title="quitar" onClick={() => remove(eje)} style={tiny}>✕</button>
+          </span>
+        ))}
+        {EJES.filter(([e]) => !path.includes(e)).map(([e, l]) => (
+          <button key={e} className="btn btn-ghost" style={{ padding: "2px 8px", fontSize: 12 }} onClick={() => setPath((p) => [...p, e])}>+ {l}</button>
+        ))}
+        {path.length > 0 && (
+          <>
+            <button className="btn btn-ghost" style={{ padding: "2px 8px", fontSize: 11, marginLeft: 6 }} onClick={() => setColapsado(new Set(allKeys))}>colapsar todo</button>
+            <button className="btn btn-ghost" style={{ padding: "2px 8px", fontSize: 11 }} onClick={() => setColapsado(new Set())}>expandir todo</button>
+          </>
+        )}
+      </div>
       <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 12 }}>
-        <span className="faint" style={{ fontSize: 12 }}>Agrupar por:</span>
-        <div className="seg">
-          <button className={agruparPor === "" ? "on" : ""} onClick={() => setAgruparPor("")}>Ninguno</button>
-          {EJES.map(([e, l]) => <button key={e} className={agruparPor === e ? "on" : ""} onClick={() => setAgruparPor(e)}>{l}</button>)}
-        </div>
-        <span className="faint" style={{ fontSize: 12, marginLeft: 8 }}>Filtrar:</span>
+        <span className="faint" style={{ fontSize: 12 }}>Filtrar:</span>
         <select value={filtro.eje} onChange={(e) => setFiltro({ eje: e.target.value, valor: "" })} style={{ fontSize: 12, padding: "4px 6px" }}>
           <option value="">(eje)</option>
           {EJES.map(([e, l]) => <option key={e} value={e}>{l}</option>)}
@@ -67,23 +116,23 @@ export function Templates() {
         <div className="tr head" style={{ gridTemplateColumns: COLS }}>
           <span>TIPO DE DOCUMENTO</span><span>DISCIPLINAS</span><span>REFERENCIAS</span><span>MADUREZ</span><span>ACCIONES</span>
         </div>
-        {grupos.map(([g, items]) => (
-          <Fragment key={g || "_"}>
-            {agruparPor && (
-              <div className="tr" style={{ background: "#FAFCFC" }}>
-                <span style={{ gridColumn: "1 / -1", fontWeight: 600, fontSize: 12 }}>{ejeLabel(agruparPor)}: {g} <span className="faint">({items.length})</span></span>
-              </div>
-            )}
-            {items.map((t) => (
-              <div key={t.tipo_doc} className="tr row" role="button" tabIndex={0} style={{ gridTemplateColumns: COLS }} onClick={() => open(t.tipo_doc)} onKeyDown={(e) => { if (e.key === "Enter") open(t.tipo_doc); }}>
-                <span><b>{t.nombre}</b><div className="faint mono" style={{ fontSize: 11 }}>{t.tipo_doc}</div></span>
-                <span className="muted">{(t.disciplinas || []).join(", ") || "—"}</span>
-                <span className="mono">{t.refs_count} docs</span>
-                <span><MaturityBadge m={t.maturity} /></span>
-                <span><button className="btn btn-ghost" style={{ padding: "5px 8px" }} onClick={(e) => { e.stopPropagation(); del(t.tipo_doc); }}><Trash2 size={14} color="var(--red)" /></button></span>
-              </div>
-            ))}
-          </Fragment>
+        {rows.map((r) => r.kind === "group" ? (
+          <div key={r.key} className="tr" style={{ background: "#FAFCFC", cursor: "pointer" }} role="button" tabIndex={0}
+            onClick={() => toggle(r.key)} onKeyDown={(e) => { if (e.key === "Enter") toggle(r.key); }}>
+            <span style={{ gridColumn: "1 / -1", display: "flex", alignItems: "center", gap: 6, paddingLeft: r.depth * 18, fontSize: 12, fontWeight: 600 }}>
+              {colapsado.has(r.key) ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
+              <span className="faint" style={{ fontWeight: 500 }}>{ejeLabel(r.eje)}:</span> {r.valor}
+              <span className="faint" style={{ fontWeight: 400 }}>({r.count})</span>
+            </span>
+          </div>
+        ) : (
+          <div key={r.key} className="tr row" role="button" tabIndex={0} style={{ gridTemplateColumns: COLS }} onClick={() => open(r.t.tipo_doc)} onKeyDown={(e) => { if (e.key === "Enter") open(r.t.tipo_doc); }}>
+            <span style={{ paddingLeft: r.depth * 18 }}><b>{r.t.nombre}</b><div className="faint mono" style={{ fontSize: 11 }}>{r.t.tipo_doc}</div></span>
+            <span className="muted">{(r.t.disciplinas || []).join(", ") || "—"}</span>
+            <span className="mono">{r.t.refs_count} docs</span>
+            <span><MaturityBadge m={r.t.maturity} /></span>
+            <span><button className="btn btn-ghost" style={{ padding: "5px 8px" }} onClick={(e) => { e.stopPropagation(); del(r.t.tipo_doc); }}><Trash2 size={14} color="var(--red)" /></button></span>
+          </div>
         ))}
         {!filtrados.length && <div className="tr"><span className="faint">No hay templates{filtro.valor ? " con ese filtro" : ""}.</span></div>}
       </div>

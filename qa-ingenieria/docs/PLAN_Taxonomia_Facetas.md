@@ -140,6 +140,9 @@ más: vive en un **alcance** y se resuelve con la **misma precedencia que las re
 - **Barato ahora**: tras la Fase 1, cada familia ya lleva `revision.facetas` → la UI solo agrupa/filtra por esos
   valores. Backend: exponer `facetas` en `GET /api/tipos` (hoy devuelve nombre/disciplinas/refs/maturity).
 - Nada de árbol fijo en el dato: el árbol es la vista (pivot), como concluyó el análisis.
+- **HECHO (rework 2026-06-21)**: tabla dinámica MULTINIVEL — se elige el ORDEN de los ejes (chips reordenables
+  ◀ ▶, agregar/quitar) y agrupa anidado en ese orden; nodos COLAPSABLES (colapsar/expandir todo) + filtro por
+  faceta. (Antes era un solo nivel y "siempre lideraba el tipo".)
 
 ## 5. Riesgos y mitigaciones (operativas)
 - **Conflicto de facetas** → precedencia documentada + log ruidoso ante empate (no resolver en silencio).
