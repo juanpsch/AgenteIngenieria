@@ -22,9 +22,7 @@ criterios_aceptacion: 'Plano o esquema eléctrico de una instalación.'
 no_corresponde: 'Memorias de texto, planos de otra disciplina.'
 zonas: []
 revision:
-  normas:
-  - aea-90364      # contenido eléctrico: caída de tensión, secciones, 30 mA, puesta a tierra
-  - iram-dibujo    # como lámina: rótulo, escala, acotación (transversal)
+  facetas: { tipo: plano, disciplina: electrica }   # plano->iram-dibujo + electrica->aea-90364
   legibilidad:
     blur_var_min: 80
     ocr_conf_min: 0.6

@@ -23,8 +23,7 @@ criterios_aceptacion: 'Hoja de datos / data report de un recipiente a presión.'
 no_corresponde: 'Planos, P&ID, memorias de otra disciplina.'
 zonas: []
 revision:
-  normas:
-  - asme-viii-1
+  facetas: { tipo: hoja_datos, disciplina: mecanica }
   legibilidad:
     blur_var_min: 80
     ocr_conf_min: 0.6

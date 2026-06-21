@@ -23,9 +23,7 @@ criterios_aceptacion: 'P&ID de una planta de efluentes (familia EPA / Brown & Ca
 no_corresponde: 'Hojas civiles/generales del juego (C-/G-/T-), memorias de texto, páginas de libro.'
 zonas: []
 revision:
-  normas:
-  - epa-wwtp             # rótulo + símbolos/líneas vs las leyendas del juego (VLM)
-  - iram-instrumentacion # tags ISA, leyenda, índice
+  facetas: { tipo: pid, organizacion: epa_bc, disciplina: instrumentacion }
   legibilidad:
     blur_var_min: 80
     ocr_conf_min: 0.6

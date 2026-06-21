@@ -24,8 +24,7 @@ criterios_aceptacion: 'Documento que sea una lámina/plano de dibujo técnico.'
 no_corresponde: 'Memorias de texto, hojas de datos, presupuestos.'
 zonas: []
 revision:
-  normas:
-  - iram-dibujo
+  facetas: { tipo: plano }
   legibilidad:
     blur_var_min: 80
     ocr_conf_min: 0.6

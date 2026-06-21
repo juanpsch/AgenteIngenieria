@@ -1,0 +1,38 @@
+# Ejes ortogonales (facetas) + sus valores. Una familia declara sus coordenadas en `revision.facetas`
+# y el resolvedor une las reglas de todas, con "lo más específico gana". Ver docs/PLAN_Taxonomia_Facetas.md.
+#
+# Editar acá es la forma de cambiar las decisiones de diseño (precedencia de ejes, política de conflicto)
+# sin tocar código.
+
+politica:
+  conflicto_severidad: mas_especifico   # mas_especifico | mas_restrictivo (gana la severidad más alta)
+
+ejes:                       # precedencia: MENOR número = MÁS específico (pisa al resto)
+  proyecto:     { precedencia: 1 }
+  organizacion: { precedencia: 2 }
+  tipo:         { precedencia: 3 }
+  disciplina:   { precedencia: 4 }
+  jurisdiccion: { precedencia: 5 }
+
+valores:                    # por eje: valor -> {nombre, padre?, normas?, requisitos?, excluir?}
+  tipo:
+    diagrama:   { nombre: "Diagramas" }
+    pid:        { nombre: "P&ID", padre: diagrama, normas: [iram-instrumentacion] }
+    plano:      { nombre: "Plano (dibujo técnico)", normas: [iram-dibujo] }
+    memoria:    { nombre: "Memoria de cálculo" }
+    hoja_datos: { nombre: "Hoja de datos de recipiente", normas: [asme-viii-1] }
+    esquematico: { nombre: "Esquemático electrónico" }
+  organizacion:
+    camuzzi:    { nombre: "Camuzzi", normas: [camuzzi] }
+    epa_bc:     { nombre: "EPA / Brown & Caldwell", normas: [epa-wwtp] }
+  disciplina:
+    instrumentacion: { nombre: "Instrumentación" }
+    procesos:        { nombre: "Procesos" }
+    electrica:       { nombre: "Eléctrica", normas: [aea-90364] }
+    estructural:     { nombre: "Estructural", normas: [cirsoc-201] }
+    mecanica:        { nombre: "Mecánica" }
+    civil:           { nombre: "Civil" }
+    electronica:     { nombre: "Electrónica" }
+  jurisdiccion:
+    AR: { nombre: "Argentina" }
+    US: { nombre: "EE.UU." }

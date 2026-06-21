@@ -4,6 +4,11 @@
 > Principio rector: **modelo facetado + composición**; el árbol es una vista. **No-breaking**: las familias
 > planas siguen funcionando sin tocarlas.
 
+> **Estado: FASE 1 implementada (2026-06-21).** `knowledge/facetas.yaml` + `tools/facetas.py` + resolvedor v2.
+> Ajuste vs este plan: las coordenadas van en **`revision.facetas`** (no top-level) → cero cambios en los
+> callers de `resolver_requisitos`. Las 8 familias migradas resuelven las MISMAS normas que antes (verificado).
+> Decisiones configurables en `facetas.yaml` (`ejes.*.precedencia`, `politica.conflicto_severidad`).
+
 ## 0. Decisiones fijadas (defaults; confirmables)
 - **Ejes** (con precedencia, 1 = más específico gana): `proyecto(1) > organizacion(2) > tipo(3) > disciplina(4) > jurisdiccion(5) > global(6)`.
 - **Resolución de reglas**: unión de todas las facetas − exclusiones; ante mismo `id`, **gana la faceta más específica** (override completo de la regla, incl. severidad). Empate de precedencia → desempate por orden de eje + **log ruidoso** (nunca silencioso).

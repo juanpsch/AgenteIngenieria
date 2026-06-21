@@ -24,9 +24,7 @@ criterios_aceptacion: 'P&ID de una planta de gas (familia Camuzzi).'
 no_corresponde: 'Memorias de texto, planos de otra disciplina, páginas de libro.'
 zonas: []
 revision:
-  normas:
-  - camuzzi             # rótulo + símbolos/líneas vs leyenda Camuzzi (VLM)
-  - iram-instrumentacion # tags ISA, leyenda, índice
+  facetas: { tipo: pid, organizacion: camuzzi, disciplina: instrumentacion, jurisdiccion: AR }
   legibilidad:
     blur_var_min: 80
     ocr_conf_min: 0.6

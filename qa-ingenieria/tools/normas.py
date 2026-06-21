@@ -119,26 +119,58 @@ def vlm_de_normas(ids: list[str]) -> list[dict[str, Any]]:
     return out
 
 
-def resolver_requisitos(revision: dict | None) -> list[dict[str, Any]]:
-    """Conjunto FINAL de requisitos (reglas) a evaluar para una familia, a partir de su bloque
-    `revision`:  expand(`normas`) ∪ `requisitos`(por id global) ∪ `reglas`(inline del template) − `excluir`.
+_SEV_RANK = {"bloqueante": 3, "mayor": 2, "menor": 1, "observacion": 0}
 
-    Dedup/override por id LOCAL (el `reglas` inline del template pisa al de una norma con el mismo id;
-    `requisitos` pisa al expandido). `excluir` acepta id global "<norma>:<id>" o id local.
-    Antes de resolver, expande los `perfiles` referenciados (eje proyecto/cliente)."""
+
+def _aplicar_bundle(out: dict, excl: set, bundle: dict, origen: str, pol: str) -> None:
+    """Suma las reglas de un bundle a `out` (id local -> regla), pisando lo previo (más específico gana).
+    Cada regla queda anotada con `origen` (qué faceta/template la trajo) para explicabilidad."""
+    def _set(rid, regla):
+        prev = out.get(rid)
+        nr = {**regla, "origen": origen}
+        if prev and pol == "mas_restrictivo" and _SEV_RANK.get(prev.get("severidad"), 0) > _SEV_RANK.get(nr.get("severidad"), 0):
+            nr["severidad"] = prev.get("severidad")   # conserva la severidad más alta
+        out[rid] = nr
+
+    for r in reglas_de_normas(bundle.get("normas") or []):
+        _set(r.get("id"), r)
+    for rid in bundle.get("requisitos") or []:
+        q = requisito_por_id(rid)
+        if q:
+            _set(q.get("id"), q)
+    for r in bundle.get("reglas") or []:
+        _set(r.get("id"), {**r, "req_id": f"template:{r.get('id')}"})
+    excl.update(e.split(":", 1)[-1] for e in (bundle.get("excluir") or []))
+
+
+def resolver_requisitos(revision: dict | None) -> list[dict[str, Any]]:
+    """Conjunto FINAL de requisitos a evaluar para una familia. Une, de MENOS a MÁS específico:
+      facetas (`revision.facetas`, por precedencia de eje + ancestros) → `perfiles` → `normas`/`requisitos`/
+      `reglas` propios del template. Mismo id local: gana lo más específico (override; con `origen`).
+    `excluir` (id global o local) saca reglas. Todo configurable en knowledge/facetas.yaml."""
     try:
         from tools import perfiles  # import perezoso (evita circular)
         revision = perfiles.expandir_revision(revision or {})
     except Exception:
         revision = revision or {}
-    out: dict[str, dict[str, Any]] = {}  # id local -> regla
-    for r in reglas_de_normas(revision.get("normas") or []):   # atajo: norma entera
-        out[r.get("id")] = r
-    for rid in revision.get("requisitos") or []:               # granular por id global
-        q = requisito_por_id(rid)
-        if q:
-            out[q.get("id")] = q
-    for r in revision.get("reglas") or []:                     # reglas propias del template
-        out[r.get("id")] = {**r, "req_id": f"template:{r.get('id')}"}
-    excl = {e.split(":", 1)[-1] for e in (revision.get("excluir") or [])}  # por id local o global
+
+    out: dict[str, dict[str, Any]] = {}   # id local -> regla
+    excl: set[str] = set()
+    pol = "mas_especifico"
+
+    facetas = revision.get("facetas") or {}
+    if facetas:
+        try:
+            from tools import facetas as F  # import perezoso
+            pol = (F.politica() or {}).get("conflicto_severidad", pol)
+            for eje in sorted(facetas, key=F.precedencia, reverse=True):   # menos específico primero
+                for v in F.cadena(eje, facetas[eje]):                      # ancestros primero
+                    _aplicar_bundle(out, excl, F.bundle(eje, v), f"{eje}={v}", pol)
+        except Exception:
+            pass
+
+    # Template propio = lo MÁS específico (último, pisa a las facetas).
+    propio = {k: revision.get(k) for k in ("normas", "requisitos", "reglas", "excluir")}
+    _aplicar_bundle(out, excl, propio, "template", pol)
+
     return [r for k, r in out.items() if k not in excl]

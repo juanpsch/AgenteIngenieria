@@ -23,8 +23,7 @@ criterios_aceptacion: 'Memoria que cita la norma aplicable e incluye el cálculo
 no_corresponde: 'Planos puramente gráficos, documentos de otras disciplinas, presupuestos.'
 zonas: []
 revision:
-  normas:
-  - aea-90364
+  facetas: { tipo: memoria, disciplina: electrica }
   legibilidad:
     blur_var_min: 80
     ocr_conf_min: 0.6
