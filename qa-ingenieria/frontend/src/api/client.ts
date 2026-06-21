@@ -116,6 +116,11 @@ export interface Tipo {
   tipo_doc: string; nombre: string; empresa?: string | null;
   disciplinas: string[]; refs_count: number; maturity: string; actualizado?: string | null;
   facetas?: Record<string, string>;   // coordenadas (tipo/organizacion/disciplina/jurisdiccion) para pivot/filtros
+  hereda_de?: string | null;          // cold-start: familia de la que hereda ejemplos
+}
+export interface FacetRegistry {      // registro de facetas: etiquetas legibles por eje (para la UI de Templates)
+  ejes: string[];
+  valores: Record<string, Record<string, string>>;
 }
 export interface ReglaFamiliaStat {
   tipo_doc: string; nombre: string; facetas: Record<string, string>;
@@ -181,6 +186,7 @@ export const api = {
     return form<ValidarResp>("/validar", fd);
   },
   listTipos: () => req<Tipo[]>("GET", "/tipos"),
+  facetasRegistry: () => req<FacetRegistry>("GET", "/facetas"),
   getTipo: (id: string) => req<any>("GET", `/tipos/${id}`),
   capturar(file: File, tipo_doc?: string, nombre?: string, modo = "ejemplo") {
     const fd = new FormData();

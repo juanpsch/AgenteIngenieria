@@ -1,0 +1,21 @@
+/* Vista Templates de referencia — hover/animaciones del handoff (los estilos base van inline). */
+@keyframes czfade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@keyframes czpanel { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: none; } }
+
+.tpl-grouprow { transition: background .12s; }
+.tpl-grouprow:hover { background: #eef4f5 !important; }
+.tpl-leafrow:hover { background: #fafcfc; }
+.tpl-leafrow-b:hover { background: #f3f9f9; }
+.tpl-card { transition: border-color .15s, box-shadow .15s; }
+.tpl-card:hover { border-color: #cfdbe1; box-shadow: 0 4px 14px rgba(20, 40, 55, .09); }
+.tpl-iconbtn:hover { background: #e1f0f1 !important; color: #0e7c86 !important; }
+.tpl-iconbtn-del:hover { background: #fdeceb !important; color: #d0473e !important; }
+.tpl-chipbtn:hover { background: #e2e8ec !important; }
+.tpl-xbtn:hover { background: #fdeceb !important; color: #d0473e !important; }
+.tpl-addaxis:hover { border-color: #0e7c86 !important; color: #0e7c86 !important; background: #f2fafa !important; }
+.tpl-link:hover { background: #eef1f3 !important; }
+.tpl-coord:hover { background: #fff !important; }
+.tpl-primary:hover { background: #0b6b74 !important; }
+.tpl-secondary:hover { border-color: #cdd6dc !important; }
+.tpl-calib:hover { border-color: #0e7c86 !important; background: #f2fafa !important; }
+.tpl-tab { transition: all .15s; }

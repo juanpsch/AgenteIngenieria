@@ -191,13 +191,28 @@ def validar(
 @app.get("/api/tipos")
 def list_tipos():
     cargar_tipos.cache_clear()
-    return [
-        {"tipo_doc": tid, "nombre": t.get("nombre"), "empresa": t.get("empresa"),
-         "disciplinas": t.get("disciplinas", []), "refs_count": refs.refs_count(tid),
-         "maturity": refs.maturity(tid), "actualizado": None,
-         "facetas": (t.get("revision") or {}).get("facetas") or {}}   # coordenadas (para pivot/filtros)
-        for tid, t in cargar_tipos().items()
-    ]
+    cmin = refs._calibrated_min()
+    out = []
+    for tid, t in cargar_tipos().items():
+        n = refs.refs_count(tid)
+        out.append({
+            "tipo_doc": tid, "nombre": t.get("nombre"), "empresa": t.get("empresa"),
+            "disciplinas": t.get("disciplinas", []), "refs_count": n,
+            "maturity": refs.maturity(tid), "actualizado": None,
+            "facetas": (t.get("revision") or {}).get("facetas") or {},   # coordenadas (para pivot/filtros)
+            "hereda_de": (refs._familia_generica(tid) if n < cmin else None),  # cold-start: de quién hereda ejemplos
+        })
+    return out
+
+
+@app.get("/api/facetas")
+def list_facetas():
+    """Registro de facetas: etiquetas legibles de cada valor por eje (para la UI de Templates / pivot)."""
+    from tools import facetas as F
+    fac = F.cargar_facetas()
+    valores = {eje: {vid: (v or {}).get("nombre") or vid for vid, v in (vals or {}).items()}
+               for eje, vals in (fac.get("valores") or {}).items()}
+    return {"ejes": list((fac.get("ejes") or {}).keys()), "valores": valores}
 
 
 @app.get("/api/tipos/{tid}")
