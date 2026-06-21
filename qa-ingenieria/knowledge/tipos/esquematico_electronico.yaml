@@ -69,6 +69,7 @@ zonas:
   ancla_inicio: ECA-BRD
   requerido: true
 revision:
+  facetas: { tipo: esquematico, disciplina: electronica }
   norma_ref: IPC / IRAM (lo que aplique al esquemático)
   legibilidad:
     blur_var_min: 80

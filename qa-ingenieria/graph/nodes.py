@@ -471,13 +471,14 @@ def revisor_node(state: CasoState) -> dict[str, Any]:
     (`verdicto_revision`), para no pisar el chip de admisión en la UI."""
     from ai_agents.revisor import revisar
     from graph.revision import agregar_revision
+    from tools import normas
 
     tipo = state.get("tipo_objetivo")
     tpl = cargar_tipos().get(tipo) or {}
     cfg = tpl.get("revision")
     docs_ = state.get("documentos", [])
     doc = docs_[-1] if docs_ else {}
-    if not cfg or not doc:
+    if not normas.tiene_revision(cfg) or not doc:
         return {"hallazgos": [], "verdicto_revision": None, "severidad_max": None}
 
     hallazgos = revisar(doc, cfg, state.get("revision_extracto") or {})

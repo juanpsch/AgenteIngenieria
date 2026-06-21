@@ -36,3 +36,5 @@ criterios_aceptacion: Documento en formato PDF que incluya un cajetín completo 
   cada hoja, índice de hojas, historial de revisiones y numeración de páginas.
 no_corresponde: Documentos que no contengan diagramas eléctricos o que no cumplan
   con la estructura especificada.
+revision:
+  facetas: { tipo: plano, disciplina: electrica, proyecto: panda }

@@ -182,6 +182,16 @@ def resolver_requisitos(revision: dict | None) -> list[dict[str, Any]]:
     return result
 
 
+def tiene_revision(revision: dict | None) -> bool:
+    """¿Esta `revision` define revisión de CONTENIDO? Sí si trae config explícita (legibilidad, normas,
+    requisitos, reglas, contenido_requerido…) o si sus FACETAS resuelven al menos un requisito. Una revision
+    con SOLO facetas que no traen reglas es metadata de agrupación, no revisión (no se revisa contenido)."""
+    rev = revision or {}
+    if any(k != "facetas" for k in rev):
+        return True
+    return bool(resolver_requisitos(rev))
+
+
 def severidad_overrides(revision: dict | None) -> dict[str, str]:
     """Mapa {id_local | req_id | "norma_declarada[:norma]": severidad} resuelto por precedencia
     (facetas menos→más específico; `revision.severidad` del template último). Permite que una familia/faceta

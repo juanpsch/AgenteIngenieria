@@ -24,6 +24,7 @@ no_corresponde: 'Planos, P&ID, memorias de otra disciplina.'
 zonas: []
 revision:
   facetas: { tipo: hoja_datos, disciplina: mecanica }
+  normas: [asme-viii-1]   # norma específica del recipiente a presión (el tipo hoja_datos es genérico)
   legibilidad:
     blur_var_min: 80
     ocr_conf_min: 0.6

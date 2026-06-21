@@ -97,9 +97,10 @@ def route_post_admision(state: CasoState) -> str:
     entra a revisión en esta fase.
     """
     from tools.tipos import cargar_tipos
+    from tools import normas
 
     tipo = state.get("tipo_objetivo")
     if not state.get("revisar_auto", True) or not tipo:
         return "fin"
     tpl = cargar_tipos().get(tipo) or {}
-    return "revisar" if tpl.get("revision") else "fin"
+    return "revisar" if normas.tiene_revision(tpl.get("revision")) else "fin"

@@ -12,12 +12,18 @@ const EJES: [string, string][] = [["organizacion", "Empresa"], ["tipo", "Tipo"],
 const ejeLabel = (e: string) => EJES.find(([k]) => k === e)?.[1] || e;
 const SIN = "— (sin valor)";
 
-// Valores de un eje para una familia. Usa la faceta; si falta, cae al campo legacy (disciplina ← `disciplinas`
-// multivaluado; empresa ← `empresa`) para no mandar a "sin valor" docs que sí tienen el dato en la columna.
+// Valores de un eje para una familia (para agrupar/filtrar). Disciplina = UNIÓN de la faceta + el campo legacy
+// `disciplinas` (multivaluado) para coincidir con la columna y no perder disciplinas. Empresa cae a `empresa`
+// legacy si no hay faceta. El resto usa la faceta.
 function facetVals(t: Tipo, eje: string): string[] {
   const f = (t.facetas || {})[eje];
+  if (eje === "disciplina") {
+    const s = new Set<string>();
+    if (f) s.add(f);
+    for (const d of t.disciplinas || []) if (d) s.add(d);
+    return [...s];
+  }
   if (f) return [f];
-  if (eje === "disciplina") return (t.disciplinas || []).filter(Boolean);
   if (eje === "organizacion" && t.empresa) return [t.empresa];
   return [];
 }

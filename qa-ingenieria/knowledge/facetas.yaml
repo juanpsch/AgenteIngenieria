@@ -23,7 +23,9 @@ valores:                    # por eje: valor -> {nombre, padre?, normas?, requis
     pid:        { nombre: "P&ID", padre: diagrama, normas: [iram-instrumentacion], familia_generica: pid_instrumentacion, severidad: { norma_declarada: menor } }
     plano:      { nombre: "Plano (dibujo técnico)", normas: [iram-dibujo], familia_generica: plano_generico, severidad: { norma_declarada: menor } }
     memoria:    { nombre: "Memoria de cálculo", severidad: { norma_declarada: mayor } }
-    hoja_datos: { nombre: "Hoja de datos de recipiente", normas: [asme-viii-1] }
+    # hoja_datos es GENÉRICO (agrupa); la norma específica (ASME VIII-1) la declara la familia de recipientes
+    # en su revision.normas, no el tipo — así otras hojas de datos no heredan ASME por error.
+    hoja_datos: { nombre: "Hoja de datos" }
     esquematico: { nombre: "Esquemático electrónico" }
   organizacion:
     camuzzi:    { nombre: "Camuzzi", normas: [camuzzi] }
@@ -39,3 +41,6 @@ valores:                    # por eje: valor -> {nombre, padre?, normas?, requis
   jurisdiccion:
     AR: { nombre: "Argentina" }
     US: { nombre: "EE.UU." }
+  proyecto:
+    carem25: { nombre: "CAREM25" }
+    panda:   { nombre: "PANDA" }
