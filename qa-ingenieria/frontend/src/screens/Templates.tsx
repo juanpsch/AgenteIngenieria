@@ -10,7 +10,18 @@ import { Plus, Trash2, ArrowLeft, Eye, Upload, ChevronDown, ChevronRight } from 
 
 const EJES: [string, string][] = [["organizacion", "Empresa"], ["tipo", "Tipo"], ["disciplina", "Disciplina"], ["jurisdiccion", "Jurisdicción"]];
 const ejeLabel = (e: string) => EJES.find(([k]) => k === e)?.[1] || e;
-const fval = (t: Tipo, eje: string) => (t.facetas || {})[eje] || "";
+const SIN = "— (sin valor)";
+
+// Valores de un eje para una familia. Usa la faceta; si falta, cae al campo legacy (disciplina ← `disciplinas`
+// multivaluado; empresa ← `empresa`) para no mandar a "sin valor" docs que sí tienen el dato en la columna.
+function facetVals(t: Tipo, eje: string): string[] {
+  const f = (t.facetas || {})[eje];
+  if (f) return [f];
+  if (eje === "disciplina") return (t.disciplinas || []).filter(Boolean);
+  if (eje === "organizacion" && t.empresa) return [t.empresa];
+  return [];
+}
+const groupKeys = (t: Tipo, eje: string) => { const v = facetVals(t, eje); return v.length ? v : [SIN]; };
 
 // Filas aplanadas del pivot multinivel (grupos anidados + hojas), respetando colapso.
 type PivRow =
@@ -21,7 +32,7 @@ function pivotRows(items: Tipo[], path: string[], colapsado: Set<string>, depth 
   if (!path.length) return items.map((t) => ({ kind: "leaf", key: `${prefix}/${t.tipo_doc}`, depth, t }));
   const [eje, ...rest] = path;
   const groups: Record<string, Tipo[]> = {};
-  for (const t of items) (groups[fval(t, eje) || "— (sin valor)"] ??= []).push(t);
+  for (const t of items) for (const v of groupKeys(t, eje)) (groups[v] ??= []).push(t);  // multivaluado: aparece en cada uno
   const rows: PivRow[] = [];
   for (const [valor, its] of Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]))) {
     const key = `${prefix}/${eje}=${valor}`;
@@ -34,7 +45,7 @@ function pivotKeys(items: Tipo[], path: string[], prefix = ""): string[] {
   if (!path.length) return [];
   const [eje, ...rest] = path;
   const groups: Record<string, Tipo[]> = {};
-  for (const t of items) (groups[fval(t, eje) || "— (sin valor)"] ??= []).push(t);
+  for (const t of items) for (const v of groupKeys(t, eje)) (groups[v] ??= []).push(t);
   const ks: string[] = [];
   for (const [valor, its] of Object.entries(groups)) {
     const key = `${prefix}/${eje}=${valor}`;
@@ -62,9 +73,9 @@ export function Templates() {
   const remove = (eje: string) => setPath((p) => p.filter((e) => e !== eje));
   const toggle = (k: string) => setColapsado((s) => { const n = new Set(s); n.has(k) ? n.delete(k) : n.add(k); return n; });
 
-  const valoresDe = (eje: string) => [...new Set(tipos.map((t) => fval(t, eje)).filter(Boolean))].sort();
+  const valoresDe = (eje: string) => [...new Set(tipos.flatMap((t) => facetVals(t, eje)))].sort();
   const filtrados = useMemo(
-    () => tipos.filter((t) => !filtro.eje || !filtro.valor || fval(t, filtro.eje) === filtro.valor),
+    () => tipos.filter((t) => !filtro.eje || !filtro.valor || facetVals(t, filtro.eje).includes(filtro.valor)),
     [tipos, filtro]);
   const rows = useMemo(() => pivotRows(filtrados, path, colapsado), [filtrados, path, colapsado]);
   const allKeys = useMemo(() => pivotKeys(filtrados, path), [filtrados, path]);
