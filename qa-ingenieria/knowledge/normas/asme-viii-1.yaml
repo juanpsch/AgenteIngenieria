@@ -1,0 +1,64 @@
+id: asme-viii-1
+nombre: ASME BPVC Sección VIII Div. 1 — Recipientes a presión (hoja de datos U-1)
+organismo: ASME
+region: Internacional (EE.UU.)
+version: "BPVC Section VIII Division 1 [verificar edición vs norma comprada]"
+
+aplica_a:
+  disciplinas: [mecanica, procesos]
+  jurisdiccion: [US, AR]
+
+deteccion:
+  anclas:
+    - 'ASME'
+    - 'section\s*VIII|secci[oó]n\s*VIII'
+    - 'U-1\b|manufacturer.{0,15}data report'
+  canales: [cajetin, notas]
+  severidad: mayor   # una hoja de datos / data report SÍ debe citar el código
+
+# Campos típicos del Manufacturer's Data Report (U-1). Texto en inglés en la mayoría de los formularios.
+reglas:
+  - id: asme_codigo
+    tipo: presencia
+    descripcion: "Cita el código ASME Sección VIII Div. 1 (o formulario U-1)"
+    patron: 'asme.{0,30}(viii|8)|division\s*1|\bU-1\b'
+    severidad: mayor
+  - id: asme_mawp
+    tipo: presencia
+    descripcion: "MAWP (presión máxima admisible de trabajo) declarada"
+    patron: 'm\.?a\.?w\.?p|max(imum)?\s+allowable\s+working\s+press'
+    severidad: mayor
+  - id: asme_presion_con_unidad
+    tipo: patron
+    descripcion: "Presión declarada con unidad (psi / kPa / MPa / bar / kg·cm⁻²)"
+    patron: '\d+(?:[.,]\d+)?\s*(?:psig?|kpa|mpa|bar|kg/?cm)'
+    min: 1
+    severidad: menor
+  - id: asme_material
+    tipo: patron
+    descripcion: "Especificación de material ASME (SA-xxx)"
+    patron: '\bSA[- ]?\d{2,4}\b'
+    min: 1
+    severidad: mayor
+  - id: asme_mdmt
+    tipo: presencia
+    descripcion: "MDMT (temperatura mínima de diseño del metal)"
+    patron: 'mdmt|min(imum)?\s+design\s+metal\s+temp'
+    severidad: menor
+  - id: asme_radiografia
+    tipo: presencia
+    descripcion: "Grado de radiografiado (RT: full / spot / none)"
+    patron: 'radiograph|\bR\.?T\.?\b|spot\s*exam'
+    severidad: menor
+  - id: asme_prueba_presion
+    tipo: presencia
+    descripcion: "Prueba de presión (hidrostática / neumática)"
+    patron: 'hydrostatic|hydro\.?\s*test|pneumatic\s*test|prueba\s*hidr'
+    severidad: menor
+
+vlm:
+  norma_ref: ASME BPVC VIII-1
+  criterios: >
+    Coherencia entre la chapa de identificación (nameplate) y la hoja de datos U-1: presión y temperatura
+    de diseño, material, eficiencia de junta (E), estampado de código y N° de National Board. Señalá campos
+    faltantes o valores inconsistentes entre secciones del formulario.

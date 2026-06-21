@@ -126,6 +126,21 @@ def test_cargar_referencia_degrada_si_falta(monkeypatch):
     assert _cargar_referencia("knowledge/normas/refs/no_existe_xyz.png") is None
 
 
+def test_asme_norma_y_template_recipiente():
+    from tools import reglas_revision as rr
+    from tools.tipos import cargar_tipos
+    assert "asme-viii-1" in normas.cargar_normas()
+    assert "hoja_datos_recipiente" in cargar_tipos()
+    # un data report LLENO cumple lo core (código + MAWP + material SA-xxx)
+    t = ("ASME Section VIII Division 1 — Form U-1. MAWP 150 psi at 650 F. Material SA-516-70. "
+         "MDMT -20 F. Radiography: spot. Hydrostatic test 225 psi.")
+    porid = {r["id"]: rr.evaluar_regla(r, t, []) for r in normas.reglas_de_normas(["asme-viii-1"])}
+    assert porid["asme_codigo"]["estado"] == "ok"
+    assert porid["asme_mawp"]["estado"] == "ok"
+    assert porid["asme_material"]["estado"] == "ok"        # SA-516-70
+    assert porid["asme_presion_con_unidad"]["estado"] == "ok"  # 150 psi
+
+
 def test_ancla_con_regex_invalido_no_rompe():
     # un ancla mal escrita (paréntesis sin cerrar) no debe crashear la detección
     assert normas._ancla_match("(AEA sin cerrar", "texto (AEA sin cerrar aquí") is True

@@ -1,0 +1,30 @@
+tipo_doc: hoja_datos_recipiente
+nombre: Hoja de datos de recipiente a presión (ASME VIII-1)
+disciplinas:
+- mecanica
+- procesos
+formatos_archivo:
+- pdf
+cajetin:
+  requerido: false
+  campos_requeridos: []
+  reglas: []
+secciones_requeridas: []
+columnas_requeridas: []
+caracteristicas:
+- Hoja de datos / Manufacturer's Data Report (U-1) de un recipiente a presión
+- Cita ASME Sección VIII Div. 1; MAWP, material (SA-xxx), MDMT, radiografía
+nomenclatura: ''
+bloqueante:
+- archivo fuera de formatos_archivo
+- no es una hoja de datos de recipiente a presión
+senales_reconocimiento: 'Formulario con MAWP, presión/temperatura de diseño, material SA-xxx y código ASME VIII.'
+criterios_aceptacion: 'Hoja de datos / data report de un recipiente a presión.'
+no_corresponde: 'Planos, P&ID, memorias de otra disciplina.'
+zonas: []
+revision:
+  normas:
+  - asme-viii-1
+  legibilidad:
+    blur_var_min: 80
+    ocr_conf_min: 0.6
