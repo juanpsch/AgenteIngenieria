@@ -530,6 +530,33 @@ def caso_pagina(thread_id: str, page: int = 1):
     return Response(content=base64.b64decode(durl.split(",", 1)[1]), media_type="image/png")
 
 
+@app.get("/api/casos/{thread_id}/informe")
+def caso_informe(thread_id: str):
+    """Informe de revisión en PDF (admisión + revisión + hallazgos + decisión humana)."""
+    from datetime import date
+
+    from tools.informe import generar_informe
+
+    st = _state_de(thread_id)
+    if not st:
+        raise HTTPException(404, "no se encontró el caso")
+    mapped = _map_validacion(st)
+    rev = mapped.get("revision") or {}
+    docs_ = st.get("documentos") or []
+    ult = docs_[-1] if docs_ else {}
+    fname = ult.get("filename") or (Path(ult["path"]).name if ult.get("path") else "documento")
+    datos = {
+        "fecha": date.today().isoformat(),
+        "filename": fname, "tipo": mapped.get("tipo_doc"),
+        "admision": mapped.get("veredicto"), "score": mapped.get("score"),
+        "revision": rev, "hallazgos": rev.get("hallazgos"),
+        "decision": historial.decision_de(thread_id), "notas": rev.get("notas"),
+    }
+    pdf = generar_informe(datos)
+    return Response(content=pdf, media_type="application/pdf",
+                    headers={"Content-Disposition": f'inline; filename="informe_{thread_id}.pdf"'})
+
+
 @app.get("/api/normas/catalogo")
 def normas_catalogo():
     """Catálogo plano de requisitos chequeables (la biblioteca asignable a las familias)."""

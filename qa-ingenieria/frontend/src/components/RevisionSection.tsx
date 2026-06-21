@@ -64,7 +64,10 @@ export function RevisionSection({ rev, threadId, nPaginas, imagenes, feedback }:
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <div className="eyebrow" style={{ marginTop: 6 }}>REVISIÓN DE CONTENIDO (FASE 1)</div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 6 }}>
+        <div className="eyebrow" style={{ margin: 0 }}>REVISIÓN DE CONTENIDO (FASE 1)</div>
+        {threadId && <a className="btn btn-ghost" style={{ padding: "3px 9px", fontSize: 11.5 }} href={api.informeUrl(threadId)} target="_blank" rel="noreferrer">Descargar informe (PDF)</a>}
+      </div>
 
       <div className={`verdict ${v.cls}`} style={{ padding: "12px 16px" }}>
         <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
