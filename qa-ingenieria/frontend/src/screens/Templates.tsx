@@ -7,16 +7,18 @@ import { RequisitosEditor } from "../components/RequisitosEditor";
 import { useActivity } from "../components/Activity";
 import { errMsg } from "../design/tokens";
 import { Plus, Trash2, ArrowLeft, Eye, Upload, ChevronDown, Pencil, Search, X, Copy, ListFilter } from "lucide-react";
+import { FACET_AXIS, Bar } from "../design/facets";
 import "./Templates.css";
 
 // ───────────────── Vista facetada (handoff design_handoff_templates_referencia) ─────────────────
 type AxisKey = "tipo" | "empresa" | "disc" | "juris" | "proyecto";
+// Colores/etiquetas vienen del módulo compartido (design/facets) para no duplicar la paleta.
 const AXES: Record<AxisKey, { label: string; color: string; facet: string }> = {
-  tipo:     { label: "Tipo",         color: "#0e7c86", facet: "tipo" },
-  empresa:  { label: "Empresa",      color: "#4f46e5", facet: "organizacion" },
-  disc:     { label: "Disciplina",   color: "#475569", facet: "disciplina" },
-  juris:    { label: "Jurisdicción", color: "#b45309", facet: "jurisdiccion" },
-  proyecto: { label: "Proyecto",     color: "#9333ea", facet: "proyecto" },
+  tipo:     { ...FACET_AXIS.tipo,         facet: "tipo" },
+  empresa:  { ...FACET_AXIS.organizacion, facet: "organizacion" },
+  disc:     { ...FACET_AXIS.disciplina,   facet: "disciplina" },
+  juris:    { ...FACET_AXIS.jurisdiccion, facet: "jurisdiccion" },
+  proyecto: { ...FACET_AXIS.proyecto,     facet: "proyecto" },
 };
 const AXIS_ORDER: AxisKey[] = ["tipo", "empresa", "disc", "juris", "proyecto"];
 const T = 5;   // umbral "calibrado"
@@ -113,11 +115,7 @@ const MatPill = ({ m, size = 11 }: { m: MatMeta; size?: number }) => (
     <span style={{ fontSize: size, fontWeight: 600, color: m.fg }}>{m.label}</span>
   </span>
 );
-const Progress = ({ m, h = 5 }: { m: MatMeta; h?: number }) => (
-  <div style={{ position: "relative", height: h, background: "#edf1f3", borderRadius: h / 2, overflow: "hidden" }}>
-    <div style={{ position: "absolute", inset: 0, width: `${m.pct}%`, background: m.dot, borderRadius: h / 2, transition: "width .3s" }} />
-  </div>
-);
+const Progress = ({ m, h = 5 }: { m: MatMeta; h?: number }) => <Bar pct={m.pct} color={m.dot} h={h} />;
 const GroupRow = ({ r, collapsed, onToggle, indent, compact }: {
   r: Extract<Row, { kind: "group" }>; collapsed: boolean; onToggle: () => void; indent: number; compact?: boolean;
 }) => {
