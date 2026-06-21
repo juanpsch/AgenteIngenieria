@@ -625,16 +625,6 @@ def reglas_estadisticas():
     return out
 
 
-@app.get("/api/perfiles")
-def list_perfiles():
-    """Perfiles de cumplimiento (eje proyecto/cliente) con sus requisitos resueltos, para asignar en bloque."""
-    from tools import perfiles
-
-    return [{"id": pid, "nombre": p.get("nombre", pid), "proyecto": p.get("proyecto"),
-             "jurisdiccion": p.get("jurisdiccion"), "requisitos": perfiles.requisitos_de_perfil(p)}
-            for pid, p in perfiles.cargar_perfiles().items()]
-
-
 @app.get("/api/tipos/{tid}/requisitos/sugerencias")
 def requisitos_sugerencias(tid: str):
     """Sugerencias del aprendedor para la familia (agregar/quitar/prior), desde el corpus etiquetado."""

@@ -145,14 +145,10 @@ def _aplicar_bundle(out: dict, excl: set, bundle: dict, origen: str, pol: str) -
 
 def resolver_requisitos(revision: dict | None) -> list[dict[str, Any]]:
     """Conjunto FINAL de requisitos a evaluar para una familia. Une, de MENOS a MÁS específico:
-      facetas (`revision.facetas`, por precedencia de eje + ancestros) → `perfiles` → `normas`/`requisitos`/
-      `reglas` propios del template. Mismo id local: gana lo más específico (override; con `origen`).
+      facetas (`revision.facetas`, por precedencia de eje + ancestros) → `normas`/`requisitos`/`reglas`
+      propios del template. Mismo id local: gana lo más específico (override; con `origen`).
     `excluir` (id global o local) saca reglas. Todo configurable en knowledge/facetas.yaml."""
-    try:
-        from tools import perfiles  # import perezoso (evita circular)
-        revision = perfiles.expandir_revision(revision or {})
-    except Exception:
-        revision = revision or {}
+    revision = revision or {}
 
     out: dict[str, dict[str, Any]] = {}   # id local -> regla
     excl: set[str] = set()

@@ -83,9 +83,6 @@ export interface SugerenciaReq {
 export interface SugerenciasRequisitos {
   agregar: SugerenciaReq[]; quitar: SugerenciaReq[]; prior_disciplina: SugerenciaReq[];
 }
-export interface Perfil {
-  id: string; nombre: string; proyecto?: string | null; jurisdiccion?: string | null; requisitos: string[];
-}
 export interface RevisionBlock {
   verdicto: VerdictoRevision | null;
   severidad_max: string | null;
@@ -228,7 +225,6 @@ export const api = {
   putRequisitos: (id: string, requisitos: string[]) =>
     req<{ ok: boolean; requisitos_resueltos: string[] }>("PUT", `/tipos/${id}/requisitos`, { requisitos }),
   sugerenciasRequisitos: (id: string) => req<SugerenciasRequisitos>("GET", `/tipos/${id}/requisitos/sugerencias`),
-  perfiles: () => req<Perfil[]>("GET", "/perfiles"),
   requisitoFeedback: (threadId: string, requisito_id: string, juicio: Juicio, alcance: Alcance = "familia", notas?: string) =>
     req<{ ok: boolean }>("POST", `/casos/${threadId}/requisito-feedback`, { requisito_id, juicio, alcance, notas }),
   promover: (id: string, threadId: string, promote: boolean) => req<any>("POST", `/tipos/${id}/referencias/promover`, { thread_id: threadId, promote }),

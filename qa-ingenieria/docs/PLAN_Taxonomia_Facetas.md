@@ -81,7 +81,9 @@ for (_, fuente, b) in sort(contribs, key=precedencia, DESC):   # menos → más 
 return [r for (id,r) in out if id not in excl]
 ```
 - **Determinista** (orden total por precedencia). Empate exacto → orden de eje + `log.warning`.
-- `perfiles` actuales: se mantienen como una contrib más (o se migran a un eje `proyecto`).
+- `perfiles`: **consolidados en facetas y RETIRADOS (2026-06-21)** — eran el mecanismo pre-taxonomía para
+  "proyecto/jurisdicción → normas"; el bundle del único perfil (aea+cirsoc) ya lo dan las facetas
+  `disciplina: electrica/estructural`. Se eliminó `tools/perfiles`, el endpoint y la UI.
 - Cada requisito resuelto lleva `origen` (qué faceta lo trajo) → para mostrar en la UI ("regla de: org=Camuzzi").
 
 ## 3. Reuso de ejemplos/aprendizaje (Fase 3)
