@@ -118,8 +118,14 @@ return [r for (id,r) in out if id not in excl]
 ### Fase 4 — Aprendizaje por faceta
 - Negativos + aplicabilidad + juicio por regla atribuidos a la faceta correcta (no a la familia puntual). El juicio "regla mal" sobre `iram-instrumentacion:isa_tags` se reusa en TODAS las familias que la usan.
 
-### Fase 5 — Navegación facetada (UI)
-- Árbol **pivotable** (elegís el orden de ejes) + breadcrumbs + conteos en vivo sobre el set de familias.
+### Fase 5 — Navegación facetada (UI)  ← (idea del usuario, 2026-06-21)
+- En **Templates**, ver los tipos de doc **pivoteados por la faceta que uno elija** (entrar por empresa, por
+  disciplina, por tipo…) — un selector de "agrupar por" + drill-down, manejable desde la UI.
+- **Filtros por metadata**: filtrar el set por valores de faceta (org=Camuzzi ∧ disciplina=instrumentación) y
+  por otra metadata del doc, con conteos en vivo + breadcrumbs.
+- **Barato ahora**: tras la Fase 1, cada familia ya lleva `revision.facetas` → la UI solo agrupa/filtra por esos
+  valores. Backend: exponer `facetas` en `GET /api/tipos` (hoy devuelve nombre/disciplinas/refs/maturity).
+- Nada de árbol fijo en el dato: el árbol es la vista (pivot), como concluyó el análisis.
 
 ## 5. Riesgos y mitigaciones (operativas)
 - **Conflicto de facetas** → precedencia documentada + log ruidoso ante empate (no resolver en silencio).
