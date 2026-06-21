@@ -71,6 +71,7 @@ export interface Hallazgo {
   origen?: string;                  // de qué faceta vino la regla ("organizacion=camuzzi" / "tipo=pid" / "template")
 }
 export type Juicio = "de_acuerdo" | "no_aplica" | "regla_mal";
+export type Alcance = "familia" | "norma" | "global";   // hasta dónde llega el juicio humano
 export interface CatalogoRequisito {
   req_id: string; id: string; tipo: string; descripcion?: string; severidad?: string;
   norma_id: string; norma_nombre?: string; norma_ref?: string; disciplinas?: string[] | null;
@@ -108,7 +109,7 @@ export interface ValidarResp {
   campos?: Record<string, unknown>;
   zonas_resultado: ZonaResultado[];
   revision: RevisionBlock | null;
-  requisito_feedback: Record<string, { juicio: Juicio; nota: string | null }>;
+  requisito_feedback: Record<string, { juicio: Juicio; nota: string | null; alcance?: Alcance }>;
   imagen: string | null;
   imagenes: string[];
   n_paginas: number;
@@ -130,6 +131,7 @@ export interface ReglaStat {        // observatorio de reglas: estadística de c
   disciplinas: string[]; huerfana: boolean;
   n: number; ok: number; fallo: number; no_verificable: number; advertencia: number;
   pct_cumple: number | null; feedback: Record<string, number>;
+  feedback_amplio: Record<string, number>;   // juicios a nivel norma/global (se reusan en todas las familias)
   familias: ReglaFamiliaStat[];
 }
 export interface Referencia { ref_id: string; filename: string; origin: string; }
@@ -227,8 +229,8 @@ export const api = {
     req<{ ok: boolean; requisitos_resueltos: string[] }>("PUT", `/tipos/${id}/requisitos`, { requisitos }),
   sugerenciasRequisitos: (id: string) => req<SugerenciasRequisitos>("GET", `/tipos/${id}/requisitos/sugerencias`),
   perfiles: () => req<Perfil[]>("GET", "/perfiles"),
-  requisitoFeedback: (threadId: string, requisito_id: string, juicio: Juicio, notas?: string) =>
-    req<{ ok: boolean }>("POST", `/casos/${threadId}/requisito-feedback`, { requisito_id, juicio, notas }),
+  requisitoFeedback: (threadId: string, requisito_id: string, juicio: Juicio, alcance: Alcance = "familia", notas?: string) =>
+    req<{ ok: boolean }>("POST", `/casos/${threadId}/requisito-feedback`, { requisito_id, juicio, alcance, notas }),
   promover: (id: string, threadId: string, promote: boolean) => req<any>("POST", `/tipos/${id}/referencias/promover`, { thread_id: threadId, promote }),
   entregas: () => req<Record<string, string[]>>("GET", "/entregas-tipo"),
   putEntrega: (id: string, documentos_requeridos: string[]) => req("PUT", `/entregas-tipo/${id}`, { documentos_requeridos }),

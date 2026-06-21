@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { api, type EstadoRevision, type Hallazgo, type Juicio } from "../api/client";
+import { api, type Alcance, type EstadoRevision, type Hallazgo, type Juicio } from "../api/client";
 import { errMsg } from "../design/tokens";
 
 const EST_BADGE: Record<EstadoRevision, string> = { ok: "b-pass", fallo: "b-fail", advertencia: "b-warn", no_verificable: "b-info" };
@@ -27,12 +27,20 @@ function roll(hs: Hallazgo[]) {
 
 /** Grilla jerárquica Norma → Dimensión → requisito (plegable), con el resultado automático y un
  *  JUICIO HUMANO opcional por regla (de acuerdo / no aplica / regla mal) que retroalimenta a la regla. */
+const ALCANCES: { v: Alcance; label: string }[] = [
+  { v: "familia", label: "esta familia" },
+  { v: "norma", label: "esta norma" },
+  { v: "global", label: "global" },
+];
+
 export function GrillaRequisitos({ hallazgos, threadId, feedbackInicial }: {
-  hallazgos: Hallazgo[]; threadId?: string; feedbackInicial?: Record<string, { juicio: Juicio; nota: string | null }>;
+  hallazgos: Hallazgo[]; threadId?: string; feedbackInicial?: Record<string, { juicio: Juicio; nota: string | null; alcance?: Alcance }>;
 }) {
   const [colapsado, setColapsado] = useState<Set<string>>(new Set());
   const [fb, setFb] = useState<Record<string, Juicio>>(() =>
     Object.fromEntries(Object.entries(feedbackInicial || {}).map(([k, v]) => [k, v.juicio])));
+  const [alc, setAlc] = useState<Record<string, Alcance>>(() =>
+    Object.fromEntries(Object.entries(feedbackInicial || {}).map(([k, v]) => [k, v.alcance || "familia"])));
   const [err, setErr] = useState("");
 
   const tree = useMemo(() => {
@@ -47,12 +55,18 @@ export function GrillaRequisitos({ hallazgos, threadId, feedbackInicial }: {
 
   const toggle = (k: string) => setColapsado((s) => { const n = new Set(s); n.has(k) ? n.delete(k) : n.add(k); return n; });
 
-  async function juzgar(reqId: string, j: Juicio) {
-    if (!threadId || fb[reqId] === j) return;   // re-clic del mismo juicio: no-op (no hay borrado)
+  async function juzgar(reqId: string, j: Juicio, a: Alcance) {
+    if (!threadId) return;
     setErr("");
     setFb((p) => ({ ...p, [reqId]: j }));
-    try { await api.requisitoFeedback(threadId, reqId, j); }
+    setAlc((p) => ({ ...p, [reqId]: a }));
+    try { await api.requisitoFeedback(threadId, reqId, j, a); }
     catch (e) { setErr(errMsg(e)); }
+  }
+  // Cambiar el alcance: si ya hay un juicio, lo re-manda con el nuevo alcance.
+  function cambiarAlcance(reqId: string, a: Alcance) {
+    setAlc((p) => ({ ...p, [reqId]: a }));
+    if (fb[reqId]) juzgar(reqId, fb[reqId], a);
   }
 
   if (!hallazgos?.length) return null;
@@ -109,12 +123,21 @@ export function GrillaRequisitos({ hallazgos, threadId, feedbackInicial }: {
                           <div style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 5, flexWrap: "wrap" }}>
                             <span className="faint" style={{ fontSize: 10.5 }}>mi juicio:</span>
                             {JUICIOS.map((j) => (
-                              <button key={j.v} title={j.hint} onClick={() => juzgar(h.req_id!, j.v)}
+                              <button key={j.v} title={j.hint} onClick={() => juzgar(h.req_id!, j.v, alc[h.req_id!] || "familia")}
                                 className={`chip ${fb[h.req_id!] === j.v ? j.cls : "mat-neutral"}`}
                                 style={{ cursor: "pointer", fontSize: 10, opacity: fb[h.req_id!] && fb[h.req_id!] !== j.v ? 0.5 : 1, border: fb[h.req_id!] === j.v ? "1px solid var(--ink)" : undefined }}>
                                 {j.label}
                               </button>
                             ))}
+                            <span className="faint" style={{ fontSize: 10.5, marginLeft: 4 }}>alcance:</span>
+                            <select value={alc[h.req_id!] || "familia"} onChange={(e) => cambiarAlcance(h.req_id!, e.target.value as Alcance)}
+                              title="Hasta dónde llega tu juicio: solo esta familia, o toda la norma (se reusa en las demás familias)."
+                              style={{ fontSize: 10, padding: "1px 4px" }}>
+                              {ALCANCES.map((a) => <option key={a.v} value={a.v}>{a.label}</option>)}
+                            </select>
+                            {(alc[h.req_id!] && alc[h.req_id!] !== "familia") && fb[h.req_id!] && (
+                              <span className="chip mat-info" style={{ fontSize: 9 }} title="Este juicio se reusa en todas las familias que usan la regla">↗ {alc[h.req_id!]}</span>
+                            )}
                           </div>
                         )}
                       </div>

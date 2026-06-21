@@ -90,7 +90,12 @@ export function Reglas() {
               <span>{r.severidad && <span className={`chip ${SEV_CLS[r.severidad] || "mat-neutral"}`} style={{ fontSize: 9.5 }}>{r.severidad}</span>}</span>
               <span className="mono">{r.n || "—"}</span>
               <span><PctBar pct={r.pct_cumple} /></span>
-              <span><FeedbackChips fb={r.feedback} /></span>
+              <span style={{ display: "flex", gap: 4, alignItems: "center", flexWrap: "wrap" }}>
+                <FeedbackChips fb={r.feedback} />
+                {FB.some(([k]) => r.feedback_amplio?.[k]) && (
+                  <span className="chip mat-info" style={{ fontSize: 9 }} title="Hay juicios a nivel norma/global: se reusan en todas las familias que usan la regla">↗ norma</span>
+                )}
+              </span>
             </div>
             {open === r.req_id && (
               <div className="tr" style={{ background: "var(--bg)" }}>

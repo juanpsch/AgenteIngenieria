@@ -39,6 +39,7 @@ class RequisitoFeedbackIn(BaseModel):
     requisito_id: str          # id global del requisito "<norma>:<id>"
     juicio: str                # "de_acuerdo" | "no_aplica" | "regla_mal"
     notas: str | None = None
+    alcance: str = "familia"   # "familia" | "norma" | "global": hasta dónde llega el juicio
 
 
 class RequisitosIn(BaseModel):

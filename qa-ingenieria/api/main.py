@@ -589,12 +589,16 @@ def reglas_estadisticas():
                 if est in c:
                     c[est] += 1
 
-    fb_glob: dict[str, dict] = {}       # req_id -> {juicio: n}
-    fb_fam: dict[str, dict] = {}        # req_id -> {tipo_doc -> {juicio: n}}
+    fb_glob: dict[str, dict] = {}       # req_id -> {juicio: n}  (todos los alcances)
+    fb_fam: dict[str, dict] = {}        # req_id -> {tipo_doc -> {juicio: n}}  (solo alcance familia)
+    fb_amplio: dict[str, dict] = {}     # req_id -> {juicio: n}  (alcance norma/global: se reusa en todas)
     for r in historial.feedback_global():
-        rid, td, j, n = r["req_id"], r["tipo_doc"], r["juicio"], int(r["n"])
+        rid, td, j, n, al = r["req_id"], r["tipo_doc"], r["juicio"], int(r["n"]), r.get("alcance", "familia")
         gg = fb_glob.setdefault(rid, {}); gg[j] = gg.get(j, 0) + n
-        ff = fb_fam.setdefault(rid, {}).setdefault(td, {}); ff[j] = ff.get(j, 0) + n
+        if al in ("norma", "global"):
+            aa = fb_amplio.setdefault(rid, {}); aa[j] = aa.get(j, 0) + n
+        else:
+            ff = fb_fam.setdefault(rid, {}).setdefault(td, {}); ff[j] = ff.get(j, 0) + n
 
     def _pct(c):
         base = c["ok"] + c["fallo"]      # % de cumplimiento sobre lo verificable (ok / (ok+fallo))
@@ -615,6 +619,7 @@ def reglas_estadisticas():
             "severidad": meta.get("severidad"), "tipo": meta.get("tipo"),
             "disciplinas": meta.get("disciplinas") or [], "huerfana": rid not in cat,
             **g, "pct_cumple": _pct(g), "feedback": fb_glob.get(rid, {}),
+            "feedback_amplio": fb_amplio.get(rid, {}),   # juicios a nivel norma/global (se reusan)
             "familias": sorted(familias, key=lambda x: -x["n"]),
         })
     return out
@@ -640,16 +645,19 @@ def requisitos_sugerencias(tid: str):
 
 @app.post("/api/casos/{thread_id}/requisito-feedback")
 def requisito_feedback(thread_id: str, body: RequisitoFeedbackIn):
-    """Juicio humano POR REGLA (grilla): de_acuerdo / no_aplica / regla_mal. Alimenta el aprendizaje."""
+    """Juicio humano POR REGLA (grilla): de_acuerdo / no_aplica / regla_mal, con ALCANCE
+    (familia / norma / global). Alimenta el aprendizaje; norma/global se reusan en todas las familias."""
     if body.juicio not in ("de_acuerdo", "no_aplica", "regla_mal"):
         raise HTTPException(400, "juicio debe ser de_acuerdo | no_aplica | regla_mal")
+    if body.alcance not in ("familia", "norma", "global"):
+        raise HTTPException(400, "alcance debe ser familia | norma | global")
     st = _state_de(thread_id) or {}
     tipo = st.get("tipo_objetivo")
     estado = next((h.get("estado") for h in (st.get("hallazgos") or [])
                    if h.get("req_id") == body.requisito_id), None)
     historial.registrar_requisito_feedback(thread_id, body.requisito_id, body.juicio, _now(),
-                                           tipo_doc=tipo, estado=estado, nota=body.notas)
-    return {"ok": True, "requisito_id": body.requisito_id, "juicio": body.juicio}
+                                           tipo_doc=tipo, estado=estado, nota=body.notas, alcance=body.alcance)
+    return {"ok": True, "requisito_id": body.requisito_id, "juicio": body.juicio, "alcance": body.alcance}
 
 
 def _doc_path_caso(thread_id: str) -> str | None:

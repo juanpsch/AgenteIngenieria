@@ -46,9 +46,13 @@ def init() -> None:
             """CREATE TABLE IF NOT EXISTS requisito_feedback (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 thread_id TEXT, tipo_doc TEXT, req_id TEXT,
-                juicio TEXT, estado TEXT, nota TEXT, fecha TEXT
+                juicio TEXT, estado TEXT, nota TEXT, fecha TEXT,
+                alcance TEXT DEFAULT 'familia'
             )"""
         )
+        # Migración: `alcance` (familia | norma | global) — hasta dónde llega el juicio.
+        if "alcance" not in {r["name"] for r in c.execute("PRAGMA table_info(requisito_feedback)").fetchall()}:
+            c.execute("ALTER TABLE requisito_feedback ADD COLUMN alcance TEXT DEFAULT 'familia'")
         c.execute(
             "CREATE UNIQUE INDEX IF NOT EXISTS ix_req_fb ON requisito_feedback(thread_id, req_id)"
         )
@@ -123,24 +127,38 @@ def corpus_global(limit: int = 20000) -> list[dict[str, Any]]:
 
 
 def feedback_global() -> list[dict[str, Any]]:
-    """Juicios humanos por (familia, regla): [{tipo_doc, req_id, juicio, n}] — para el observatorio."""
+    """Juicios humanos por (familia, regla, alcance): [{tipo_doc, req_id, juicio, alcance, n}] — observatorio."""
     with closing(_conn()) as c:
         rows = c.execute(
-            "SELECT tipo_doc, req_id, juicio, COUNT(*) n FROM requisito_feedback GROUP BY tipo_doc, req_id, juicio",
+            "SELECT tipo_doc, req_id, juicio, COALESCE(alcance,'familia') alcance, COUNT(*) n "
+            "FROM requisito_feedback GROUP BY tipo_doc, req_id, juicio, alcance",
         ).fetchall()
     return [dict(r) for r in rows]
 
 
 def feedback_agg(tipo_doc: str) -> dict[str, dict[str, int]]:
-    """Conteo de juicios humanos por regla de una familia: {req_id: {de_acuerdo, no_aplica, regla_mal}}."""
+    """Conteo de juicios humanos por regla aplicables a una familia, RESUELTO por alcance:
+    {req_id: {de_acuerdo, no_aplica, regla_mal}}. Suma el juicio de alcance `familia` de ESTA familia +
+    el de alcance `norma`/`global` de cualquier caso (se reusa); si la familia tiene juicio propio sobre
+    una regla, ese PISA al amplio (lo más específico gana)."""
     with closing(_conn()) as c:
-        rows = c.execute(
-            "SELECT req_id, juicio, COUNT(*) n FROM requisito_feedback WHERE tipo_doc=? GROUP BY req_id, juicio",
+        fam = c.execute(
+            "SELECT req_id, juicio, COUNT(*) n FROM requisito_feedback WHERE tipo_doc=? AND COALESCE(alcance,'familia')='familia' GROUP BY req_id, juicio",
             (tipo_doc,),
         ).fetchall()
+        amplio = c.execute(
+            "SELECT req_id, juicio, COUNT(*) n FROM requisito_feedback WHERE alcance IN ('norma','global') GROUP BY req_id, juicio",
+        ).fetchall()
     out: dict[str, dict[str, int]] = {}
-    for r in rows:
+    propios: set[str] = set()
+    for r in fam:
         out.setdefault(r["req_id"], {})[r["juicio"]] = int(r["n"])
+        propios.add(r["req_id"])
+    for r in amplio:
+        if r["req_id"] in propios:        # la familia tiene el suyo -> lo más específico gana
+            continue
+        d = out.setdefault(r["req_id"], {})
+        d[r["juicio"]] = d.get(r["juicio"], 0) + int(r["n"])
     return out
 
 
@@ -167,26 +185,28 @@ def decision_de(thread_id: str) -> Optional[str]:
 
 def registrar_requisito_feedback(thread_id: str, req_id: str, juicio: str, fecha: str,
                                  tipo_doc: str | None = None, estado: str | None = None,
-                                 nota: str | None = None) -> None:
+                                 nota: str | None = None, alcance: str = "familia") -> None:
     """Guarda (o reemplaza) el juicio humano de UNA regla en un caso. `juicio` ∈ {de_acuerdo,
-    no_aplica, regla_mal}; `estado` = resultado automático al momento (para la matriz de aprendizaje)."""
+    no_aplica, regla_mal}; `estado` = resultado automático al momento (para la matriz de aprendizaje).
+    `alcance` ∈ {familia, norma, global}: hasta dónde llega el juicio (familia = solo esta; norma/global =
+    se reusa en todas las familias que usan la regla — lo más específico, la familia, gana en la resolución)."""
     with closing(_conn()) as c:
         c.execute("DELETE FROM requisito_feedback WHERE thread_id=? AND req_id=?", (thread_id, req_id))
         c.execute(
-            """INSERT INTO requisito_feedback (thread_id, tipo_doc, req_id, juicio, estado, nota, fecha)
-               VALUES (?,?,?,?,?,?,?)""",
-            (thread_id, tipo_doc, req_id, juicio, estado, nota, fecha),
+            """INSERT INTO requisito_feedback (thread_id, tipo_doc, req_id, juicio, estado, nota, fecha, alcance)
+               VALUES (?,?,?,?,?,?,?,?)""",
+            (thread_id, tipo_doc, req_id, juicio, estado, nota, fecha, alcance),
         )
         c.commit()
 
 
 def feedback_de(thread_id: str) -> dict[str, dict[str, Any]]:
-    """Juicios humanos por regla de un caso: {req_id: {juicio, nota}}."""
+    """Juicios humanos por regla de un caso: {req_id: {juicio, nota, alcance}}."""
     with closing(_conn()) as c:
         rows = c.execute(
-            "SELECT req_id, juicio, nota FROM requisito_feedback WHERE thread_id=?", (thread_id,)
+            "SELECT req_id, juicio, nota, alcance FROM requisito_feedback WHERE thread_id=?", (thread_id,)
         ).fetchall()
-        return {r["req_id"]: {"juicio": r["juicio"], "nota": r["nota"]} for r in rows}
+        return {r["req_id"]: {"juicio": r["juicio"], "nota": r["nota"], "alcance": r["alcance"] or "familia"} for r in rows}
 
 
 def listar(limit: int = 200) -> list[dict[str, Any]]:
