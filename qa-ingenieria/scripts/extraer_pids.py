@@ -27,6 +27,10 @@ EXTRACCIONES = [
     # Leyendas / tablas de símbolos
     ("instrumentacion/pid_kimray.pdf",    [10, 11, 12, 13], "instrumentacion/leyendas/kimray_simbolos_equipos.pdf"),
     ("instrumentacion/instr_utn_frrq.pdf", [8],           "instrumentacion/leyendas/utn_simbolos_letras_isa.pdf"),
+    # P&ID reales de gas argentino (EIA Planta Compresora Salliqueló) → positivos del genérico
+    ("instrumentacion/fuentes/salliquelo_eia.pdf", [231], "instrumentacion/pid_validos/salliquelo_pid_1.pdf"),
+    ("instrumentacion/fuentes/salliquelo_eia.pdf", [232], "instrumentacion/pid_validos/salliquelo_pid_2.pdf"),
+    ("instrumentacion/fuentes/salliquelo_eia.pdf", [233], "instrumentacion/pid_validos/salliquelo_pid_3.pdf"),
 ]
 
 

@@ -271,9 +271,11 @@ def _vlm_payload(doc: dict, cfg: dict, candidatas: list[Hallazgo]) -> dict:
         ref_imgs: list = []
         for v in criterios:
             partes.append(f"### Criterios — {v['norma_ref']}\n{v['criterios']}")
-            img = _cargar_referencia(v.get("referencia_imagen"))
-            if img:
-                ref_imgs.append(img)
+            ri = v.get("referencia_imagen")
+            for ruta in (ri if isinstance(ri, list) else [ri]):   # 1 o varias leyendas de referencia
+                img = _cargar_referencia(ruta)
+                if img:
+                    ref_imgs.append(img)
         if ref_imgs:
             partes.insert(0, f"## NOTA: las primeras {len(ref_imgs)} imagen(es) son la LEYENDA/ESTÁNDAR de "
                              "referencia de la(s) norma(s); las que siguen son el DOCUMENTO a revisar. "

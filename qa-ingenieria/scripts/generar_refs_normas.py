@@ -17,6 +17,7 @@ _OUT = _BASE / "knowledge" / "normas" / "refs"
 # (PDF fuente relativo a la raíz, página 1-based, nombre de salida)
 REFS = [
     ("tests/fixtures/docs/instrumentacion/pid_validos/pid_camuzzi_simbologia.pdf", 1, "camuzzi_simbologia.png"),
+    ("tests/fixtures/docs/instrumentacion/fuentes/camuzzi_glosario.pdf", 14, "camuzzi_glosario.png"),  # símbolos instrum./válvulas/actuadores
 ]
 
 

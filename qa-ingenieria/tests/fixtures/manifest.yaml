@@ -59,6 +59,12 @@ docs:
   - { id: pid_camuzzi_simbologia, archivo: instrumentacion/pid_validos/pid_camuzzi_simbologia.pdf, tipo: pid, disciplina: instrumentacion, norma_esperada: iram-instrumentacion, caso: valido,
       url: "https://www.camuzzigas.com/wp-content/uploads/2020/11/sce-ec-101-0001-simbologa-pid-plantas-compresoras-de-gas-natural.pdf" }  # leyenda ISA-5.1 oil&gas, español
 
+  # --- Fuentes para extraer P&ID reales / referencias (no se usan enteras) ---
+  - { id: salliquelo_eia, archivo: instrumentacion/fuentes/salliquelo_eia.pdf, tipo: pid, disciplina: instrumentacion, norma_esperada: iram-instrumentacion, caso: fuente,
+      url: "https://www.ambiente.gba.gob.ar/sites/default/files/EIA%20Planta%20Compresora%20Salliquel%C3%B3.pdf" }  # EIA 238 pág; P&ID reales en págs ~221/231/232 (se extraen)
+  - { id: camuzzi_glosario, archivo: instrumentacion/fuentes/camuzzi_glosario.pdf, tipo: pid, disciplina: instrumentacion, norma_esperada: camuzzi, caso: fuente,
+      url: "https://www.camuzzigas.com/wp-content/uploads/2020/06/sce-ec-301-0002-00-glosario-terminologa-y-simbologa-plantas-compresoras-de-gas-natural.pdf" }  # glosario/simbología Camuzzi (2ª referencia VLM)
+
   # --- "FALSOS P&ID" (parecen pero NO son lámina — para RECHAZAR como negativos) ---
   - { id: noespid_paper_digitize, archivo: instrumentacion/pid_invalidos/noespid_paper_digitize.pdf, tipo: pid, disciplina: instrumentacion, norma_esperada: iram-instrumentacion, caso: no_es_pid,
       url: "https://arxiv.org/pdf/2109.03794" }  # paper con P&ID embebido en prosa

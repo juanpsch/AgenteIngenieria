@@ -48,7 +48,9 @@ lookups:
 
 vlm:
   norma_ref: Camuzzi — Simbología P&ID (ISA-5.1)
-  referencia_imagen: knowledge/normas/refs/camuzzi_simbologia.png   # la leyenda como ground-truth del VLM
+  referencia_imagen:                                   # leyendas como ground-truth del VLM (1 o varias)
+    - knowledge/normas/refs/camuzzi_simbologia.png     # lámina maestra SCE-EC-101
+    - knowledge/normas/refs/camuzzi_glosario.png       # símbolos de instrumentos/válvulas/actuadores SCE-EC-301 p14
   criterios: >
     Compará los símbolos del P&ID contra la LEYENDA TIPO de Camuzzi adjunta: forma de válvulas e
     instrumentos, codificación de líneas, símbolos de función y nomenclatura de instrumentos. Señalá
