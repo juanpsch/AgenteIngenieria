@@ -119,6 +119,19 @@ export interface Tipo {
   disciplinas: string[]; refs_count: number; maturity: string; actualizado?: string | null;
   facetas?: Record<string, string>;   // coordenadas (tipo/organizacion/disciplina/jurisdiccion) para pivot/filtros
 }
+export interface ReglaFamiliaStat {
+  tipo_doc: string; nombre: string; facetas: Record<string, string>;
+  n: number; ok: number; fallo: number; no_verificable: number; advertencia: number;
+  pct_cumple: number | null; feedback: Record<string, number>;
+}
+export interface ReglaStat {        // observatorio de reglas: estadística de cumplimiento + feedback, facetada
+  req_id: string; id?: string; descripcion?: string;
+  norma_id?: string; norma_ref?: string; severidad?: string; tipo?: string;
+  disciplinas: string[]; huerfana: boolean;
+  n: number; ok: number; fallo: number; no_verificable: number; advertencia: number;
+  pct_cumple: number | null; feedback: Record<string, number>;
+  familias: ReglaFamiliaStat[];
+}
 export interface Referencia { ref_id: string; filename: string; origin: string; }
 export interface Cobertura { campo: string; patron: string; n: number; total: number; error?: boolean; }
 export type RuleTipo = "regex" | "filename" | "presencia";
@@ -209,6 +222,7 @@ export const api = {
     req<{ verdicto: string; resuelta: boolean }>("POST", `/casos/${threadId}/revision/decision`, { decision, notas }),
   revisionVlm: (threadId: string) => req<RevisionBlock>("POST", `/casos/${threadId}/revision/vlm`),
   catalogoRequisitos: () => req<CatalogoRequisito[]>("GET", "/normas/catalogo"),
+  reglasEstadisticas: () => req<ReglaStat[]>("GET", "/reglas/estadisticas"),
   putRequisitos: (id: string, requisitos: string[]) =>
     req<{ ok: boolean; requisitos_resueltos: string[] }>("PUT", `/tipos/${id}/requisitos`, { requisitos }),
   sugerenciasRequisitos: (id: string) => req<SugerenciasRequisitos>("GET", `/tipos/${id}/requisitos/sugerencias`),

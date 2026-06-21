@@ -102,6 +102,35 @@ def corpus_requisitos(tipo_doc: str, limit: int = 5000) -> list[dict[str, Any]]:
     return out
 
 
+def corpus_global(limit: int = 20000) -> list[dict[str, Any]]:
+    """Todas las validaciones con requisitos (cualquier familia): [{tipo_doc, admitido, requisitos}].
+    Base del observatorio de reglas (estadística de cumplimiento facetada)."""
+    with closing(_conn()) as c:
+        rows = c.execute(
+            "SELECT tipo_doc, veredicto, decision, requisitos FROM validaciones ORDER BY id DESC LIMIT ?",
+            (limit,),
+        ).fetchall()
+    out: list[dict[str, Any]] = []
+    for r in rows:
+        d = dict(r)
+        try:
+            reqs = json.loads(d.get("requisitos") or "{}")
+        except Exception:
+            reqs = {}
+        if reqs:
+            out.append({"tipo_doc": d.get("tipo_doc"), "admitido": _admitido(d), "requisitos": reqs})
+    return out
+
+
+def feedback_global() -> list[dict[str, Any]]:
+    """Juicios humanos por (familia, regla): [{tipo_doc, req_id, juicio, n}] — para el observatorio."""
+    with closing(_conn()) as c:
+        rows = c.execute(
+            "SELECT tipo_doc, req_id, juicio, COUNT(*) n FROM requisito_feedback GROUP BY tipo_doc, req_id, juicio",
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
 def feedback_agg(tipo_doc: str) -> dict[str, dict[str, int]]:
     """Conteo de juicios humanos por regla de una familia: {req_id: {de_acuerdo, no_aplica, regla_mal}}."""
     with closing(_conn()) as c:

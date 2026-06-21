@@ -1,6 +1,6 @@
-import { ShieldCheck, Layers, Clock } from "lucide-react";
+import { ShieldCheck, Layers, Clock, BarChart3 } from "lucide-react";
 
-export type Section = "validar" | "templates" | "historial";
+export type Section = "validar" | "templates" | "reglas" | "historial";
 
 export function Sidebar({ section, onNav, pendientes }: { section: Section; onNav: (s: Section) => void; pendientes: number }) {
   const Item = ({ id, label, Icon }: { id: Section; label: string; Icon: typeof Clock }) => (
@@ -32,6 +32,7 @@ export function Sidebar({ section, onNav, pendientes }: { section: Section; onNa
       <div className="nav-group">
         <div className="nav-h">ADMINISTRACIÓN</div>
         <Item id="templates" label="Templates de referencia" Icon={Layers} />
+        <Item id="reglas" label="Observatorio de reglas" Icon={BarChart3} />
         <Item id="historial" label="Historial y auditoría" Icon={Clock} />
       </div>
       <div className="side-foot">

@@ -3,12 +3,14 @@ import { Sidebar, type Section } from "./components/Sidebar";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { Validar } from "./screens/Validar";
 import { Templates } from "./screens/Templates";
+import { Reglas } from "./screens/Reglas";
 import { Historial } from "./screens/Historial";
 import { api } from "./api/client";
 
 const HEAD: Record<Section, { h1: string; p: string }> = {
   validar: { h1: "Validar documento", p: "Subí un documento y cotejalo contra un template de referencia." },
   templates: { h1: "Templates de referencia", p: "Definí tipos de documento, sus reglas y ejemplos de calibración." },
+  reglas: { h1: "Observatorio de reglas", p: "Estadística de cumplimiento por regla, facetada, con el feedback humano." },
   historial: { h1: "Historial y auditoría", p: "Validaciones registradas y métricas." },
 };
 
@@ -33,6 +35,7 @@ export default function App() {
           <ErrorBoundary key={section}>
             {section === "validar" && <Validar />}
             {section === "templates" && <Templates />}
+            {section === "reglas" && <Reglas />}
             {section === "historial" && <Historial />}
           </ErrorBoundary>
         </div>

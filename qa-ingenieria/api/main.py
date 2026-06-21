@@ -564,6 +564,62 @@ def normas_catalogo():
     return normas.catalogo_requisitos()
 
 
+@app.get("/api/reglas/estadisticas")
+def reglas_estadisticas():
+    """Observatorio de reglas: por cada regla, su estadística de cumplimiento (global y POR FAMILIA, con las
+    facetas de cada familia) + el feedback humano agregado. Permite analizar qué reglas afectan a qué
+    documentos/familias y revisar el juicio humano. Las familias traen sus facetas para poder facetar la vista."""
+    cat = {q["req_id"]: q for q in normas.catalogo_requisitos()}
+    tipos = cargar_tipos()
+    fam_facetas = {tid: ((t.get("revision") or {}).get("facetas") or {}) for tid, t in tipos.items()}
+    fam_nombre = {tid: (t.get("nombre") or tid) for tid, t in tipos.items()}
+
+    def _z():
+        return {"n": 0, "ok": 0, "fallo": 0, "no_verificable": 0, "advertencia": 0}
+
+    glob: dict[str, dict] = {}          # req_id -> contadores
+    porfam: dict[str, dict] = {}        # req_id -> {tipo_doc -> contadores}
+    for row in historial.corpus_global():
+        td = row.get("tipo_doc")
+        for rid, est in (row.get("requisitos") or {}).items():
+            g = glob.setdefault(rid, _z())
+            f = porfam.setdefault(rid, {}).setdefault(td, _z())
+            for c in (g, f):
+                c["n"] += 1
+                if est in c:
+                    c[est] += 1
+
+    fb_glob: dict[str, dict] = {}       # req_id -> {juicio: n}
+    fb_fam: dict[str, dict] = {}        # req_id -> {tipo_doc -> {juicio: n}}
+    for r in historial.feedback_global():
+        rid, td, j, n = r["req_id"], r["tipo_doc"], r["juicio"], int(r["n"])
+        gg = fb_glob.setdefault(rid, {}); gg[j] = gg.get(j, 0) + n
+        ff = fb_fam.setdefault(rid, {}).setdefault(td, {}); ff[j] = ff.get(j, 0) + n
+
+    def _pct(c):
+        base = c["ok"] + c["fallo"]      # % de cumplimiento sobre lo verificable (ok / (ok+fallo))
+        return round(100 * c["ok"] / base, 1) if base else None
+
+    out = []
+    for rid in sorted(set(cat) | set(glob)):
+        meta = cat.get(rid, {})
+        g = glob.get(rid, _z())
+        familias = [
+            {"tipo_doc": td, "nombre": fam_nombre.get(td, td), "facetas": fam_facetas.get(td, {}),
+             **c, "pct_cumple": _pct(c), "feedback": fb_fam.get(rid, {}).get(td, {})}
+            for td, c in (porfam.get(rid) or {}).items()
+        ]
+        out.append({
+            "req_id": rid, "id": meta.get("id"), "descripcion": meta.get("descripcion"),
+            "norma_id": meta.get("norma_id"), "norma_ref": meta.get("norma_ref"),
+            "severidad": meta.get("severidad"), "tipo": meta.get("tipo"),
+            "disciplinas": meta.get("disciplinas") or [], "huerfana": rid not in cat,
+            **g, "pct_cumple": _pct(g), "feedback": fb_glob.get(rid, {}),
+            "familias": sorted(familias, key=lambda x: -x["n"]),
+        })
+    return out
+
+
 @app.get("/api/perfiles")
 def list_perfiles():
     """Perfiles de cumplimiento (eje proyecto/cliente) con sus requisitos resueltos, para asignar en bloque."""
