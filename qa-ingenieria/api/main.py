@@ -207,7 +207,8 @@ def get_tipo(tid: str):
         raise HTTPException(404, "tipo no encontrado")
     resueltos = [r.get("req_id") for r in normas.resolver_requisitos(t.get("revision") or {}) if r.get("req_id")]
     return {**t, "yaml": to_yaml(t), "refs_count": refs.refs_count(tid), "maturity": refs.maturity(tid),
-            "referencias": refs.listar_referencias(tid), "requisitos_resueltos": resueltos}
+            "referencias": refs.listar_referencias(tid), "requisitos_resueltos": resueltos,
+            "negativos": refs.listar_negativos(tid), "negativos_count": refs.negativos_count(tid)}
 
 
 @app.post("/api/tipos/capturar")
@@ -268,6 +269,32 @@ def add_ref(tid: str, file: UploadFile = File(...)):
 @app.delete("/api/tipos/{tid}/referencias/{ref_id}")
 def del_ref(tid: str, ref_id: str):
     return refs.eliminar_referencia(tid, ref_id)
+
+
+@app.delete("/api/tipos/{tid}/negativos/{ref_id}")
+def del_negativo(tid: str, ref_id: str):
+    """Borra un contra-ejemplo del tipo (no toca CLIP; el score se recalcula solo en la próxima validación)."""
+    return refs.eliminar_negativo(tid, ref_id)
+
+
+@app.get("/api/tipos/{tid}/negativos/{ref_id}/preview")
+def neg_preview(tid: str, ref_id: str, page: int = 1):
+    """Render PNG de una página de un contra-ejemplo (galería del template)."""
+    import base64
+
+    ref = next((r for r in refs.listar_negativos(tid) if r.get("ref_id") == ref_id), None)
+    if not ref:
+        raise HTTPException(404, "contra-ejemplo no encontrado")
+    p = ref.get("path")
+    if not p or not Path(p).exists():
+        raise HTTPException(404, "archivo del contra-ejemplo no encontrado")
+    ext = Path(p).suffix.lower().lstrip(".")
+    if ext in ("png", "jpg", "jpeg", "webp", "bmp", "tif", "tiff"):
+        return Response(content=Path(p).read_bytes(), media_type=f"image/{ext}")
+    durl = docs.render_pdf_page(p, page=max(1, page))
+    if not durl:
+        raise HTTPException(404, "página fuera de rango")
+    return Response(content=base64.b64decode(durl.split(",", 1)[1]), media_type="image/png")
 
 
 @app.put("/api/tipos/{tid}/zonas")

@@ -187,6 +187,8 @@ export const api = {
   addRef(id: string, file: File) { const fd = new FormData(); fd.append("file", file); return form<any>(`/tipos/${id}/referencias`, fd); },
   delRef: (id: string, refId: string) => req("DELETE", `/tipos/${id}/referencias/${refId}`),
   refPreviewUrl: (id: string, refId: string, page = 1) => `/api/tipos/${id}/referencias/${refId}/preview?page=${page}`,
+  delNeg: (id: string, refId: string) => req("DELETE", `/tipos/${id}/negativos/${refId}`),
+  negPreviewUrl: (id: string, refId: string, page = 1) => `/api/tipos/${id}/negativos/${refId}/preview?page=${page}`,
   putZonas: (id: string, zonas: Zona[]) => req<{ ok: boolean; zonas: Zona[]; refs_reembebidas: number; maturity: string }>("PUT", `/tipos/${id}/zonas`, { zonas }),
   zonaSugerida: (id: string) => req<{ zona: BBox }>("GET", `/tipos/${id}/zona-sugerida`),
   sugerirVariante: (id: string, campo: string, valor: string) => req<VarianteSugerida>("POST", `/tipos/${id}/reglas/sugerir-variante`, { campo, valor }),

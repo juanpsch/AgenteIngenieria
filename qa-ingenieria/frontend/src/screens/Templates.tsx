@@ -74,6 +74,11 @@ function Detalle({ d, onBack, reload }: { d: any; onBack: () => void; reload: ()
     try { await api.delRef(d.tipo_doc, rid); reload(); }
     catch (e) { setRefMsg("No se pudo borrar: " + errMsg(e)); }
   }
+  async function delNeg(rid: string) {
+    setRefMsg("");
+    try { await api.delNeg(d.tipo_doc, rid); reload(); }
+    catch (e) { setRefMsg("No se pudo borrar: " + errMsg(e)); }
+  }
 
   return (
     <div className="ct-fade" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -127,6 +132,40 @@ function Detalle({ d, onBack, reload }: { d: any; onBack: () => void; reload: ()
           </div>
         </div>
       </div>
+
+      {!!(d.negativos || []).length && (
+        <div className="card">
+          <div className="dim-h">Contra-ejemplos (negativos) · {d.negativos_count ?? (d.negativos || []).length}</div>
+          <div className="faint" style={{ fontSize: 11.5, margin: "2px 0 8px" }}>
+            Documentos rechazados que el modelo daba admisibles: el score <b>penaliza</b> a los parecidos. No se promueven; se agregan a pedido desde el caso.
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 12 }}>
+            {(d.negativos || []).map((r: any) => {
+              const url = api.negPreviewUrl(d.tipo_doc, r.ref_id);
+              return (
+                <div key={r.ref_id} style={{ border: "1px solid var(--red-border, #e3b7b7)", borderRadius: 10, overflow: "hidden" }}>
+                  <div style={{ position: "relative", height: 112, background: "#FAF4F4", cursor: "zoom-in", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", fontSize: 11, color: "var(--faint)" }}
+                    onClick={() => setPrev({ src: url, title: r.filename, tag: "Contra-ejemplo" })}>
+                    sin vista previa
+                    <img src={url} alt={r.filename} style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute" }}
+                      onError={(e) => { e.currentTarget.style.display = "none"; }} />
+                  </div>
+                  <div style={{ padding: 8 }}>
+                    <div className="mono" style={{ fontSize: 10.5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={r.filename}>{r.filename}</div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 6 }}>
+                      <span className="chip mat-red">contra-ejemplo</span>
+                      <span>
+                        <button className="btn btn-ghost" style={{ padding: "3px 6px" }} title="Previsualizar" onClick={() => setPrev({ src: url, title: r.filename, tag: "Contra-ejemplo" })}><Eye size={13} /></button>
+                        <button className="btn btn-ghost" style={{ padding: "3px 6px" }} title="Borrar" onClick={() => delNeg(r.ref_id)}><Trash2 size={13} color="var(--red)" /></button>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <ZonaEditor
         tipoDoc={d.tipo_doc}

@@ -213,6 +213,24 @@ def vectores_negativos(tipo_doc: str) -> list[dict[str, list]]:
     return _vectores_de(listar_negativos(tipo_doc))
 
 
+def eliminar_negativo(tipo_doc: str, ref_id: str) -> dict[str, Any]:
+    """Borra un contra-ejemplo (archivo + embedding + entrada del index). No toca CLIP: la próxima
+    validación recalcula sola la penalización con el set restante."""
+    items = listar_negativos(tipo_doc)
+    for r in items:
+        if r.get("ref_id") == ref_id:
+            for k in ("path", "embed_path"):
+                if r.get(k):
+                    try:
+                        Path(r[k]).unlink()
+                    except Exception:
+                        pass
+    keep = [r for r in items if r.get("ref_id") != ref_id]
+    _neg_dir(tipo_doc).mkdir(parents=True, exist_ok=True)
+    _neg_index_path(tipo_doc).write_text(json.dumps(keep, ensure_ascii=False, indent=2), encoding="utf-8")
+    return {"negativos_count": len(keep)}
+
+
 def vectores_referencia(tipo_doc: str) -> list[list[float]]:
     """Embeddings de página de todas las referencias (aplanado). Compat."""
     return [v for g in vectores_por_referencia(tipo_doc) for v in g.get("paginas", [])]
