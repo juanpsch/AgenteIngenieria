@@ -8,6 +8,13 @@ const EST_GLYPH: Record<EstadoRevision, string> = { ok: "✓", fallo: "✕", adv
 const DIM_LABEL: Record<string, string> = { legibilidad: "Legibilidad", norma: "Norma / nomenclatura", contenido: "Contenido", consistencia: "Consistencia" };
 const SEV_CLS: Record<string, string> = { bloqueante: "mat-red", mayor: "mat-amber", menor: "mat-neutral", observacion: "mat-ok" };
 const NORMA_FALLBACK = "General / interno";
+const ORIGEN_EJE: Record<string, string> = { organizacion: "empresa", tipo: "tipo", disciplina: "disciplina", jurisdiccion: "jurisdicción", proyecto: "proyecto" };
+function origenLabel(o?: string): string | null {
+  if (!o) return null;
+  if (o === "template") return "del template";
+  const [e, v] = o.split("=");
+  return `vía ${ORIGEN_EJE[e] || e}: ${v}`;
+}
 const JUICIOS: { v: Juicio; label: string; cls: string; hint: string }[] = [
   { v: "de_acuerdo", label: "de acuerdo", cls: "mat-ok", hint: "el check es válido en esta familia" },
   { v: "no_aplica", label: "no aplica", cls: "mat-neutral", hint: "esta regla no corresponde a esta familia" },
@@ -87,6 +94,7 @@ export function GrillaRequisitos({ hallazgos, threadId, feedbackInicial }: {
                         <div className="lab" style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                           <span>{h.razonamiento || h.check_id}</span>
                           {h.severidad && <span className={`chip ${SEV_CLS[h.severidad] || "mat-neutral"}`} style={{ fontSize: 9.5 }}>{h.severidad}</span>}
+                          {origenLabel(h.origen) && <span className="chip mat-neutral" style={{ fontSize: 9 }} title="De qué faceta/eje viene esta regla">{origenLabel(h.origen)}</span>}
                           {h.estado_previo && <span className="chip mat-info" style={{ fontSize: 9.5 }} title={h.nota_vlm || ""}>ⓘ verificado por IA</span>}
                           {h.ubicacion?.pagina && <span className="faint" style={{ fontSize: 10, fontWeight: 400 }}>pág {h.ubicacion.pagina}</span>}
                         </div>

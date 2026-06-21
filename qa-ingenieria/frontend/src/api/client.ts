@@ -68,6 +68,7 @@ export interface Hallazgo {
   req_id?: string;
   estado_previo?: EstadoRevision;   // estado por texto antes de que el VLM verificara la regla
   nota_vlm?: string;                // qué concluyó el VLM (por qué cambió la regla)
+  origen?: string;                  // de qué faceta vino la regla ("organizacion=camuzzi" / "tipo=pid" / "template")
 }
 export type Juicio = "de_acuerdo" | "no_aplica" | "regla_mal";
 export interface CatalogoRequisito {

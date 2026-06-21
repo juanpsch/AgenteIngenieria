@@ -33,6 +33,7 @@ class Hallazgo(TypedDict, total=False):
     req_id: str             # id global del requisito "<norma>:<id>" (para el feedback por regla)
     estado_previo: str      # estado por TEXTO antes de que el VLM verificara la regla (marca el cambio)
     nota_vlm: str           # qué concluyó el VLM al verificar la regla (trazabilidad del override)
+    origen: str             # qué faceta trajo la regla (p.ej. "organizacion=camuzzi" / "tipo=pid" / "template")
 
 
 def mk(check_id: str, dimension: str, severidad: str, estado: str, *,

@@ -191,6 +191,8 @@ def _tier2_reglas(doc: dict, cfg: dict, extracto: dict) -> list[Hallazgo]:
         h = reglas_revision.evaluar_regla(r, texto, tablas)
         if dominante and h.get("estado") == "fallo" and r.get("tipo") in _TIPOS_AUSENCIA:
             h = _degradar_no_verificable(h)
+        if r.get("origen"):                       # de qué faceta vino la regla (Fase 2)
+            h = {**h, "origen": r["origen"]}
         out.append(h)
     return out
 
