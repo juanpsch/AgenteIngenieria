@@ -34,6 +34,7 @@ export interface ScoreDetalle {
   n_negativos?: number;             // contra-ejemplos (docs rechazados por el humano)
   negativos?: number | null;        // cuánto se parece a un negativo (0–100)
   score_positivos?: number | null;  // score contra positivos ANTES de penalizar
+  heredado_de?: string | null;      // si calibra con ejemplos heredados de otra familia (cold-start)
 }
 export type ZonaClase = "identidad" | "visual" | "regla";
 export interface ZonaResultado {

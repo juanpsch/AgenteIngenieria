@@ -31,6 +31,27 @@ def test_familia_plana_legacy_sigue_andando():
     assert "aea-90364" in ids
 
 
+def test_familia_generica_desde_faceta():
+    assert facetas.familia_generica("pid") == "pid_instrumentacion"
+    assert facetas.familia_generica("inexistente") is None
+
+
+def test_referencias_heredadas_en_cold_start(monkeypatch):
+    # familia con 0 ejemplos propios hereda los de su familia genérica; con muchos propios, NO
+    from tools import refs
+    monkeypatch.setattr(refs, "_familia_generica", lambda t: "padre" if t == "hijo" else None)
+    padre_refs = [{"ref_id": "p1"}, {"ref_id": "p2"}]
+    monkeypatch.setattr(refs, "vectores_por_referencia",
+                        lambda t: [] if t == "hijo" else (padre_refs if t == "padre" else []))
+    grupos, heredado = refs.referencias_resueltas("hijo")
+    assert heredado == "padre" and len(grupos) == 2          # 0 propios -> hereda
+
+    monkeypatch.setattr(refs, "vectores_por_referencia",
+                        lambda t: [{"ref_id": f"h{i}"} for i in range(6)] if t == "hijo" else padre_refs)
+    grupos2, heredado2 = refs.referencias_resueltas("hijo")
+    assert heredado2 is None and len(grupos2) == 6          # >=5 propios -> NO hereda
+
+
 def test_template_pisa_a_faceta():
     # una regla inline del template (lo más específico) gana sobre la misma id traída por una faceta
     rev = {"facetas": {"tipo": "pid"},

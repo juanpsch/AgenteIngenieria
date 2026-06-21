@@ -70,6 +70,7 @@ export function ScoreBreakdown({ d }: { d: ScoreDetalle | null }) {
 
       <div className="faint" style={{ fontSize: 11.5, marginTop: 11 }}>
         Comparado contra <b>{n_referencias}</b> ejemplo{n_referencias === 1 ? "" : "s"} de referencia
+        {d.heredado_de && <> · <b>heredados de {d.heredado_de}</b> (todavía sin ejemplos propios)</>}
         {ref_top?.filename && (
           <> · más parecido: <span className="mono">{ref_top.filename}</span>{ref_top.score != null && <> ({ref_top.score}%)</>}</>
         )}

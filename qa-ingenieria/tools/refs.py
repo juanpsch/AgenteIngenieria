@@ -213,6 +213,43 @@ def vectores_negativos(tipo_doc: str) -> list[dict[str, list]]:
     return _vectores_de(listar_negativos(tipo_doc))
 
 
+def _familia_generica(tipo_doc: str) -> str | None:
+    """Familia de la que `tipo_doc` HEREDA ejemplos (cold-start), según su faceta `tipo`. None si no aplica."""
+    try:
+        from tools import facetas as F
+        from tools.tipos import cargar_tipos
+        tipo_val = (((cargar_tipos().get(tipo_doc) or {}).get("revision") or {}).get("facetas") or {}).get("tipo")
+        gen = F.familia_generica(tipo_val) if tipo_val else None
+        return gen if gen and gen != tipo_doc else None
+    except Exception:
+        return None
+
+
+def referencias_resueltas(tipo_doc: str) -> tuple[list[dict[str, list]], str | None]:
+    """Ejemplos POSITIVOS para puntuar: los propios; si tiene menos de `CALIBRATED_MIN`, suma los de su
+    familia genérica (herencia para cold-start). Devuelve (grupos, heredado_de). Los heredados habilitan un
+    score INFORMATIVO pero nunca hacen DECISIVA la familia (eso sigue atado a los ejemplos propios)."""
+    propias = vectores_por_referencia(tipo_doc)
+    if len(propias) >= _calibrated_min():
+        return propias, None
+    gen = _familia_generica(tipo_doc)
+    if gen:
+        heredadas = vectores_por_referencia(gen)
+        if heredadas:
+            return propias + heredadas, gen
+    return propias, None
+
+
+def negativos_resueltos(tipo_doc: str) -> list[dict[str, list]]:
+    """Contra-ejemplos para penalizar: los propios; en modo herencia (pocos positivos propios) suma los de la
+    familia genérica."""
+    propios = vectores_negativos(tipo_doc)
+    if len(vectores_por_referencia(tipo_doc)) >= _calibrated_min():
+        return propios
+    gen = _familia_generica(tipo_doc)
+    return (propios + vectores_negativos(gen)) if gen else propios
+
+
 def eliminar_negativo(tipo_doc: str, ref_id: str) -> dict[str, Any]:
     """Borra un contra-ejemplo (archivo + embedding + entrada del index). No toca CLIP: la próxima
     validación recalcula sola la penalización con el set restante."""

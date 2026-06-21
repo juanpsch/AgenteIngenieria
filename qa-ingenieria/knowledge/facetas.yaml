@@ -17,8 +17,9 @@ ejes:                       # precedencia: MENOR número = MÁS específico (pis
 valores:                    # por eje: valor -> {nombre, padre?, normas?, requisitos?, excluir?}
   tipo:
     diagrama:   { nombre: "Diagramas" }
-    pid:        { nombre: "P&ID", padre: diagrama, normas: [iram-instrumentacion] }
-    plano:      { nombre: "Plano (dibujo técnico)", normas: [iram-dibujo] }
+    # familia_generica: de dónde HEREDA ejemplos un subgrupo nuevo (cold-start) hasta tener los propios
+    pid:        { nombre: "P&ID", padre: diagrama, normas: [iram-instrumentacion], familia_generica: pid_instrumentacion }
+    plano:      { nombre: "Plano (dibujo técnico)", normas: [iram-dibujo], familia_generica: plano_generico }
     memoria:    { nombre: "Memoria de cálculo" }
     hoja_datos: { nombre: "Hoja de datos de recipiente", normas: [asme-viii-1] }
     esquematico: { nombre: "Esquemático electrónico" }

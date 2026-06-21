@@ -61,3 +61,8 @@ def bundle(eje: str, v: str) -> dict[str, Any]:
 
 def nombre(eje: str, v: str) -> str:
     return _valor(eje, v).get("nombre") or v
+
+
+def familia_generica(tipo_valor: str) -> str | None:
+    """Familia de la que un subgrupo HEREDA ejemplos (cold-start), según el valor del eje `tipo`."""
+    return _valor("tipo", tipo_valor).get("familia_generica")

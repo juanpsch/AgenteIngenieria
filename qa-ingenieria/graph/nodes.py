@@ -232,11 +232,11 @@ def _evaluar_similitud(tipo: str, doc: dict, bbox: dict | None = None, zonas: li
     if not similarity.disponible():
         det = "Backend de embeddings no disponible — el cotejo siguió por reglas."
         return _res({"dimension": "identidad", "label": label, "state": "info", "detail": det, "requerido": False}, None, True)
-    if mat == "solo_reglas":
-        return _res(dict(_SIM_CHECK), None, True)
-
-    ref_groups = refs.vectores_por_referencia(tipo)
-    neg_groups = refs.vectores_negativos(tipo)   # contra-ejemplos (docs rechazados por el humano)
+    # Ejemplos propios; si son pocos, hereda los de la familia genérica del tipo (cold-start).
+    ref_groups, heredado = refs.referencias_resueltas(tipo)
+    if not ref_groups:
+        return _res(dict(_SIM_CHECK), None, True)   # ni propios ni heredados -> sin score visual
+    neg_groups = refs.negativos_resueltos(tipo)   # contra-ejemplos (propios + heredados en modo herencia)
     cand_caj: list = []
     for z in zonas:
         pg = max(0, int(z.get("pagina", 1)) - 1)
@@ -261,16 +261,17 @@ def _evaluar_similitud(tipo: str, doc: dict, bbox: dict | None = None, zonas: li
     if d["top_index"] is not None:
         g = ref_groups[d["top_index"]]
         top = {"filename": g.get("filename"), "score": d["top_score"]}
+    decisivo = mat == "calibrado"   # solo los ejemplos PROPIOS deciden; los heredados son informativos
     detalle = {
         "score": s, "cajetin": d["cajetin"], "pagina": d["pagina"],
         "peso_cajetin": round(wc, 2), "peso_pagina": round(wp, 2),
         "umbral_aprobacion": appr, "umbral_revision": rev, "umbrales_auto": auto_um is not None,
-        "n_referencias": len(ref_groups), "ref_top": top, "decisivo": mat == "calibrado",
+        "n_referencias": len(ref_groups), "ref_top": top, "decisivo": decisivo,
         "n_negativos": len(neg_groups), "negativos": d.get("negativos"),
-        "score_positivos": d.get("score_positivos"),
+        "score_positivos": d.get("score_positivos"), "heredado_de": heredado,
     }
 
-    if mat == "calibrado":
+    if decisivo:
         v = clasificar_score(s, (appr, rev))
         st = {"valido": "pass", "revision_manual": "warn", "invalido": "fail"}[v]
         det = {"valido": f"{s}% · sobre umbral ({appr:.0f})",
@@ -278,9 +279,10 @@ def _evaluar_similitud(tipo: str, doc: dict, bbox: dict | None = None, zonas: li
                "invalido": f"{s}% · bajo umbral ({rev:.0f})"}[v]
         return _res({"dimension": "identidad", "label": label, "state": st, "detail": det, "requerido": False},
                     s, False, v, detalle)
-    # calibrando -> check blando, score informativo (no concluyente)
-    return _res({"dimension": "identidad", "label": label, "state": "info",
-                 "detail": f"{s}% · calibrando ({len(ref_groups)} ej., no concluyente)", "requerido": False},
+    # informativo (no concluyente): calibrando con lo propio, o usando ejemplos heredados
+    det = (f"{s}% · usando ejemplos heredados de {heredado} (no concluyente)" if heredado
+           else f"{s}% · calibrando ({len(ref_groups)} ej., no concluyente)")
+    return _res({"dimension": "identidad", "label": label, "state": "info", "detail": det, "requerido": False},
                 s, True, None, detalle)
 
 
