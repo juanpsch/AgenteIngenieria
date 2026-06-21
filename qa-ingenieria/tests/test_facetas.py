@@ -52,6 +52,21 @@ def test_referencias_heredadas_en_cold_start(monkeypatch):
     assert heredado2 is None and len(grupos2) == 6          # >=5 propios -> NO hereda
 
 
+def test_override_severidad_template():
+    res = normas.resolver_requisitos({"facetas": {"tipo": "pid"}, "severidad": {"isa_tags_instrumento": "observacion"}})
+    isa = next(r for r in res if r["id"] == "isa_tags_instrumento")
+    assert isa["severidad"] == "observacion"          # el template baja la severidad de una regla de faceta
+
+
+def test_severidad_norma_declarada_por_tipo():
+    # "declarar la norma": mayor en memoria, menor en plano/pid (el ejemplo del usuario, vía faceta tipo)
+    assert normas.severidad_overrides({"facetas": {"tipo": "memoria"}}).get("norma_declarada") == "mayor"
+    assert normas.severidad_overrides({"facetas": {"tipo": "plano"}}).get("norma_declarada") == "menor"
+    # y la familia puntual puede overridear a la faceta
+    ov = normas.severidad_overrides({"facetas": {"tipo": "memoria"}, "severidad": {"norma_declarada": "observacion"}})
+    assert ov.get("norma_declarada") == "observacion"
+
+
 def test_template_pisa_a_faceta():
     # una regla inline del template (lo más específico) gana sobre la misma id traída por una faceta
     rev = {"facetas": {"tipo": "pid"},

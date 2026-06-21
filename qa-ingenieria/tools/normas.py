@@ -173,4 +173,28 @@ def resolver_requisitos(revision: dict | None) -> list[dict[str, Any]]:
     propio = {k: revision.get(k) for k in ("normas", "requisitos", "reglas", "excluir")}
     _aplicar_bundle(out, excl, propio, "template", pol)
 
-    return [r for k, r in out.items() if k not in excl]
+    result = [r for k, r in out.items() if k not in excl]
+    ov = severidad_overrides(revision)   # override de severidad por faceta/familia (lo más específico gana)
+    for r in result:
+        nv = ov.get(r.get("id")) or ov.get(r.get("req_id"))
+        if nv:
+            r["severidad"] = nv
+    return result
+
+
+def severidad_overrides(revision: dict | None) -> dict[str, str]:
+    """Mapa {id_local | req_id | "norma_declarada[:norma]": severidad} resuelto por precedencia
+    (facetas menos→más específico; `revision.severidad` del template último). Permite que una familia/faceta
+    suba o baje la severidad de una regla (p.ej. "declarar la norma" mayor en memoria, menor en plano)."""
+    revision = revision or {}
+    ov: dict[str, str] = {}
+    facetas = revision.get("facetas") or {}
+    try:
+        from tools import facetas as F  # import perezoso
+        for eje in sorted(facetas, key=F.precedencia, reverse=True):   # menos específico primero
+            for v in F.cadena(eje, facetas[eje]):                      # ancestros primero
+                ov.update(F.severidad(eje, v))
+    except Exception:
+        pass
+    ov.update(revision.get("severidad") or {})   # template = lo más específico
+    return ov

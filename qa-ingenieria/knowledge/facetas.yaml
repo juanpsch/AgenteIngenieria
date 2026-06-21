@@ -17,10 +17,12 @@ ejes:                       # precedencia: MENOR número = MÁS específico (pis
 valores:                    # por eje: valor -> {nombre, padre?, normas?, requisitos?, excluir?}
   tipo:
     diagrama:   { nombre: "Diagramas" }
-    # familia_generica: de dónde HEREDA ejemplos un subgrupo nuevo (cold-start) hasta tener los propios
-    pid:        { nombre: "P&ID", padre: diagrama, normas: [iram-instrumentacion], familia_generica: pid_instrumentacion }
-    plano:      { nombre: "Plano (dibujo técnico)", normas: [iram-dibujo], familia_generica: plano_generico }
-    memoria:    { nombre: "Memoria de cálculo" }
+    # familia_generica: de dónde HEREDA ejemplos un subgrupo nuevo (cold-start) hasta tener los propios.
+    # severidad: override por faceta (lo más específico gana). "declarar la norma" importa en una memoria
+    # (mayor) pero no en un plano/P&ID (menor) — y una familia puntual puede overridearlo en su revision.
+    pid:        { nombre: "P&ID", padre: diagrama, normas: [iram-instrumentacion], familia_generica: pid_instrumentacion, severidad: { norma_declarada: menor } }
+    plano:      { nombre: "Plano (dibujo técnico)", normas: [iram-dibujo], familia_generica: plano_generico, severidad: { norma_declarada: menor } }
+    memoria:    { nombre: "Memoria de cálculo", severidad: { norma_declarada: mayor } }
     hoja_datos: { nombre: "Hoja de datos de recipiente", normas: [asme-viii-1] }
     esquematico: { nombre: "Esquemático electrónico" }
   organizacion:

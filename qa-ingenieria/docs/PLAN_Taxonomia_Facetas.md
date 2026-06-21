@@ -116,6 +116,11 @@ return [r for (id,r) in out if id not in excl]
 - **Aceptación**: `pid_camuzzi` (0 ejemplos propios) **calibra usando los de `pid_instrumentacion`**; al promover P&IDs Camuzzi reales, los propios toman peso. (Cierra el dolor de hoy.)
 
 ### Fase 4 — Aprendizaje por faceta (con ALCANCE + override por familia)
+> **Estado: override de SEVERIDAD por faceta/familia HECHO (2026-06-21).** `severidad: {id: nivel}` en una
+> faceta o en `revision`; resuelto por precedencia (`severidad_overrides`), aplicado a requisitos y a
+> `norma_declarada`. Demo real: "declarar la norma" = mayor en memoria, menor en plano (vía faceta `tipo`),
+> overridable por familia. Aplicabilidad "no aplica acá" ya estaba (`excluir` por familia). **Pendiente:** que
+> el JUICIO (de_acuerdo/no_aplica/regla_mal) que alimenta al aprendedor se guarde y resuelva con alcance.
 **Refinamiento (2026-06-21):** una regla puede importar en una familia y en otra NO ("declarar la norma" es
 *mayor* en una memoria pero *menor/irrelevante* en un plano). Por eso el juicio NO se globaliza a la norma sin
 más: vive en un **alcance** y se resuelve con la **misma precedencia que las reglas** (lo más específico gana).

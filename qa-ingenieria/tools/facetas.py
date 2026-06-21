@@ -59,6 +59,11 @@ def bundle(eje: str, v: str) -> dict[str, Any]:
             "reglas": d.get("reglas"), "excluir": d.get("excluir")}
 
 
+def severidad(eje: str, v: str) -> dict:
+    """Overrides de severidad que aporta un valor de faceta: {id_local | "norma_declarada[:id]": nivel}."""
+    return _valor(eje, v).get("severidad") or {}
+
+
 def nombre(eje: str, v: str) -> str:
     return _valor(eje, v).get("nombre") or v
 
