@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { api, type Tipo, type Cobertura } from "../api/client";
 import { MaturityBadge, Dropzone } from "../components/ui";
 import { PreviewModal } from "../components/PreviewModal";
@@ -8,10 +8,16 @@ import { useActivity } from "../components/Activity";
 import { errMsg } from "../design/tokens";
 import { Plus, Trash2, ArrowLeft, Eye, Upload } from "lucide-react";
 
+const EJES: [string, string][] = [["organizacion", "Empresa"], ["tipo", "Tipo"], ["disciplina", "Disciplina"], ["jurisdiccion", "Jurisdicción"]];
+const ejeLabel = (e: string) => EJES.find(([k]) => k === e)?.[1] || e;
+const fval = (t: Tipo, eje: string) => (t.facetas || {})[eje] || "";
+
 export function Templates() {
   const [tipos, setTipos] = useState<Tipo[]>([]);
   const [detail, setDetail] = useState<any | null>(null);
   const [showNew, setShowNew] = useState(false);
+  const [agruparPor, setAgruparPor] = useState("");                       // pivot: entrar por empresa/tipo/disciplina…
+  const [filtro, setFiltro] = useState<{ eje: string; valor: string }>({ eje: "", valor: "" });
 
   const load = () => api.listTipos().then(setTipos).catch(() => {});
   useEffect(() => { load(); }, []);
@@ -19,27 +25,67 @@ export function Templates() {
   async function open(id: string) { setDetail(await api.getTipo(id)); }
   async function del(id: string) { await api.delTipo(id); load(); }
 
+  const valoresDe = (eje: string) => [...new Set(tipos.map((t) => fval(t, eje)).filter(Boolean))].sort();
+  const filtrados = useMemo(
+    () => tipos.filter((t) => !filtro.eje || !filtro.valor || fval(t, filtro.eje) === filtro.valor),
+    [tipos, filtro]);
+  const grupos: [string, Tipo[]][] = useMemo(() => {
+    if (!agruparPor) return [["", filtrados]];
+    const m: Record<string, Tipo[]> = {};
+    for (const t of filtrados) (m[fval(t, agruparPor) || "— (sin valor)"] ??= []).push(t);
+    return Object.entries(m).sort((a, b) => a[0].localeCompare(b[0]));
+  }, [filtrados, agruparPor]);
+
   if (detail) return <Detalle d={detail} onBack={() => { setDetail(null); load(); }} reload={() => open(detail.tipo_doc)} />;
 
+  const COLS = "2fr 1.2fr 1fr 1.1fr 80px";
   return (
     <div className="ct-fade">
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 14 }}>
-        <button className="btn btn-primary" onClick={() => setShowNew(true)}><Plus size={15} /> Nuevo template</button>
+      {/* Pivot + filtros por faceta */}
+      <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 12 }}>
+        <span className="faint" style={{ fontSize: 12 }}>Agrupar por:</span>
+        <div className="seg">
+          <button className={agruparPor === "" ? "on" : ""} onClick={() => setAgruparPor("")}>Ninguno</button>
+          {EJES.map(([e, l]) => <button key={e} className={agruparPor === e ? "on" : ""} onClick={() => setAgruparPor(e)}>{l}</button>)}
+        </div>
+        <span className="faint" style={{ fontSize: 12, marginLeft: 8 }}>Filtrar:</span>
+        <select value={filtro.eje} onChange={(e) => setFiltro({ eje: e.target.value, valor: "" })} style={{ fontSize: 12, padding: "4px 6px" }}>
+          <option value="">(eje)</option>
+          {EJES.map(([e, l]) => <option key={e} value={e}>{l}</option>)}
+        </select>
+        {filtro.eje && (
+          <select value={filtro.valor} onChange={(e) => setFiltro({ ...filtro, valor: e.target.value })} style={{ fontSize: 12, padding: "4px 6px" }}>
+            <option value="">(todos)</option>
+            {valoresDe(filtro.eje).map((v) => <option key={v} value={v}>{v}</option>)}
+          </select>
+        )}
+        {filtro.eje && filtro.valor && <button className="btn btn-ghost" style={{ padding: "3px 8px" }} onClick={() => setFiltro({ eje: "", valor: "" })}>limpiar</button>}
+        <button className="btn btn-primary" style={{ marginLeft: "auto" }} onClick={() => setShowNew(true)}><Plus size={15} /> Nuevo template</button>
       </div>
+
       <div className="table">
-        <div className="tr head" style={{ gridTemplateColumns: "2fr 1.2fr 1fr 1.1fr 80px" }}>
+        <div className="tr head" style={{ gridTemplateColumns: COLS }}>
           <span>TIPO DE DOCUMENTO</span><span>DISCIPLINAS</span><span>REFERENCIAS</span><span>MADUREZ</span><span>ACCIONES</span>
         </div>
-        {tipos.map((t) => (
-          <div key={t.tipo_doc} className="tr row" role="button" tabIndex={0} style={{ gridTemplateColumns: "2fr 1.2fr 1fr 1.1fr 80px" }} onClick={() => open(t.tipo_doc)} onKeyDown={(e) => { if (e.key === "Enter") open(t.tipo_doc); }}>
-            <span><b>{t.nombre}</b><div className="faint mono" style={{ fontSize: 11 }}>{t.tipo_doc}</div></span>
-            <span className="muted">{(t.disciplinas || []).join(", ") || "—"}</span>
-            <span className="mono">{t.refs_count} docs</span>
-            <span><MaturityBadge m={t.maturity} /></span>
-            <span><button className="btn btn-ghost" style={{ padding: "5px 8px" }} onClick={(e) => { e.stopPropagation(); del(t.tipo_doc); }}><Trash2 size={14} color="var(--red)" /></button></span>
-          </div>
+        {grupos.map(([g, items]) => (
+          <Fragment key={g || "_"}>
+            {agruparPor && (
+              <div className="tr" style={{ background: "#FAFCFC" }}>
+                <span style={{ gridColumn: "1 / -1", fontWeight: 600, fontSize: 12 }}>{ejeLabel(agruparPor)}: {g} <span className="faint">({items.length})</span></span>
+              </div>
+            )}
+            {items.map((t) => (
+              <div key={t.tipo_doc} className="tr row" role="button" tabIndex={0} style={{ gridTemplateColumns: COLS }} onClick={() => open(t.tipo_doc)} onKeyDown={(e) => { if (e.key === "Enter") open(t.tipo_doc); }}>
+                <span><b>{t.nombre}</b><div className="faint mono" style={{ fontSize: 11 }}>{t.tipo_doc}</div></span>
+                <span className="muted">{(t.disciplinas || []).join(", ") || "—"}</span>
+                <span className="mono">{t.refs_count} docs</span>
+                <span><MaturityBadge m={t.maturity} /></span>
+                <span><button className="btn btn-ghost" style={{ padding: "5px 8px" }} onClick={(e) => { e.stopPropagation(); del(t.tipo_doc); }}><Trash2 size={14} color="var(--red)" /></button></span>
+              </div>
+            ))}
+          </Fragment>
         ))}
-        {!tipos.length && <div className="tr"><span className="faint">No hay templates. Creá el primero con “Nuevo template”.</span></div>}
+        {!filtrados.length && <div className="tr"><span className="faint">No hay templates{filtro.valor ? " con ese filtro" : ""}.</span></div>}
       </div>
       {showNew && <NuevoTemplate onClose={() => setShowNew(false)} onSaved={() => { setShowNew(false); load(); }} />}
     </div>

@@ -116,6 +116,7 @@ export interface ValidarResp {
 export interface Tipo {
   tipo_doc: string; nombre: string; empresa?: string | null;
   disciplinas: string[]; refs_count: number; maturity: string; actualizado?: string | null;
+  facetas?: Record<string, string>;   // coordenadas (tipo/organizacion/disciplina/jurisdiccion) para pivot/filtros
 }
 export interface Referencia { ref_id: string; filename: string; origin: string; }
 export interface Cobertura { campo: string; patron: string; n: number; total: number; error?: boolean; }

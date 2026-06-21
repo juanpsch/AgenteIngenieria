@@ -194,7 +194,8 @@ def list_tipos():
     return [
         {"tipo_doc": tid, "nombre": t.get("nombre"), "empresa": t.get("empresa"),
          "disciplinas": t.get("disciplinas", []), "refs_count": refs.refs_count(tid),
-         "maturity": refs.maturity(tid), "actualizado": None}
+         "maturity": refs.maturity(tid), "actualizado": None,
+         "facetas": (t.get("revision") or {}).get("facetas") or {}}   # coordenadas (para pivot/filtros)
         for tid, t in cargar_tipos().items()
     ]
 
