@@ -45,6 +45,32 @@ docs:
   - { id: pid_kimray, archivo: instrumentacion/pid_kimray.pdf, tipo: pid, disciplina: instrumentacion, norma_esperada: iram-instrumentacion, caso: no_cumple,
       url: "https://kimray.com/sites/default/files/uploads/training-demos/Kimray%20How%20to%20Read%20an%20Oil%20&%20Gas%20P&ID%20Reference%20Guide.pdf" }   # tags dentro del gráfico -> OBSERVADO (camino VLM)
 
+  # --- P&ID VÁLIDOS (láminas reales — para PROMOVER como positivos y calibrar el template) ---
+  - { id: pid_srp_chiller, archivo: instrumentacion/pid_validos/pid_srp_chiller.pdf, tipo: pid, disciplina: instrumentacion, norma_esperada: iram-instrumentacion, caso: valido,
+      url: "https://www.srpnet.com/assets/srpnet/pdf/doing-business/builders-developers-contractors/construction-specifications/design-library/mechanical/hydronic/mp-110-chilledwaterpipingdiagram.pdf" }  # lámina HVAC D, limpia
+  - { id: pid_isopropanol, archivo: instrumentacion/pid_validos/pid_isopropanol.pdf, tipo: pid, disciplina: instrumentacion, norma_esperada: iram-instrumentacion, caso: valido,
+      url: "https://raw.githubusercontent.com/Galigeigei-Z/Chemical-Engineering-Design-Project-for-Isopropanol-Production/main/P%26ID.pdf" }  # 20 láminas A0 química (tags en gráfico)
+  - { id: pid_oviedo_vapor, archivo: instrumentacion/pid_validos/pid_oviedo_vapor.pdf, tipo: pid, disciplina: instrumentacion, norma_esperada: iram-instrumentacion, caso: valido,
+      url: "https://digibuo.uniovi.es/dspace/bitstream/handle/10651/42647/7.Diagramas%20P&IDRUO.pdf" }  # P&ID en español, texto extraíble
+  - { id: pid_oviedo_pasteurizado, archivo: instrumentacion/pid_validos/pid_oviedo_pasteurizado.pdf, tipo: pid, disciplina: instrumentacion, norma_esperada: iram-instrumentacion, caso: valido,
+      url: "https://digibuo.uniovi.es/dspace/bitstream/handle/10651/31580/061-Diagramas%20P&IDRUO.pdf" }  # alimentos/lácteos, español
+  - { id: pid_epa_wwtp, archivo: instrumentacion/pid_validos/pid_epa_wwtp.pdf, tipo: pid, disciplina: instrumentacion, norma_esperada: iram-instrumentacion, caso: valido,
+      url: "https://www.epa.gov/system/files/documents/2021-08/pahala-wwtp-design-build-drawings-2021-07-23.pdf" }  # juego de planos agua/efluentes + leyenda ISA
+  - { id: pid_camuzzi_simbologia, archivo: instrumentacion/pid_validos/pid_camuzzi_simbologia.pdf, tipo: pid, disciplina: instrumentacion, norma_esperada: iram-instrumentacion, caso: valido,
+      url: "https://www.camuzzigas.com/wp-content/uploads/2020/11/sce-ec-101-0001-simbologa-pid-plantas-compresoras-de-gas-natural.pdf" }  # leyenda ISA-5.1 oil&gas, español
+
+  # --- "FALSOS P&ID" (parecen pero NO son lámina — para RECHAZAR como negativos) ---
+  - { id: noespid_paper_digitize, archivo: instrumentacion/pid_invalidos/noespid_paper_digitize.pdf, tipo: pid, disciplina: instrumentacion, norma_esperada: iram-instrumentacion, caso: no_es_pid,
+      url: "https://arxiv.org/pdf/2109.03794" }  # paper con P&ID embebido en prosa
+  - { id: noespid_indice_instrumentos, archivo: instrumentacion/pid_invalidos/noespid_indice_instrumentos.pdf, tipo: pid, disciplina: instrumentacion, norma_esperada: iram-instrumentacion, caso: no_es_pid,
+      url: "https://cdn.forumautomation.com/original/2X/3/38a564084a9f8b257c4c76eeb1edd1eb813ee91d.pdf" }  # tabla/índice de instrumentos, no diagrama
+  - { id: noespid_pfd_amoniaco, archivo: instrumentacion/pid_invalidos/noespid_pfd_amoniaco.pdf, tipo: pid, disciplina: instrumentacion, norma_esperada: iram-instrumentacion, caso: no_es_pid,
+      url: "https://arxiv.org/pdf/physics/0504177" }  # PFD (no P&ID)
+  - { id: noespid_flowchart_sw, archivo: instrumentacion/pid_invalidos/noespid_flowchart_sw.pdf, tipo: pid, disciplina: instrumentacion, norma_esperada: iram-instrumentacion, caso: no_es_pid,
+      url: "https://arxiv.org/pdf/2501.17441" }  # flowcharts de software (parecido visual)
+  - { id: noespid_unifilar_transformador, archivo: instrumentacion/pid_invalidos/noespid_unifilar_transformador.pdf, tipo: pid, disciplina: instrumentacion, norma_esperada: iram-instrumentacion, caso: no_es_pid,
+      url: "https://www.usbr.gov/power/data/fist/fist3_30/fist3_30.pdf" }  # eléctrico (otra disciplina)
+
   # ===== ELECTRÓNICA =====
   - { id: pcb_beaglebone_sch, archivo: electronica/pcb_beaglebone_sch.pdf, tipo: esquematico_electronico, disciplina: electronica, norma_esperada: ipc-2612, caso: valido,
       url: "https://raw.githubusercontent.com/CircuitCo/BeagleBone-Black/master/BBB_SCH.pdf" }
