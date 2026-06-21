@@ -205,7 +205,8 @@ export function Templates() {
                 {coordChips(r.f).map((c) => (
                   <button key={c.axisKey} className="tpl-coord" onClick={() => setFacetVal(c.axisKey, c.value)} title={`Filtrar por ${AXES[c.axisKey].label}`} style={{ display: "flex", alignItems: "center", gap: 5, background: "#f6f8f9", border: "1px solid #e6ecef", borderRadius: 6, padding: "2px 7px 2px 6px", cursor: "pointer" }}>
                     <span style={{ width: 6, height: 6, borderRadius: 2, background: c.color }} />
-                    <span style={{ fontSize: 11.5, color: "#3f5260", fontWeight: 500 }}>{c.value}</span>
+                    <span style={{ fontSize: 10.5, color: "#8a99a3" }}>{AXES[c.axisKey].label}:</span>
+                    <span style={{ fontSize: 11.5, color: "#3f5260", fontWeight: 600 }}>{c.value}</span>
                   </button>
                 ))}
               </div>
@@ -358,6 +359,7 @@ export function Templates() {
                         {coordChips(f).map((c) => (
                           <span key={c.axisKey} style={{ display: "flex", alignItems: "center", gap: 5, background: "#f6f8f9", border: "1px solid #e6ecef", borderRadius: 6, padding: "2px 7px 2px 6px" }}>
                             <span style={{ width: 6, height: 6, borderRadius: 2, background: c.color }} />
+                            <span style={{ fontSize: 10, color: "#8a99a3" }}>{AXES[c.axisKey].label}:</span>
                             <span style={{ fontSize: 11, color: "#3f5260" }}>{c.value}</span>
                           </span>
                         ))}
