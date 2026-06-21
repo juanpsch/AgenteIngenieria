@@ -4,11 +4,16 @@ import { VeredictoChip } from "../components/ui";
 import { ResultadoDetalle } from "../components/ResultadoDetalle";
 import { useActivity } from "../components/Activity";
 import { errMsg, maturityLabel } from "../design/tokens";
-import { ArrowLeft, Check, X } from "lucide-react";
+import { Stat } from "../design/facets";
+import { ArrowLeft, Check, X, Search } from "lucide-react";
+import "./Templates.css";
 
-function Metric({ n, l, color }: { n: number | string; l: string; color?: string }) {
-  return <div className="metric"><div className="n" style={{ color }}>{n}</div><div className="l">{l}</div></div>;
-}
+const VER: { k: Veredicto; label: string; fg: string; bg: string; border: string; dot: string }[] = [
+  { k: "valido",          label: "Válido",          fg: "#0d6b53", bg: "#e9f5f0", border: "#c3e7da", dot: "#12a87f" },
+  { k: "revision_manual", label: "Revisión manual", fg: "#946312", bg: "#fdf6ea", border: "#f0ddb6", dot: "#e0a32e" },
+  { k: "invalido",        label: "Inválido",        fg: "#b42318", bg: "#fef3f2", border: "#fecdc9", dot: "#d0473e" },
+  { k: "faltan_datos",    label: "Faltan datos",    fg: "#5b6b78", bg: "#f4f6f8", border: "#dce3e8", dot: "#94a3b8" },
+];
 
 type Caso = ValidarResp & { decision: string | null };
 
@@ -22,6 +27,8 @@ export function Historial() {
   const [negativoOk, setNegativoOk] = useState<number | null>(null);
   const [decidiendo, setDecidiendo] = useState(false);
   const [err, setErr] = useState("");
+  const [q, setQ] = useState("");
+  const [ver, setVer] = useState<Set<Veredicto>>(new Set());
   const { run } = useActivity();
 
   useEffect(() => { api.historial().then(setH).catch(() => {}); }, []);
@@ -114,35 +121,71 @@ export function Historial() {
   // --- Lista ---
   if (!h) return <div className="faint">Cargando…</div>;
   const m = h.metricas;
+  const s = q.trim().toLowerCase();
+  const buscadas = h.items.filter((it) => !s || it.doc.toLowerCase().includes(s) || it.tipo_doc.toLowerCase().includes(s));
+  const items = buscadas.filter((it) => ver.size === 0 || ver.has(it.veredicto));
+  const COLS = "1.7fr 1.3fr 1.2fr 70px 1fr";
   return (
-    <div className="ct-fade" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      {err && <div className="card" style={{ borderColor: "var(--red-border)", color: "var(--red-ink)" }}>{err}</div>}
-      <div className="metrics">
-        <Metric n={m.validados} l="Validados" />
-        <Metric n={`${m.aprobacion_pct}%`} l="% de aprobación" color="var(--green)" />
-        <Metric n={m.pendientes} l="Pendientes de revisión" color="var(--amber)" />
-        <Metric n={m.promovidos} l="Promovidos a referencia" color="var(--teal)" />
+    <div className="ct-fade">
+      {err && <div style={{ background: "#fef3f2", border: "1px solid #fecdc9", color: "#b42318", borderRadius: 10, padding: "10px 14px", marginBottom: 14, fontSize: 13 }}>{err}</div>}
+
+      {/* Resumen */}
+      <div style={{ display: "flex", gap: 12, marginBottom: 14 }}>
+        <Stat value={m.validados} label="validados" />
+        <Stat value={`${m.aprobacion_pct}%`} label="% de aprobación" color="#0d6b53" />
+        <Stat value={m.pendientes} label="pendientes de revisión" color={m.pendientes ? "#946312" : undefined} />
+        <Stat value={m.promovidos} label="promovidos a referencia" color="#0e7c86" />
       </div>
-      <div className="table">
-        <div className="tr head" style={{ gridTemplateColumns: "1.6fr 1.4fr 1.1fr .7fr 1fr" }}>
-          <span>DOCUMENTO</span><span>TEMPLATE</span><span>VEREDICTO</span><span>SCORE</span><span>FECHA</span>
+
+      {/* Toolbar */}
+      <div style={{ background: "#fff", border: "1px solid #e7edf0", borderRadius: 12, padding: "12px 16px", marginBottom: 16, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+        <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+          <Search size={14} color="#9aa7b0" style={{ position: "absolute", left: 9 }} />
+          <input placeholder="Buscar documento o template…" value={q} onChange={(e) => setQ(e.target.value)} style={{ border: "1px solid #dce3e8", borderRadius: 8, padding: "7px 10px 7px 30px", fontSize: 12.5, width: 240, background: "#fafbfc", color: "#2b3a45" }} />
         </div>
-        {h.items.map((it) => (
-          <div key={it.thread_id} className="tr row" role="button" tabIndex={0}
-            style={{ gridTemplateColumns: "1.6fr 1.4fr 1.1fr .7fr 1fr" }}
+        <span style={{ fontSize: 11.5, color: "#9aa7b0", fontWeight: 600, letterSpacing: .3 }}>VEREDICTO</span>
+        {VER.map((v) => {
+          const count = buscadas.filter((it) => it.veredicto === v.k).length;
+          const op = ver.size === 0 || ver.has(v.k) ? 1 : .4;
+          return (
+            <button key={v.k} onClick={() => setVer((set) => { const n = new Set(set); n.has(v.k) ? n.delete(v.k) : n.add(v.k); return n; })}
+              style={{ border: `1.5px solid ${v.border}`, background: v.bg, borderRadius: 20, padding: "4px 11px 4px 8px", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, opacity: op, transition: "opacity .15s" }}>
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: v.dot }} />
+              <span style={{ fontSize: 12, fontWeight: 600, color: v.fg }}>{v.label}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: v.fg, background: "rgba(255,255,255,.65)", borderRadius: 9, padding: "0 6px" }}>{count}</span>
+            </button>
+          );
+        })}
+        <div style={{ flex: 1 }} />
+        <span style={{ fontSize: 12, color: "#7e8f9a" }}><b style={{ color: "#2b3a45" }}>{items.length}</b> de {h.items.length}</span>
+      </div>
+
+      {/* Tabla */}
+      <div style={{ background: "#fff", border: "1px solid #e4eaee", borderRadius: 12, overflow: "hidden", boxShadow: "0 1px 3px rgba(20,40,55,.05)" }}>
+        <div style={{ display: "grid", gridTemplateColumns: COLS, padding: "11px 18px", background: "#f7f9fa", borderBottom: "1px solid #e7edf0", fontSize: 10.5, letterSpacing: .6, fontWeight: 700, color: "#90a0aa" }}>
+          <div>DOCUMENTO</div><div>TEMPLATE</div><div>VEREDICTO</div><div style={{ textAlign: "center" }}>SCORE</div><div>FECHA</div>
+        </div>
+        {items.map((it) => (
+          <div key={it.thread_id} className="tpl-leafrow" role="button" tabIndex={0} style={{ display: "grid", gridTemplateColumns: COLS, alignItems: "center", padding: "11px 18px", borderBottom: "1px solid #eef2f4", cursor: "pointer", animation: "czfade .2s ease" }}
             title="Ver el detalle del análisis"
-            onClick={() => abrir(it.thread_id, it.doc, !!it.promovido_a_ref)}
-            onKeyDown={(e) => { if (e.key === "Enter") abrir(it.thread_id, it.doc, !!it.promovido_a_ref); }}>
-            <span className="mono" style={{ fontSize: 12 }}>{it.doc}{it.promovido_a_ref ? "  ↑ref" : ""}</span>
-            <span className="muted">{it.tipo_doc}</span>
-            <span><VeredictoChip v={it.veredicto as Veredicto} /></span>
-            <span className="mono">{it.score ?? "—"}</span>
-            <span className="faint" style={{ fontSize: 11 }}>{it.fecha}</span>
+            onClick={() => abrir(it.thread_id, it.doc, !!it.promovido_a_ref)} onKeyDown={(e) => { if (e.key === "Enter") abrir(it.thread_id, it.doc, !!it.promovido_a_ref); }}>
+            <span style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0, paddingRight: 12 }}>
+              <span style={{ fontFamily: "ui-monospace,Menlo,monospace", fontSize: 12, color: "#1c2c36", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.doc}</span>
+              {!!it.promovido_a_ref && <span title="Promovido a referencia" style={{ fontSize: 10, color: "#0b6b74", background: "#eef7f8", border: "1px solid #bfe0e4", borderRadius: 5, padding: "0 6px", flex: "none" }}>↑ ref</span>}
+            </span>
+            <span style={{ fontSize: 12, color: "#52646f" }}>{it.tipo_doc}</span>
+            <span><VeredictoChip v={it.veredicto} /></span>
+            <span style={{ textAlign: "center", fontFamily: "ui-monospace,Menlo,monospace", fontSize: 12.5, fontWeight: 600, color: it.score != null ? "#2b3a45" : "#b6c0c7" }}>{it.score ?? "—"}</span>
+            <span style={{ fontSize: 11.5, color: "#94a3ab" }}>{it.fecha}</span>
           </div>
         ))}
-        {!h.items.length && <div className="tr"><span className="faint">Sin validaciones todavía.</span></div>}
+        {!items.length && (
+          <div style={{ textAlign: "center", padding: "60px 20px", color: "#8b9aa4" }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: "#5d7180" }}>{h.items.length ? "Sin resultados" : "Sin validaciones todavía"}</div>
+            {h.items.length > 0 && <div style={{ fontSize: 12.5, marginTop: 5 }}>Ninguna coincide con los filtros.</div>}
+          </div>
+        )}
       </div>
-      <div className="faint" style={{ fontSize: 11.5 }}>Hacé clic en una fila para ver el detalle del análisis (veredicto, score, checks y preview).</div>
     </div>
   );
 }

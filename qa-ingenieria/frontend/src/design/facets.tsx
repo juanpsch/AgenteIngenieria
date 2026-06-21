@@ -1,5 +1,6 @@
-// Tokens y componentes de FACETAS compartidos (Templates + Observatorio) — colores/etiquetas por eje,
-// barra de progreso y chips de faceta etiquetados. Misma paleta del handoff de Templates.
+// Tokens y componentes de FACETAS compartidos (Templates + Observatorio + Historial) — colores/etiquetas
+// por eje, barra de progreso, chips de faceta y tarjeta de métrica. Misma paleta del handoff de Templates.
+import type { ReactNode } from "react";
 import type { FacetRegistry } from "../api/client";
 
 export const FACET_AXIS: Record<string, { label: string; color: string }> = {
@@ -12,6 +13,14 @@ export const FACET_AXIS: Record<string, { label: string; color: string }> = {
 export const FACET_ORDER = ["tipo", "organizacion", "disciplina", "jurisdiccion", "proyecto"];
 
 export const pctColor = (pct: number) => (pct >= 80 ? "#12a87f" : pct >= 50 ? "#e0a32e" : "#d0473e");
+
+// Tarjeta de métrica (cabecera resumen) — usada por Observatorio e Historial.
+export const Stat = ({ value, label, color }: { value: ReactNode; label: string; color?: string }) => (
+  <div style={{ flex: 1, background: "#fff", border: "1px solid #e4eaee", borderRadius: 12, padding: "13px 16px", boxShadow: "0 1px 3px rgba(20,40,55,.05)" }}>
+    <div style={{ fontSize: 24, fontWeight: 700, color: color || "#13252f", lineHeight: 1 }}>{value}</div>
+    <div style={{ fontSize: 11.5, color: "#7e8f9a", marginTop: 5 }}>{label}</div>
+  </div>
+);
 
 export function Bar({ pct, color, h = 6 }: { pct: number; color: string; h?: number }) {
   return (

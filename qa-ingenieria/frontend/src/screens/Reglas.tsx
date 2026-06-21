@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { api, type ReglaStat, type FacetRegistry } from "../api/client";
 import { ChevronDown, Search, X, ListFilter } from "lucide-react";
-import { FACET_AXIS, FACET_ORDER, Bar, FacetChips, pctColor } from "../design/facets";
+import { FACET_AXIS, FACET_ORDER, Bar, FacetChips, pctColor, Stat } from "../design/facets";
 import "./Templates.css";
 
 // Observatorio de reglas: planilla facetada con su estadística de cumplimiento + feedback humano. Mismo
@@ -46,12 +46,6 @@ const FeedbackChips = ({ fb, size = 10 }: { fb: Record<string, number>; size?: n
     <span key={f.k} title={f.label} style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: size, fontWeight: 600, color: f.fg, background: f.bg, border: `1px solid ${f.border}`, borderRadius: 20, padding: "1px 7px" }}>{f.glyph} {fb[f.k]}</span>
   ))}</>;
 };
-const Stat = ({ value, label, color }: { value: React.ReactNode; label: string; color?: string }) => (
-  <div style={{ flex: 1, background: "#fff", border: "1px solid #e4eaee", borderRadius: 12, padding: "13px 16px", boxShadow: "0 1px 3px rgba(20,40,55,.05)" }}>
-    <div style={{ fontSize: 24, fontWeight: 700, color: color || "#13252f", lineHeight: 1 }}>{value}</div>
-    <div style={{ fontSize: 11.5, color: "#7e8f9a", marginTop: 5 }}>{label}</div>
-  </div>
-);
 
 export function Reglas() {
   const [data, setData] = useState<ReglaStat[]>([]);
