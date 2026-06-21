@@ -15,6 +15,14 @@ def test_presencia_unidad_tolera_simbolo():
     assert evaluar_regla(r, "no hay secciones", [])["estado"] == "fallo"
 
 
+def test_isa_tags_tolera_burbuja_en_dos_lineas():
+    # las burbujas de P&ID rinden el tag en dos líneas ("PC\n115"); deben contarse igual
+    from tools import normas
+    r = next(x for x in normas.reglas_de_normas(["iram-instrumentacion"]) if x["id"] == "isa_tags_instrumento")
+    assert evaluar_regla(r, "PC\n115   FT\n203   LIC\n205", [])["estado"] == "ok"   # 3 tags en 2 líneas
+    assert evaluar_regla(r, "TIC-101 y FT-203 en una línea, falta uno", [])["estado"] == "fallo"  # solo 2
+
+
 def test_regla_vlm_es_no_verificable_por_texto():
     # una regla interpretativa NO se juzga por texto, aunque aparezca la palabra: queda no_verificable
     r = {"id": "leyenda", "tipo": "vlm", "descripcion": "hay leyenda que define los símbolos", "severidad": "mayor"}
