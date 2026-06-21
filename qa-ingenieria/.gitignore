@@ -17,6 +17,9 @@ local_state/
 # Documentos de referencia subidos (Cotejar §3.2) — binarios, no se commitean
 knowledge/refs/
 
+# Imágenes de referencia de normas (leyendas para el VLM) — generadas por scripts/generar_refs_normas.py
+knowledge/normas/refs/
+
 # Archivos subidos al sandbox / temporales
 sandbox/uploads/
 uploads_api/

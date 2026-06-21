@@ -114,7 +114,8 @@ def vlm_de_normas(ids: list[str]) -> list[dict[str, Any]]:
     for nid in ids or []:
         v = (cat.get(nid) or {}).get("vlm")
         if v and v.get("criterios"):
-            out.append({"norma_ref": v.get("norma_ref") or nid, "criterios": v.get("criterios")})
+            out.append({"norma_ref": v.get("norma_ref") or nid, "criterios": v.get("criterios"),
+                        "referencia_imagen": v.get("referencia_imagen")})  # leyenda/estándar como ground-truth del VLM
     return out
 
 

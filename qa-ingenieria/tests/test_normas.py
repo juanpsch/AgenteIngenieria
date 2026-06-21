@@ -97,6 +97,26 @@ def test_iram_catalogos_deteccion_y_reglas():
         assert rr.evaluar_regla(r, t, [])["estado"] in ("ok", "fallo", "no_verificable")
 
 
+def test_camuzzi_norma_rotulo_determinista_y_simbolos_vlm():
+    cat = normas.cargar_normas()
+    assert "camuzzi" in cat
+    reglas = {r["id"]: r for r in normas.reglas_de_normas(["camuzzi"])}
+    assert reglas["camuzzi_rotulo"]["tipo"] == "presencia"          # lo de texto, determinista
+    assert reglas["camuzzi_simbolos_estandar"]["tipo"] == "vlm"     # lo gráfico, lo juzga el VLM
+
+
+def test_vlm_de_normas_expone_referencia_imagen():
+    # la norma camuzzi declara su leyenda como referencia visual del VLM (ground-truth gráfico)
+    v = normas.vlm_de_normas(["camuzzi"])
+    assert v and v[0].get("referencia_imagen")
+
+
+def test_cargar_referencia_degrada_si_falta(monkeypatch):
+    from ai_agents.revisor import _cargar_referencia
+    assert _cargar_referencia(None) is None
+    assert _cargar_referencia("knowledge/normas/refs/no_existe_xyz.png") is None
+
+
 def test_ancla_con_regex_invalido_no_rompe():
     # un ancla mal escrita (paréntesis sin cerrar) no debe crashear la detección
     assert normas._ancla_match("(AEA sin cerrar", "texto (AEA sin cerrar aquí") is True

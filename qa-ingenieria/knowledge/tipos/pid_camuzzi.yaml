@@ -1,0 +1,32 @@
+tipo_doc: pid_camuzzi
+nombre: P&ID Camuzzi (gas)
+disciplinas:
+- instrumentacion
+- procesos
+- gas
+formatos_archivo:
+- pdf
+cajetin:
+  requerido: false
+  campos_requeridos: []
+  reglas: []
+secciones_requeridas: []
+columnas_requeridas: []
+caracteristicas:
+- P&ID de planta de gas con rótulo y simbología tipo Camuzzi
+- Tags de instrumento ISA-5.1 y codificación de líneas Camuzzi
+nomenclatura: ''
+bloqueante:
+- archivo fuera de formatos_archivo
+- no es un P&ID / diagrama de instrumentación
+senales_reconocimiento: 'Diagrama de proceso con burbujas de instrumento, válvulas y líneas; cajetín Camuzzi / PLANO TIPO.'
+criterios_aceptacion: 'P&ID de una planta de gas (familia Camuzzi).'
+no_corresponde: 'Memorias de texto, planos de otra disciplina, páginas de libro.'
+zonas: []
+revision:
+  normas:
+  - camuzzi             # rótulo + símbolos/líneas vs leyenda Camuzzi (VLM)
+  - iram-instrumentacion # tags ISA, leyenda, índice
+  legibilidad:
+    blur_var_min: 80
+    ocr_conf_min: 0.6

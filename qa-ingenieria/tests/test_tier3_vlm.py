@@ -51,6 +51,21 @@ def test_revisar_no_corre_vlm_aunque_este_disponible(monkeypatch):
     assert not any(x.get("fuente") == "vlm" for x in h)
 
 
+def test_vlm_payload_adjunta_la_leyenda_de_referencia(monkeypatch):
+    # si la norma trae vlm.referencia_imagen, _vlm_payload se la pasa al VLM ANTES del documento
+    from ai_agents import revisor
+    import ai_agents.provider
+    import ai_agents.util
+    cap = {}
+    monkeypatch.setattr(ai_agents.provider, "build_agent", lambda *a, **k: object())
+    monkeypatch.setattr(ai_agents.util, "build_input", lambda text, images: cap.update(imgs=images) or {})
+    monkeypatch.setattr(ai_agents.util, "run_agent", lambda agent, inp: '{"reglas":[],"observaciones":[]}')
+    monkeypatch.setattr(revisor, "_cargar_referencia", lambda r: "data:image/png;base64,REF")
+    revisor._vlm_payload({"contenido": "x", "imagenes": ["DOC"]}, {"normas": ["camuzzi"]}, [])
+    assert cap["imgs"][0] == "data:image/png;base64,REF"   # la leyenda va primero
+    assert "DOC" in cap["imgs"]                            # el documento, después
+
+
 def test_observar_vlm_fuerza_aunque_flag_off(monkeypatch):
     # observar_vlm ignora REVISION_VLM=0 y sí produce la observación (es la acción a pedido).
     from ai_agents.revisor import observar_vlm

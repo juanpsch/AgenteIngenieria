@@ -219,6 +219,30 @@ def _a_hallazgos_vlm(observaciones: list) -> list[Hallazgo]:
     return out
 
 
+def _cargar_referencia(ruta: str | None) -> str | None:
+    """Carga la imagen de referencia de una norma (leyenda/estándar) como data-url, para dársela al VLM
+    como ground-truth. Acepta imagen o PDF (rinde la página 1). Ruta relativa a la raíz del repo.
+    None si no existe / no se puede (degrada con gracia)."""
+    if not ruta:
+        return None
+    try:
+        from pathlib import Path as _P
+        p = _P(ruta)
+        if not p.is_absolute():
+            p = _P(__file__).resolve().parent.parent / ruta
+        if not p.exists():
+            return None
+        if p.suffix.lower() == ".pdf":
+            from tools import docs
+            imgs = docs.render_pdf_images(str(p), max_pages=1)
+            return imgs[0] if imgs else None
+        import base64
+        mime = "image/png" if p.suffix.lower() == ".png" else "image/jpeg"
+        return f"data:{mime};base64," + base64.b64encode(p.read_bytes()).decode("ascii")
+    except Exception:
+        return None
+
+
 def _vlm_payload(doc: dict, cfg: dict, candidatas: list[Hallazgo]) -> dict:
     """UNA llamada al VLM: verifica las reglas `candidatas` (las que el texto no pudo) + observaciones
     cualitativas. Devuelve {'reglas': {check_id: {veredicto, razon}}, 'observaciones': [hallazgos]} o {}.
@@ -244,11 +268,19 @@ def _vlm_payload(doc: dict, cfg: dict, candidatas: list[Hallazgo]) -> dict:
                 partes.append(f'- id="{h.get("check_id")}": {desc}{ref}')
         if instrucciones:
             partes += ["", "## Instrucciones de observación (NO bloqueante)", instrucciones]
+        ref_imgs: list = []
         for v in criterios:
             partes.append(f"### Criterios — {v['norma_ref']}\n{v['criterios']}")
+            img = _cargar_referencia(v.get("referencia_imagen"))
+            if img:
+                ref_imgs.append(img)
+        if ref_imgs:
+            partes.insert(0, f"## NOTA: las primeras {len(ref_imgs)} imagen(es) son la LEYENDA/ESTÁNDAR de "
+                             "referencia de la(s) norma(s); las que siguen son el DOCUMENTO a revisar. "
+                             "Compará el documento CONTRA esa leyenda.")
         partes += ["", "## Texto del documento", (doc.get("contenido") or "")[:6000] or "(ver imágenes)"]
         agent = build_agent("revisor-qa", instructions=load_prompt("revisor"))
-        out = run_agent(agent, build_input("\n".join(partes), doc.get("imagenes") or []))
+        out = run_agent(agent, build_input("\n".join(partes), ref_imgs + (doc.get("imagenes") or [])))
         data = extract_json(out, {})
         reglas = {r["id"]: r for r in (data.get("reglas") or []) if isinstance(r, dict) and r.get("id")}
         return {"reglas": reglas, "observaciones": _a_hallazgos_vlm(data.get("observaciones") or [])}

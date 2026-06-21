@@ -1,0 +1,55 @@
+id: camuzzi
+nombre: Camuzzi Gas — Simbología P&ID (plantas compresoras de gas natural)
+organismo: Camuzzi / ISA-5.1
+region: Argentina
+version: "SCE-EC-101-0001 (PLANO TIPO de simbología) [verificar edición]"
+
+# Es un ESTÁNDAR DE DIBUJO (mapa de reglas), no un documento de proceso. Define la simbología que un
+# P&ID Camuzzi debe seguir. Lo gráfico lo juzga el VLM contra la propia leyenda (vlm.referencia_imagen).
+aplica_a:
+  disciplinas: [instrumentacion, procesos, gas]
+  jurisdiccion: [AR]
+
+deteccion:
+  anclas:
+    - 'CAMUZZI'
+    - 'PLANO\s*TIPO'
+    - 'SCE-EC-101'
+  canales: [cajetin, leyenda]
+  severidad: menor
+
+reglas:
+  - id: camuzzi_rotulo
+    tipo: presencia
+    descripcion: "Rótulo/cajetín tipo Camuzzi (CAMUZZI / PLANO TIPO / código SCE-EC)"
+    patron: 'camuzzi|plano\s*tipo|sce-ec-\d'
+    severidad: mayor
+  # --- Gráficas: las juzga el VLM contra la LEYENDA Camuzzi (ver vlm.referencia_imagen) ---
+  - id: camuzzi_simbolos_estandar
+    tipo: vlm
+    descripcion: "Los símbolos (válvulas, instrumentos, cañerías, funciones) coinciden con la simbología tipo Camuzzi"
+    severidad: menor
+  - id: camuzzi_codificacion_lineas
+    tipo: vlm
+    descripcion: "Las líneas siguen la codificación de líneas de la leyenda Camuzzi"
+    severidad: observacion
+
+# Categorías de la lámina de simbología (referencia / checks futuros).
+lookups:
+  secciones_leyenda:
+    - codificación de líneas
+    - identificación y tipos de válvulas
+    - símbolos de cañerías
+    - ubicación / sistema de control
+    - dispositivos de seguridad y accesorios
+    - tipos de instrumentos
+    - nomenclatura de instrumentos (letras ISA)
+    - símbolos de función
+
+vlm:
+  norma_ref: Camuzzi — Simbología P&ID (ISA-5.1)
+  referencia_imagen: knowledge/normas/refs/camuzzi_simbologia.png   # la leyenda como ground-truth del VLM
+  criterios: >
+    Compará los símbolos del P&ID contra la LEYENDA TIPO de Camuzzi adjunta: forma de válvulas e
+    instrumentos, codificación de líneas, símbolos de función y nomenclatura de instrumentos. Señalá
+    incoherencias: un símbolo usado que NO figura en la leyenda, o que difiere de su forma estándar.
