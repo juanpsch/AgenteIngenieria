@@ -115,8 +115,17 @@ return [r for (id,r) in out if id not in excl]
 - `tools/refs.referencias_resueltas` / `negativos_resueltos`; mapa faceta→familia genérica; `nodes._check_similitud` los usa; desglose muestra propios vs heredados.
 - **Aceptación**: `pid_camuzzi` (0 ejemplos propios) **calibra usando los de `pid_instrumentacion`**; al promover P&IDs Camuzzi reales, los propios toman peso. (Cierra el dolor de hoy.)
 
-### Fase 4 — Aprendizaje por faceta
-- Negativos + aplicabilidad + juicio por regla atribuidos a la faceta correcta (no a la familia puntual). El juicio "regla mal" sobre `iram-instrumentacion:isa_tags` se reusa en TODAS las familias que la usan.
+### Fase 4 — Aprendizaje por faceta (con ALCANCE + override por familia)
+**Refinamiento (2026-06-21):** una regla puede importar en una familia y en otra NO ("declarar la norma" es
+*mayor* en una memoria pero *menor/irrelevante* en un plano). Por eso el juicio NO se globaliza a la norma sin
+más: vive en un **alcance** y se resuelve con la **misma precedencia que las reglas** (lo más específico gana).
+- **Alcance** (elegible por el humano / inferido por evidencia): `familia > organización > tipo > disciplina > norma/global`.
+- "regla mal" / "no aplica" / severidad / agregados del corpus se guardan **con su scope**; al evaluar una
+  familia se toma el **más específico aplicable** (la familia siempre puede **override**). Así "isa_tags está
+  roto" (scope norma) se reusa, pero "acá no aplica" (scope familia) queda local.
+- **Severidad de checks transversales** (ej. "declara la norma"): poder atarla a la faceta correcta
+  (tipo=memoria→mayor; tipo=plano→menor) u overridearla por familia, no solo per-norma (hoy `deteccion.severidad`).
+- UI: al juzgar, elegir el alcance ("solo esta familia" por defecto / "esta norma" / "esta faceta").
 
 ### Fase 5 — Navegación facetada (UI)  ← (idea del usuario, 2026-06-21)
 - En **Templates**, ver los tipos de doc **pivoteados por la faceta que uno elija** (entrar por empresa, por
