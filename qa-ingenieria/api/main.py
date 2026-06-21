@@ -373,21 +373,23 @@ def get_caso(thread_id: str):
     return resp
 
 
-def _capturar_negativo(thread_id: str, st: dict) -> None:
-    """Guarda el doc como CONTRA-EJEMPLO del gate: el modelo lo daba admisible pero el humano lo rechazó
-    ('se parece pero NO es'). Alimenta el embedding (similarity penaliza la cercanía a negativos)."""
-    try:
-        from tools import refs
+@app.post("/api/casos/{thread_id}/negativo")
+def caso_negativo(thread_id: str):
+    """Guarda el caso como CONTRA-EJEMPLO del gate — acción DELIBERADA, simétrica a 'promover'. Solo para
+    casos que el humano RECHAZÓ. Alimenta el embedding (similarity penaliza los parecidos a un rechazado)."""
+    if historial.decision_de(thread_id) != "rejected":
+        raise HTTPException(409, "solo se usa como contra-ejemplo un caso rechazado")
+    st = _state_de(thread_id) or {}
+    tipo = st.get("tipo_objetivo")
+    docs_ = st.get("documentos") or []
+    p = docs_[-1].get("path") if docs_ else None
+    if not tipo or not p or not Path(p).exists():
+        raise HTTPException(400, "no se encontró el documento del caso")
+    from tools import refs
 
-        tipo = st.get("tipo_objetivo")
-        docs_ = st.get("documentos") or []
-        p = docs_[-1].get("path") if docs_ else None
-        if not tipo or not p or not Path(p).exists():
-            return
-        r = refs.agregar_negativo(tipo, Path(p).name, Path(p).read_bytes(), origin="rechazo_humano")
-        logging.getLogger("cotejar").info("negativo capturado (%s) tipo=%s total=%s", thread_id, tipo, r.get("negativos_count"))
-    except Exception as exc:
-        logging.getLogger("cotejar").warning("no se pudo capturar negativo (%s): %s", thread_id, exc)
+    r = refs.agregar_negativo(tipo, Path(p).name, Path(p).read_bytes(), origin="rechazo_humano")
+    logging.getLogger("cotejar").info("negativo (manual) %s tipo=%s total=%s", thread_id, tipo, r.get("negativos_count"))
+    return {"negativos_count": r.get("negativos_count")}
 
 
 @app.post("/api/casos/{thread_id}/decision")
@@ -412,14 +414,11 @@ def decision(thread_id: str, body: DecisionIn):
                     status = _correr_revision(thread_id, st).get("status", status)
                 except Exception as exc:
                     logging.getLogger("cotejar").warning("revisión al aprobar falló (%s): %s", thread_id, exc)
-    elif body.decision == "rejected":
-        # Contra-ejemplo para el gate: si el modelo lo daba admisible (válido/ámbar), guardarlo como negativo.
-        if veredicto_ui(status or "") in ("valido", "revision_manual"):
-            _capturar_negativo(thread_id, st)
-        if status == Status.REQUIERE_DECISION.value:
-            # Rechazar un ámbar lo deja NO admisible (refleja la decisión humana en el estado).
-            get_compiled_graph().update_state(cfg, {"status": Status.NO_ADMISIBLE.value})
-            status = Status.NO_ADMISIBLE.value
+    elif body.decision == "rejected" and status == Status.REQUIERE_DECISION.value:
+        # Rechazar un ámbar lo deja NO admisible (refleja la decisión humana en el estado).
+        # El contra-ejemplo (negativo) NO se toma solo: es una acción deliberada (endpoint /negativo).
+        get_compiled_graph().update_state(cfg, {"status": Status.NO_ADMISIBLE.value})
+        status = Status.NO_ADMISIBLE.value
     return {"status": status, "veredicto": veredicto_ui(status or ""), "decision": body.decision}
 
 

@@ -28,6 +28,7 @@ export function Validar() {
   const [decidiendo, setDecidiendo] = useState(false);
   const [promote, setPromote] = useState(true);
   const [promoted, setPromoted] = useState<{ refs_count: number; maturity: string } | null>(null);
+  const [negativoOk, setNegativoOk] = useState<number | null>(null);
   const [err, setErr] = useState("");
   const timer = useRef<number>();
   const { run } = useActivity();
@@ -42,7 +43,7 @@ export function Validar() {
 
   async function validar() {
     if (!file || !tipoDoc) return;
-    setStage("processing"); setErr(""); setDecision(null); setPromoted(null); setRes(null);
+    setStage("processing"); setErr(""); setDecision(null); setPromoted(null); setNegativoOk(null); setRes(null);
     try {
       // Paso 1 — Gate (admisión): rápido, se muestra enseguida.
       const r = await run("Validar (admisión)", () => api.validar(file, tipoDoc, { revisar: false }), PASOS);
@@ -82,9 +83,15 @@ export function Validar() {
     try { setPromoted(await api.promover(res.tipo_doc, res.thread_id, promote)); }
     catch (e) { setErr("No se pudo promover: " + errMsg(e)); }
   }
+  async function usarNegativo() {
+    if (!res) return;
+    setErr("");
+    try { const r = await run("Usar como contra-ejemplo", () => api.agregarNegativo(res.thread_id)); setNegativoOk(r.negativos_count); }
+    catch (e) { setErr("No se pudo guardar el contra-ejemplo: " + errMsg(e)); }
+  }
   function reiniciar() {
     setStage("upload"); setFile(null); setTipoDoc("");
-    setRes(null); setDecision(null); setPromoted(null); setErr(""); setRevisando(false);
+    setRes(null); setDecision(null); setPromoted(null); setNegativoOk(null); setErr(""); setRevisando(false);
   }
 
   const tSel = tipos.find((t) => t.tipo_doc === tipoDoc);
@@ -173,7 +180,18 @@ export function Validar() {
         </div>
       )}
       {decision === "rejected" && (
-        <div style={{ color: "var(--red-ink)" }}>✕ Documento no admitido · <button className="btn btn-ghost" style={{ padding: "2px 8px" }} onClick={() => setDecision(null)}>Deshacer</button></div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ color: "var(--red-ink)" }}>✕ Documento no admitido · <button className="btn btn-ghost" style={{ padding: "2px 8px" }} onClick={() => setDecision(null)}>Deshacer</button></div>
+          {negativoOk == null && (res.veredicto === "valido" || res.veredicto === "revision_manual") && (
+            <div className="faint" style={{ fontSize: 12 }}>
+              El modelo lo daba admisible. ¿Usarlo como <b>contra-ejemplo</b> para que no se admitan parecidos?
+              <button className="btn btn-ghost" style={{ marginLeft: 8, padding: "3px 9px" }} onClick={usarNegativo}>Usar como contra-ejemplo</button>
+            </div>
+          )}
+          {negativoOk != null && (
+            <div style={{ color: "var(--green-ink)", fontSize: 12 }}>✓ Guardado como contra-ejemplo ({negativoOk} en este tipo)</div>
+          )}
+        </div>
       )}
       {decision === "approved" && !promoted && (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>

@@ -193,6 +193,7 @@ export const api = {
   aplicarRegla: (id: string, campo: string, patron: string) => req<{ ok: boolean }>("POST", `/tipos/${id}/reglas/aplicar`, { campo, patron }),
   getCaso: (threadId: string) => req<ValidarResp & { decision: string | null }>("GET", `/casos/${threadId}`),
   decision: (threadId: string, decision: "approved" | "rejected") => req<any>("POST", `/casos/${threadId}/decision`, { decision }),
+  agregarNegativo: (threadId: string) => req<{ negativos_count: number }>("POST", `/casos/${threadId}/negativo`),
   revisarCaso: (threadId: string) => req<ValidarResp & { decision: string | null }>("POST", `/casos/${threadId}/revisar`),
   casoPaginaUrl: (threadId: string, page = 1) => `/api/casos/${threadId}/pagina/${page}`,  // preview on-demand (no payload)
   casoArchivoUrl: (threadId: string) => `/api/casos/${threadId}/archivo`,  // doc original inline (visor nativo)
