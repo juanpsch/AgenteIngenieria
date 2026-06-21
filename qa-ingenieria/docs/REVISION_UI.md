@@ -1,5 +1,8 @@
 # Revisión de contenido — guía del flujo en la UI
 
+> Para el recorrido general de TODAS las pantallas (Templates, Observatorio, Historial) y el sistema de
+> diseño, ver [UI_Guia.md](UI_Guia.md). Este documento es el detalle del **flujo de revisión** en Validar.
+>
 > Cómo se ve y se usa la **revisión de contenido (Fase 1)** en la pantalla de Validar. Es el "segundo
 > gate": una vez que un documento fue **admitido** (Fase 0), la revisión mira si el **contenido** es
 > bueno y cumple la norma. Pensada para que un revisor entienda qué está viendo y decida con evidencia.

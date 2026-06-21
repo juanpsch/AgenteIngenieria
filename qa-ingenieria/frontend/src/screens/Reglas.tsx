@@ -31,9 +31,9 @@ type RRow =
   | { kind: "leaf"; rowKey: string; depth: number; r: ReglaStat };
 
 const PctCell = ({ pct }: { pct: number | null }) => {
-  if (pct == null) return <span style={{ fontSize: 12, color: "#b6c0c7" }}>—</span>;
+  if (pct == null) return <span title="Sin datos verificables todavía" style={{ fontSize: 12, color: "#b6c0c7" }}>—</span>;
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+    <div title="% de cumplimiento = ok / (ok + fallo), sobre lo verificable" style={{ display: "flex", alignItems: "center", gap: 7, cursor: "help" }}>
       <Bar pct={pct} color={pctColor(pct)} />
       <span style={{ fontFamily: "ui-monospace,Menlo,monospace", fontSize: 11.5, fontWeight: 600, color: "#2b3a45", width: 38, textAlign: "right" }}>{pct}%</span>
     </div>
@@ -116,15 +116,15 @@ export function Reglas() {
     <div className="ct-fade">
       {/* Resumen */}
       <div style={{ display: "flex", gap: 12, marginBottom: 14 }}>
-        <Stat value={filtradas.length} label="reglas en vista" />
-        <Stat value={avgPct == null ? "—" : `${avgPct}%`} label="cumplimiento promedio" color={avgPct == null ? undefined : pctColor(avgPct)} />
-        <Stat value={conReglaMal} label="con juicio «regla mal»" color={conReglaMal ? "#946312" : undefined} />
+        <Stat value={filtradas.length} label="reglas en vista" title="Reglas que cumplen los filtros actuales" />
+        <Stat value={avgPct == null ? "—" : `${avgPct}%`} label="cumplimiento promedio" color={avgPct == null ? undefined : pctColor(avgPct)} title="Promedio del % de cumplimiento (ok sobre lo verificable) de las reglas con datos" />
+        <Stat value={conReglaMal} label="con juicio «regla mal»" color={conReglaMal ? "#946312" : undefined} title="Reglas marcadas por un humano como erradas (falso positivo/negativo)" />
       </div>
 
       {/* Toolbar: pivot + filtros */}
       <div style={{ background: "#fff", border: "1px solid #e7edf0", borderRadius: 12, padding: "14px 16px", marginBottom: 16, display: "flex", flexDirection: "column", gap: 11 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+          <div title="Tabla dinámica: agrupá las reglas por Norma / Severidad / Disciplina en el orden que elijas. Reordená con ‹ ›, sumá con + Eje, quitá con ✕." style={{ display: "flex", alignItems: "center", gap: 7, cursor: "help" }}>
             <ListFilter size={15} color="#0e7c86" />
             <span style={{ fontSize: 12.5, fontWeight: 700, color: "#34495a" }}>Agrupar en orden</span>
           </div>
@@ -209,8 +209,8 @@ export function Reglas() {
                   </div>
                 </div>
                 <span style={{ fontSize: 12, color: "#52646f", paddingRight: 10 }}>{r.norma_ref || r.norma_id || "—"}</span>
-                <span>{sv && <span style={{ fontSize: 10.5, fontWeight: 600, color: sv.fg, background: sv.bg, border: `1px solid ${sv.border}`, borderRadius: 6, padding: "2px 8px" }}>{r.severidad}</span>}</span>
-                <span style={{ textAlign: "center", fontFamily: "ui-monospace,Menlo,monospace", fontSize: 13, fontWeight: 700, color: r.n ? "#2b3a45" : "#b6c0c7" }}>{r.n || "—"}</span>
+                <span>{sv && <span title={`Severidad si la regla falla: ${r.severidad}`} style={{ fontSize: 10.5, fontWeight: 600, color: sv.fg, background: sv.bg, border: `1px solid ${sv.border}`, borderRadius: 6, padding: "2px 8px" }}>{r.severidad}</span>}</span>
+                <span title="Documentos en los que se evaluó la regla" style={{ textAlign: "center", fontFamily: "ui-monospace,Menlo,monospace", fontSize: 13, fontWeight: 700, color: r.n ? "#2b3a45" : "#b6c0c7" }}>{r.n || "—"}</span>
                 <span style={{ paddingRight: 12 }}><PctCell pct={r.pct_cumple} /></span>
                 <span style={{ display: "flex", gap: 4, alignItems: "center", flexWrap: "wrap" }}>
                   <FeedbackChips fb={r.feedback} />

@@ -131,10 +131,10 @@ export function Historial() {
 
       {/* Resumen */}
       <div style={{ display: "flex", gap: 12, marginBottom: 14 }}>
-        <Stat value={m.validados} label="validados" />
-        <Stat value={`${m.aprobacion_pct}%`} label="% de aprobación" color="#0d6b53" />
-        <Stat value={m.pendientes} label="pendientes de revisión" color={m.pendientes ? "#946312" : undefined} />
-        <Stat value={m.promovidos} label="promovidos a referencia" color="#0e7c86" />
+        <Stat value={m.validados} label="validados" title="Total de documentos validados (todo el historial)" />
+        <Stat value={`${m.aprobacion_pct}%`} label="% de aprobación" color="#0d6b53" title="Proporción de validaciones aprobadas por un humano" />
+        <Stat value={m.pendientes} label="pendientes de revisión" color={m.pendientes ? "#946312" : undefined} title="Casos admitidos sin decisión humana registrada" />
+        <Stat value={m.promovidos} label="promovidos a referencia" color="#0e7c86" title="Documentos usados como ejemplo de calibración de su template" />
       </div>
 
       {/* Toolbar */}

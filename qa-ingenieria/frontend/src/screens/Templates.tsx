@@ -385,10 +385,10 @@ export function Templates() {
       {/* selector de vista + nuevo template */}
       <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
         <div style={{ display: "flex", background: "#eef1f3", borderRadius: 9, padding: 3, gap: 2 }}>
-          {([["A", "Tabla pivot"], ["B", "Pivot + panel"], ["C", "Tarjetas"]] as const).map(([k, l]) => {
+          {([["A", "Tabla pivot", "Grilla con todas las columnas (facetas, disciplinas, ref., madurez)"], ["B", "Pivot + panel", "Lista compacta + panel de detalle de la familia elegida"], ["C", "Tarjetas", "Tarjetas agrupadas por el primer eje del pivot"]] as const).map(([k, l, tip]) => {
             const on = view === k;
             return (
-              <button key={k} className="tpl-tab" onClick={() => setView(k)} style={{ border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, padding: "7px 12px", borderRadius: 7, display: "flex", alignItems: "center", gap: 6, background: on ? "#fff" : "transparent", color: on ? "#0e7c86" : "#6b7d89", boxShadow: on ? "0 1px 3px rgba(20,40,55,.12)" : "none" }}>
+              <button key={k} className="tpl-tab" title={tip} onClick={() => setView(k)} style={{ border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, padding: "7px 12px", borderRadius: 7, display: "flex", alignItems: "center", gap: 6, background: on ? "#fff" : "transparent", color: on ? "#0e7c86" : "#6b7d89", boxShadow: on ? "0 1px 3px rgba(20,40,55,.12)" : "none" }}>
                 <span style={{ fontSize: 10, fontWeight: 800, opacity: .6 }}>{k}</span>{l}
               </button>
             );
@@ -402,7 +402,7 @@ export function Templates() {
       {/* toolbar: pivot + filtros */}
       <div style={{ background: "#fff", border: "1px solid #e7edf0", borderRadius: 12, padding: "14px 16px", marginBottom: 16, display: "flex", flexDirection: "column", gap: 11 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+          <div title="Tabla dinámica: elegí el ORDEN de los ejes; la lista se agrupa anidada en ese orden. Reordená con ‹ ›, sumá con + Eje, quitá con ✕." style={{ display: "flex", alignItems: "center", gap: 7, cursor: "help" }}>
             <ListFilter size={15} color="#0e7c86" />
             <span style={{ fontSize: 12.5, fontWeight: 700, color: "#34495a" }}>Pivot — agrupar en orden</span>
           </div>

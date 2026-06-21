@@ -5,7 +5,9 @@ import { Validar } from "./screens/Validar";
 import { Templates } from "./screens/Templates";
 import { Reglas } from "./screens/Reglas";
 import { Historial } from "./screens/Historial";
+import { Help } from "./components/Help";
 import { api } from "./api/client";
+import { HelpCircle } from "lucide-react";
 
 const HEAD: Record<Section, { h1: string; p: string }> = {
   validar: { h1: "Validar documento", p: "Subí un documento y cotejalo contra un template de referencia." },
@@ -17,6 +19,7 @@ const HEAD: Record<Section, { h1: string; p: string }> = {
 export default function App() {
   const [section, setSection] = useState<Section>("validar");
   const [pendientes, setPendientes] = useState(0);
+  const [showHelp, setShowHelp] = useState(false);
 
   useEffect(() => {
     api.historial().then((h) => setPendientes(h.metricas.pendientes)).catch(() => {});
@@ -27,9 +30,15 @@ export default function App() {
     <>
       <Sidebar section={section} onNav={setSection} pendientes={pendientes} />
       <div className="main">
-        <div className="header">
-          <h1>{head.h1}</h1>
-          <p>{head.p}</p>
+        <div className="header" style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h1>{head.h1}</h1>
+            <p>{head.p}</p>
+          </div>
+          <button title="Ayuda y guía de uso" onClick={() => setShowHelp(true)}
+            style={{ flex: "none", display: "flex", alignItems: "center", gap: 6, border: "1px solid #dce3e8", background: "#fff", color: "#0e7c86", fontSize: 13, fontWeight: 600, padding: "7px 12px", borderRadius: 9, cursor: "pointer" }}>
+            <HelpCircle size={16} /> Ayuda
+          </button>
         </div>
         <div className="container">
           <ErrorBoundary key={section}>
@@ -40,6 +49,7 @@ export default function App() {
           </ErrorBoundary>
         </div>
       </div>
+      {showHelp && <Help onClose={() => setShowHelp(false)} />}
     </>
   );
 }

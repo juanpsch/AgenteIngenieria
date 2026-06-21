@@ -15,8 +15,8 @@ export const FACET_ORDER = ["tipo", "organizacion", "disciplina", "jurisdiccion"
 export const pctColor = (pct: number) => (pct >= 80 ? "#12a87f" : pct >= 50 ? "#e0a32e" : "#d0473e");
 
 // Tarjeta de métrica (cabecera resumen) — usada por Observatorio e Historial.
-export const Stat = ({ value, label, color }: { value: ReactNode; label: string; color?: string }) => (
-  <div style={{ flex: 1, background: "#fff", border: "1px solid #e4eaee", borderRadius: 12, padding: "13px 16px", boxShadow: "0 1px 3px rgba(20,40,55,.05)" }}>
+export const Stat = ({ value, label, color, title }: { value: ReactNode; label: string; color?: string; title?: string }) => (
+  <div title={title} style={{ flex: 1, background: "#fff", border: "1px solid #e4eaee", borderRadius: 12, padding: "13px 16px", boxShadow: "0 1px 3px rgba(20,40,55,.05)", cursor: title ? "help" : "default" }}>
     <div style={{ fontSize: 24, fontWeight: 700, color: color || "#13252f", lineHeight: 1 }}>{value}</div>
     <div style={{ fontSize: 11.5, color: "#7e8f9a", marginTop: 5 }}>{label}</div>
   </div>
