@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#1f2d38;background:#eef1f3;-webkit-font-smoothing:antialiased;}
+  .cz-scroll::-webkit-scrollbar{width:10px;height:10px;}
+  .cz-scroll::-webkit-scrollbar-thumb{background:#cdd6dc;border-radius:6px;border:2px solid transparent;background-clip:content-box;}
+  .cz-scroll::-webkit-scrollbar-track{background:transparent;}
+  @keyframes czfade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+  @keyframes czpanel{from{opacity:0;transform:translateX(10px);}to{opacity:1;transform:none;}}
+  input:focus,button:focus-visible{outline:2px solid #0e7c86;outline-offset:1px;}
+</style>
+</helmet>
+
+<div style="display:flex;height:100vh;width:100%;overflow:hidden;background:#eef1f3;">
+
+  <!-- SIDEBAR -->
+  <aside style="width:248px;flex:none;background:#0c2030;color:#cdd9e2;display:flex;flex-direction:column;">
+    <div style="padding:20px 20px 16px;display:flex;align-items:center;gap:11px;">
+      <div style="width:34px;height:34px;border-radius:9px;background:linear-gradient(150deg,#13a3a3,#0a6a78);display:flex;align-items:center;justify-content:center;flex:none;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"></path></svg>
+      </div>
+      <div style="line-height:1.05;">
+        <div style="font-weight:700;font-size:16px;color:#fff;letter-spacing:.2px;">Cotejar</div>
+        <div style="font-size:10px;letter-spacing:1.5px;color:#5e7a8c;font-weight:600;margin-top:2px;">GATE DE ADMISIÓN</div>
+      </div>
+    </div>
+
+    <div style="padding:6px 14px;">
+      <div style="font-size:10px;letter-spacing:1.5px;color:#52soft;color:#566f80;font-weight:700;padding:14px 10px 6px;">FLUJO</div>
+      <div style="display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:8px;color:#aebeca;font-size:13.5px;font-weight:500;cursor:pointer;" style-hover="background:#13293a;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"></path></svg>
+        Validar documento
+      </div>
+
+      <div style="font-size:10px;letter-spacing:1.5px;color:#566f80;font-weight:700;padding:16px 10px 6px;">ADMINISTRACIÓN</div>
+      <div style="display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:8px;background:#0e7c86;color:#fff;font-size:13.5px;font-weight:600;cursor:pointer;box-shadow:0 2px 10px rgba(14,124,134,.4);">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 9 5-9 5-9-5 9-5z"></path><path d="m3 12 9 5 9-5"></path><path d="m3 17 9 5 9-5"></path></svg>
+        Templates de referencia
+      </div>
+      <div style="display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:8px;color:#aebeca;font-size:13.5px;font-weight:500;cursor:pointer;margin-top:2px;" style-hover="background:#13293a;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"></path><rect x="7" y="9" width="3" height="9"></rect><rect x="14" y="5" width="3" height="13"></rect></svg>
+        Observatorio de reglas
+      </div>
+      <div style="display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:8px;color:#aebeca;font-size:13.5px;font-weight:500;cursor:pointer;margin-top:2px;" style-hover="background:#13293a;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+        Historial y auditoría
+      </div>
+    </div>
+
+    <div style="margin-top:auto;padding:14px;">
+      <div style="background:#102536;border:1px solid #1c3santipattern;border:1px solid #1d3548;border-radius:10px;padding:12px 13px;">
+        <div style="font-size:10px;letter-spacing:1.2px;color:#566f80;font-weight:700;">PENDIENTES DE REVISIÓN</div>
+        <div style="display:flex;align-items:baseline;gap:7px;margin-top:3px;"><span style="font-size:24px;font-weight:700;color:#e0a32e;">2</span><span style="font-size:11.5px;color:#7e95a6;">documentos en cola</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 6px 4px;">
+        <div style="width:30px;height:30px;border-radius:50%;background:#2a4b5e;color:#cfe3ee;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;flex:none;">MR</div>
+        <div style="line-height:1.1;"><div style="font-size:13px;color:#dce8ef;font-weight:600;">M. Rossi</div><div style="font-size:10.5px;color:#5e7a8c;">Revisor sénior</div></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main style="flex:1;min-width:0;display:flex;flex-direction:column;background:#eef1f3;">
+
+    <!-- HEADER -->
+    <header style="background:#fff;border-bottom:1px solid #e2e8ec;padding:18px 28px;display:flex;align-items:flex-start;gap:20px;">
+      <div style="flex:1;min-width:0;">
+        <h1 style="margin:0;font-size:20px;font-weight:700;letter-spacing:-.2px;color:#13252f;">Templates de referencia</h1>
+        <p style="margin:4px 0 0;font-size:13px;color:#6b7d89;">Definí tipos de documento, sus reglas y los ejemplos con los que calibra el reconocimiento.</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;flex:none;">
+        <div style="display:flex;background:#eef1f3;border-radius:9px;padding:3px;gap:2px;">
+          <sc-for list="{{ viewTabs }}" as="t" hint-placeholder-count="3">
+            <button onClick="{{ t.onClick }}" style="border:none;cursor:pointer;font-size:12px;font-weight:600;padding:7px 12px;border-radius:7px;display:flex;align-items:center;gap:6px;background:{{ t.bg }};color:{{ t.fg }};box-shadow:{{ t.shadow }};transition:all .15s;">
+              <span style="font-size:10px;font-weight:800;opacity:.6;">{{ t.tag }}</span>{{ t.label }}
+            </button>
+          </sc-for>
+        </div>
+        <button style="border:none;cursor:pointer;background:#0e7c86;color:#fff;font-size:13px;font-weight:600;padding:9px 15px;border-radius:9px;display:flex;align-items:center;gap:7px;box-shadow:0 2px 8px rgba(14,124,134,.3);" style-hover="background:#0b6b74;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+          Nuevo template
+        </button>
+      </div>
+    </header>
+
+    <!-- TOOLBAR -->
+    <div style="background:#fff;border-bottom:1px solid #e7edf0;padding:14px 28px;display:flex;flex-direction:column;gap:11px;">
+      <!-- pivot row -->
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:7px;color:#46586astatic;color:#46586a;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0e7c86" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M7 12h10M11 18h2"></path></svg>
+          <span style="font-size:12.5px;font-weight:700;color:#34495a;">Pivot — agrupar en orden</span>
+        </div>
+        <sc-for list="{{ pivotChips }}" as="c" hint-placeholder-count="2">
+          <div style="display:flex;align-items:center;gap:4px;background:#fff;border:1.5px solid {{ c.color }};border-radius:8px;padding:3px 3px 3px 9px;box-shadow:0 1px 2px rgba(0,0,0,.04);">
+            <span style="width:7px;height:7px;border-radius:50%;background:{{ c.color }};"></span>
+            <span style="font-size:9.5px;font-weight:800;color:#9aa7b0;">{{ c.num }}</span>
+            <span style="font-size:12.5px;font-weight:700;color:#2b3a45;">{{ c.label }}</span>
+            <button onClick="{{ c.onLeft }}" title="Mover antes" style="border:none;background:#f0f3f5;width:20px;height:22px;border-radius:5px;cursor:pointer;color:#5b6e7b;display:flex;align-items:center;justify-content:center;margin-left:3px;" style-hover="background:#e2e8ec;">‹</button>
+            <button onClick="{{ c.onRight }}" title="Mover después" style="border:none;background:#f0f3f5;width:20px;height:22px;border-radius:5px;cursor:pointer;color:#5b6e7b;display:flex;align-items:center;justify-content:center;" style-hover="background:#e2e8ec;">›</button>
+            <button onClick="{{ c.onRemove }}" title="Quitar eje" style="border:none;background:transparent;width:22px;height:22px;border-radius:5px;cursor:pointer;color:#9aa7b0;display:flex;align-items:center;justify-content:center;" style-hover="background:#fdeceb;color:#d0473e;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+            </button>
+          </div>
+        </sc-for>
+        <sc-for list="{{ availableAxes }}" as="a" hint-placeholder-count="2">
+          <button onClick="{{ a.onAdd }}" style="border:1.5px dashed #c7d2da;background:#fff;border-radius:8px;padding:5px 11px;cursor:pointer;font-size:12.5px;font-weight:600;color:#5d7180;display:flex;align-items:center;gap:5px;" style-hover="border-color:#0e7c86;color:#0e7c86;background:#f2fafa;">
+            <span style="font-weight:800;">+</span>{{ a.label }}
+          </button>
+        </sc-for>
+        <div style="flex:1;"></div>
+        <button onClick="{{ onCollapseAll }}" style="border:none;background:transparent;color:#5d7180;font-size:12px;font-weight:600;cursor:pointer;padding:5px 8px;border-radius:6px;" style-hover="background:#eef1f3;">colapsar todo</button>
+        <button onClick="{{ onExpandAll }}" style="border:none;background:transparent;color:#5d7180;font-size:12px;font-weight:600;cursor:pointer;padding:5px 8px;border-radius:6px;" style-hover="background:#eef1f3;">expandir todo</button>
+      </div>
+
+      <!-- filter row -->
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div style="position:relative;display:flex;align-items:center;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9aa7b0" stroke-width="2" stroke-linecap="round" style="position:absolute;left:9px;"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+          <input value="{{ search }}" onChange="{{ onSearch }}" placeholder="Buscar familia o id…" style="border:1px solid #dce3e8;border-radius:8px;padding:7px 10px 7px 30px;font-size:12.5px;width:220px;background:#fafbfc;color:#2b3a45;" />
+        </div>
+        <span style="font-size:11.5px;color:#9aa7b0;font-weight:600;letter-spacing:.3px;">MADUREZ</span>
+        <sc-for list="{{ maturityChips }}" as="m" hint-placeholder-count="3">
+          <button onClick="{{ m.onClick }}" style="border:1.5px solid {{ m.border }};background:{{ m.bg }};border-radius:20px;padding:4px 11px 4px 8px;cursor:pointer;display:flex;align-items:center;gap:6px;opacity:{{ m.opacity }};transition:opacity .15s;">
+            <span style="width:8px;height:8px;border-radius:50%;background:{{ m.dot }};"></span>
+            <span style="font-size:12px;font-weight:600;color:{{ m.fg }};">{{ m.label }}</span>
+            <span style="font-size:11px;font-weight:700;color:{{ m.fg }};background:rgba(255,255,255,.65);border-radius:9px;padding:0 6px;">{{ m.count }}</span>
+          </button>
+        </sc-for>
+        <sc-if value="{{ facetActive }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:6px;background:#eef7f8;border:1px solid #bfe0e4;border-radius:20px;padding:4px 6px 4px 11px;">
+            <span style="font-size:11.5px;color:#0b6b74;font-weight:600;">{{ facetActiveLabel }}</span>
+            <button onClick="{{ onClearFacet }}" style="border:none;background:#d6ecee;width:18px;height:18px;border-radius:50%;cursor:pointer;color:#0b6b74;display:flex;align-items:center;justify-content:center;font-size:11px;">✕</button>
+          </div>
+        </sc-if>
+        <div style="flex:1;"></div>
+        <span style="font-size:12px;color:#7e8f9a;"><b style="color:#2b3a45;">{{ shownCount }}</b> de {{ totalCount }} familias</span>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="cz-scroll" style="flex:1;overflow:auto;padding:20px 28px 40px;">
+
+      <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+        <div style="text-align:center;padding:80px 20px;color:#8b9aa4;">
+          <div style="font-size:15px;font-weight:600;color:#5d7180;">Sin resultados</div>
+          <div style="font-size:13px;margin-top:6px;">Ninguna familia coincide con los filtros activos.</div>
+          <button onClick="{{ onClearFilters }}" style="margin-top:14px;border:1px solid #cdd6dc;background:#fff;border-radius:8px;padding:7px 14px;cursor:pointer;font-size:12.5px;font-weight:600;color:#0e7c86;">Limpiar filtros</button>
+        </div>
+      </sc-if>
+
+      <!-- ===== VIEW A: TABLA PIVOT ===== -->
+      <sc-if value="{{ isA }}" hint-placeholder-val="{{ true }}">
+        <div style="background:#fff;border:1px solid #e4eaee;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(20,40,55,.05);">
+          <div style="display:grid;grid-template-columns:2.3fr 1.5fr 1.2fr 74px 1.15fr 58px;gap:0;padding:11px 18px;background:#f7f9fa;border-bottom:1px solid #e7edf0;font-size:10.5px;letter-spacing:.6px;font-weight:700;color:#90a0aa;">
+            <div>TIPO DE DOCUMENTO</div><div>FACETAS</div><div>DISCIPLINAS</div><div style="text-align:center;">REF.</div><div>MADUREZ</div><div></div>
+          </div>
+          <sc-for list="{{ rows }}" as="r" hint-placeholder-count="8">
+            <sc-if value="{{ r.isGroup }}" hint-placeholder-val="{{ false }}">
+              <div onClick="{{ r.onToggle }}" style="display:flex;align-items:center;gap:9px;padding:9px 18px;padding-left:{{ r.indent }}px;background:{{ r.groupBg }};border-bottom:1px solid #eef2f4;cursor:pointer;" style-hover="background:#eef4f5;">
+                <span style="display:inline-flex;transition:transform .18s;transform:{{ r.caret }};color:#7e8f9a;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+                </span>
+                <span style="font-size:10px;font-weight:800;letter-spacing:.5px;color:{{ r.axisColor }};text-transform:uppercase;">{{ r.axisLabel }}</span>
+                <span style="font-size:13.5px;font-weight:700;color:{{ r.valueColor }};font-style:{{ r.valueStyle }};">{{ r.value }}</span>
+                <span style="font-size:11px;font-weight:700;color:#8b9aa4;background:#eef2f4;border-radius:10px;padding:1px 8px;">{{ r.count }}</span>
+              </div>
+            </sc-if>
+            <sc-if value="{{ r.isLeaf }}" hint-placeholder-val="{{ true }}">
+              <div style="display:grid;grid-template-columns:2.3fr 1.5fr 1.2fr 74px 1.15fr 58px;gap:0;align-items:center;padding:12px 18px;border-bottom:1px solid #eef2f4;animation:czfade .2s ease;" style-hover="background:#fafcfc;">
+                <div style="padding-left:{{ r.leafIndent }}px;padding-right:14px;">
+                  <div style="font-size:13.5px;font-weight:600;color:#1c2c36;line-height:1.25;">{{ r.family.name }}</div>
+                  <div style="display:flex;align-items:center;gap:8px;margin-top:3px;">
+                    <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:#8597a2;">{{ r.family.id }}</span>
+                    <sc-if value="{{ r.family.showInherit }}" hint-placeholder-val="{{ false }}">
+                      <span style="font-size:10.5px;color:#a07a2e;background:#fdf6e7;border:1px solid #f0e2bf;border-radius:5px;padding:0 6px;">↳ hereda {{ r.family.inheritsFrom }}</span>
+                    </sc-if>
+                  </div>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:5px;padding-right:12px;">
+                  <sc-for list="{{ r.family.coordChips }}" as="c" hint-placeholder-count="2">
+                    <button onClick="{{ c.onClick }}" title="Filtrar por {{ c.label }}" style="display:flex;align-items:center;gap:5px;background:#f6f8f9;border:1px solid #e6ecef;border-radius:6px;padding:2px 7px 2px 6px;cursor:pointer;" style-hover="border-color:{{ c.color }};background:#fff;">
+                      <span style="width:6px;height:6px;border-radius:2px;background:{{ c.color }};"></span>
+                      <span style="font-size:11.5px;color:#3f5260;font-weight:500;">{{ c.value }}</span>
+                    </button>
+                  </sc-for>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:4px;padding-right:12px;">
+                  <sc-for list="{{ r.family.disciplinas }}" as="d" hint-placeholder-count="2">
+                    <span style="font-size:11px;color:#52646f;background:#eef2f4;border-radius:5px;padding:2px 7px;">{{ d }}</span>
+                  </sc-for>
+                </div>
+                <div style="text-align:center;">
+                  <span style="font-size:14px;font-weight:700;color:{{ r.family.refColor }};">{{ r.family.examples }}</span>
+                  <div style="font-size:9.5px;color:#a3b0b8;letter-spacing:.3px;">docs</div>
+                </div>
+                <div style="padding-right:10px;">
+                  <div style="display:inline-flex;align-items:center;gap:5px;background:{{ r.family.mat.bg }};border:1px solid {{ r.family.mat.border }};border-radius:6px;padding:2px 8px;">
+                    <span style="width:7px;height:7px;border-radius:50%;background:{{ r.family.mat.dot }};"></span>
+                    <span style="font-size:11px;font-weight:600;color:{{ r.family.mat.fg }};">{{ r.family.mat.label }}</span>
+                  </div>
+                  <div style="position:relative;height:5px;background:#edf1f3;border-radius:3px;margin-top:6px;overflow:hidden;">
+                    <div style="position:absolute;inset:0;width:{{ r.family.mat.pct }}%;background:{{ r.family.mat.dot }};border-radius:3px;transition:width .3s;"></div>
+                  </div>
+                  <div style="font-size:10px;color:#94a3ab;margin-top:3px;">{{ r.family.mat.sub }}</div>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:flex-end;gap:4px;">
+                  <button title="Editar" style="border:none;background:#f0f3f5;width:28px;height:28px;border-radius:7px;cursor:pointer;color:#5d7180;display:flex;align-items:center;justify-content:center;" style-hover="background:#e1f0f1;color:#0e7c86;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
+                  </button>
+                  <button title="Borrar" style="border:none;background:#f0f3f5;width:28px;height:28px;border-radius:7px;cursor:pointer;color:#9aa7b0;display:flex;align-items:center;justify-content:center;" style-hover="background:#fdeceb;color:#d0473e;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"></path></svg>
+                  </button>
+                </div>
+              </div>
+            </sc-if>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- ===== VIEW B: PIVOT + PANEL ===== -->
+      <sc-if value="{{ isB }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:minmax(380px,1fr) 1.15fr;gap:18px;align-items:start;">
+          <div style="background:#fff;border:1px solid #e4eaee;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(20,40,55,.05);">
+            <sc-for list="{{ rows }}" as="r" hint-placeholder-count="8">
+              <sc-if value="{{ r.isGroup }}" hint-placeholder-val="{{ false }}">
+                <div onClick="{{ r.onToggle }}" style="display:flex;align-items:center;gap:8px;padding:8px 14px;padding-left:{{ r.indent }}px;background:{{ r.groupBg }};border-bottom:1px solid #eef2f4;cursor:pointer;" style-hover="background:#eef4f5;">
+                  <span style="display:inline-flex;transition:transform .18s;transform:{{ r.caret }};color:#7e8f9a;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg></span>
+                  <span style="font-size:9.5px;font-weight:800;letter-spacing:.4px;color:{{ r.axisColor }};text-transform:uppercase;">{{ r.axisLabel }}</span>
+                  <span style="font-size:12.5px;font-weight:700;color:{{ r.valueColor }};font-style:{{ r.valueStyle }};">{{ r.value }}</span>
+                  <span style="font-size:10.5px;font-weight:700;color:#8b9aa4;background:#eef2f4;border-radius:10px;padding:0 7px;">{{ r.count }}</span>
+                </div>
+              </sc-if>
+              <sc-if value="{{ r.isLeaf }}" hint-placeholder-val="{{ true }}">
+                <div onClick="{{ r.onSelect }}" style="display:flex;align-items:center;gap:10px;padding:10px 14px;padding-left:{{ r.leafIndent }}px;border-bottom:1px solid #eef2f4;cursor:pointer;background:{{ r.selBg }};border-left:3px solid {{ r.selBar }};" style-hover="background:#f3f9f9;">
+                  <span style="width:9px;height:9px;border-radius:50%;background:{{ r.family.mat.dot }};flex:none;"></span>
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-size:13px;font-weight:600;color:#1c2c36;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ r.family.name }}</div>
+                    <div style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#8597a2;">{{ r.family.id }}</div>
+                  </div>
+                  <span style="font-size:11px;color:#8b9aa4;flex:none;">{{ r.family.examples }} ref</span>
+                </div>
+              </sc-if>
+            </sc-for>
+          </div>
+
+          <!-- detail panel -->
+          <sc-if value="{{ sel }}" hint-placeholder-val="{{ true }}">
+            <div style="background:#fff;border:1px solid #e4eaee;border-radius:12px;box-shadow:0 1px 3px rgba(20,40,55,.05);position:sticky;top:0;animation:czpanel .22s ease;overflow:hidden;">
+              <div style="padding:18px 20px;border-bottom:1px solid #eef2f4;background:linear-gradient(180deg,#f8fafb,#fff);">
+                <div style="display:flex;align-items:flex-start;gap:12px;">
+                  <div style="flex:1;min-width:0;">
+                    <h2 style="margin:0;font-size:17px;font-weight:700;color:#13252f;line-height:1.25;">{{ sel.name }}</h2>
+                    <div style="font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#7e8f9a;margin-top:4px;">{{ sel.id }}</div>
+                  </div>
+                  <div style="display:inline-flex;align-items:center;gap:6px;background:{{ sel.mat.bg }};border:1px solid {{ sel.mat.border }};border-radius:7px;padding:4px 10px;flex:none;">
+                    <span style="width:8px;height:8px;border-radius:50%;background:{{ sel.mat.dot }};"></span>
+                    <span style="font-size:12px;font-weight:600;color:{{ sel.mat.fg }};">{{ sel.mat.label }}</span>
+                  </div>
+                </div>
+                <sc-if value="{{ sel.showInherit }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:10px;font-size:12px;color:#a07a2e;background:#fdf6e7;border:1px solid #f0e2bf;border-radius:7px;padding:7px 10px;">↳ Hereda ejemplos de <b>{{ sel.inheritsFrom }}</b> mientras no tenga propios.</div>
+                </sc-if>
+              </div>
+
+              <div style="padding:18px 20px;">
+                <div style="font-size:11px;font-weight:700;letter-spacing:.5px;color:#90a0aa;">CALIBRACIÓN</div>
+                <div style="display:flex;align-items:baseline;gap:8px;margin-top:8px;">
+                  <span style="font-size:30px;font-weight:700;color:#1c2c36;">{{ sel.examples }}</span>
+                  <span style="font-size:13px;color:#7e8f9a;">ejemplos · objetivo {{ target }}</span>
+                </div>
+                <div style="position:relative;height:9px;background:#edf1f3;border-radius:5px;margin-top:10px;overflow:hidden;">
+                  <div style="position:absolute;inset:0;width:{{ sel.mat.pct }}%;background:{{ sel.mat.dot }};border-radius:5px;transition:width .3s;"></div>
+                  <div style="position:absolute;top:-2px;bottom:-2px;left:{{ calibratingMarkPct }}%;width:2px;background:#c2cdd4;"></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:#94a3ab;">
+                  <span>{{ sel.mat.sub }}</span><span>calibrando ≥2 · decisivo ≥{{ target }}</span>
+                </div>
+
+                <div style="font-size:11px;font-weight:700;letter-spacing:.5px;color:#90a0aa;margin-top:22px;">COORDENADAS (FACETAS)</div>
+                <div style="display:flex;flex-direction:column;gap:1px;margin-top:8px;border:1px solid #eef2f4;border-radius:9px;overflow:hidden;">
+                  <sc-for list="{{ sel.coordsAll }}" as="c" hint-placeholder-count="5">
+                    <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:{{ c.rowBg }};">
+                      <span style="width:7px;height:7px;border-radius:2px;background:{{ c.color }};flex:none;"></span>
+                      <span style="font-size:11.5px;font-weight:600;color:#6b7d89;width:92px;flex:none;">{{ c.label }}</span>
+                      <span style="font-size:13px;font-weight:500;color:{{ c.valueColor }};font-style:{{ c.valueStyle }};">{{ c.display }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+
+                <div style="font-size:11px;font-weight:700;letter-spacing:.5px;color:#90a0aa;margin-top:22px;">DISCIPLINAS</div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">
+                  <sc-for list="{{ sel.disciplinas }}" as="d" hint-placeholder-count="2">
+                    <span style="font-size:12px;color:#3f5260;background:#eef2f4;border-radius:6px;padding:3px 10px;">{{ d }}</span>
+                  </sc-for>
+                </div>
+
+                <div style="display:flex;gap:9px;margin-top:24px;">
+                  <button style="flex:1;border:none;background:#0e7c86;color:#fff;font-size:13px;font-weight:600;padding:10px;border-radius:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;" style-hover="background:#0b6b74;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
+                    Editar reglas y ejemplos
+                  </button>
+                  <button style="border:1px solid #e1e8ec;background:#fff;color:#5d7180;font-size:13px;font-weight:600;padding:10px 14px;border-radius:9px;cursor:pointer;" style-hover="border-color:#cdd6dc;">Duplicar</button>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <!-- ===== VIEW C: TARJETAS ===== -->
+      <sc-if value="{{ isC }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:22px;">
+          <sc-for list="{{ sections }}" as="s" hint-placeholder-count="3">
+            <div>
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                <span style="width:9px;height:9px;border-radius:3px;background:{{ s.axisColor }};"></span>
+                <span style="font-size:10px;font-weight:800;letter-spacing:.6px;color:{{ s.axisColor }};text-transform:uppercase;">{{ s.axisLabel }}</span>
+                <span style="font-size:15px;font-weight:700;color:{{ s.valueColor }};font-style:{{ s.valueStyle }};">{{ s.value }}</span>
+                <span style="font-size:11px;font-weight:700;color:#8b9aa4;background:#e7edf0;border-radius:10px;padding:1px 9px;">{{ s.count }}</span>
+                <div style="flex:1;height:1px;background:#e1e8ec;"></div>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px;">
+                <sc-for list="{{ s.families }}" as="f" hint-placeholder-count="3">
+                  <div style="background:#fff;border:1px solid #e4eaee;border-radius:12px;padding:15px 16px;box-shadow:0 1px 3px rgba(20,40,55,.05);animation:czfade .2s ease;display:flex;flex-direction:column;gap:11px;" style-hover="border-color:#cfdbe1;box-shadow:0 4px 14px rgba(20,40,55,.09);">
+                    <div style="display:flex;align-items:flex-start;gap:10px;">
+                      <div style="flex:1;min-width:0;">
+                        <div style="font-size:14px;font-weight:700;color:#13252f;line-height:1.25;">{{ f.name }}</div>
+                        <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#8597a2;margin-top:3px;">{{ f.id }}</div>
+                      </div>
+                      <div style="display:inline-flex;align-items:center;gap:5px;background:{{ f.mat.bg }};border:1px solid {{ f.mat.border }};border-radius:6px;padding:2px 7px;flex:none;">
+                        <span style="width:6px;height:6px;border-radius:50%;background:{{ f.mat.dot }};"></span>
+                        <span style="font-size:10.5px;font-weight:600;color:{{ f.mat.fg }};">{{ f.mat.label }}</span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div style="position:relative;height:6px;background:#edf1f3;border-radius:4px;overflow:hidden;">
+                        <div style="position:absolute;inset:0;width:{{ f.mat.pct }}%;background:{{ f.mat.dot }};border-radius:4px;"></div>
+                      </div>
+                      <div style="font-size:10.5px;color:#94a3ab;margin-top:5px;">{{ f.mat.sub }}</div>
+                    </div>
+
+                    <div style="display:flex;flex-wrap:wrap;gap:5px;">
+                      <sc-for list="{{ f.coordChips }}" as="c" hint-placeholder-count="2">
+                        <span style="display:flex;align-items:center;gap:5px;background:#f6f8f9;border:1px solid #e6ecef;border-radius:6px;padding:2px 7px 2px 6px;">
+                          <span style="width:6px;height:6px;border-radius:2px;background:{{ c.color }};"></span>
+                          <span style="font-size:11px;color:#3f5260;">{{ c.value }}</span>
+                        </span>
+                      </sc-for>
+                      <sc-for list="{{ f.disciplinas }}" as="d" hint-placeholder-count="1">
+                        <span style="font-size:11px;color:#52646f;background:#eef2f4;border-radius:6px;padding:2px 7px;">{{ d }}</span>
+                      </sc-for>
+                    </div>
+
+                    <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid #eef2f4;padding-top:11px;">
+                      <span style="font-size:11.5px;color:#7e8f9a;"><b style="color:#2b3a45;font-size:13px;">{{ f.examples }}</b> referencias</span>
+                      <sc-if value="{{ f.needsCalib }}" hint-placeholder-val="{{ false }}">
+                        <button style="border:1px dashed #c7d2da;background:#fff;border-radius:7px;padding:5px 10px;cursor:pointer;font-size:11.5px;font-weight:600;color:#0e7c86;display:flex;align-items:center;gap:5px;" style-hover="border-color:#0e7c86;background:#f2fafa;">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+                          Calibrar
+                        </button>
+                      </sc-if>
+                      <sc-if value="{{ f.calibrated }}" hint-placeholder-val="{{ false }}">
+                        <button style="border:1px solid #e1e8ec;background:#fff;border-radius:7px;padding:5px 10px;cursor:pointer;font-size:11.5px;font-weight:600;color:#5d7180;" style-hover="border-color:#cdd6dc;">Ver reglas</button>
+                      </sc-if>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1320,&quot;height&quot;:860},&quot;defaultView&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;A&quot;,&quot;B&quot;,&quot;C&quot;],&quot;default&quot;:&quot;A&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;calibratedThreshold&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:5,&quot;min&quot;:3,&quot;max&quot;:10,&quot;tsType&quot;:&quot;number&quot;},&quot;showInheritance&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.AXES = {
+      tipo:{label:'Tipo', color:'#0e7c86'},
+      empresa:{label:'Empresa', color:'#4f46e5'},
+      disc:{label:'Disciplina', color:'#475569'},
+      juris:{label:'Jurisdicción', color:'#b45309'},
+      proyecto:{label:'Proyecto', color:'#9333ea'},
+    };
+    this.AXIS_ORDER = ['tipo','empresa','disc','juris','proyecto'];
+    this.families = this.enrich();
+    this.state = {
+      view: (props && props.defaultView) || 'A',
+      order: ['tipo','disc'],
+      collapsed: new Set(),
+      maturity: new Set(),
+      search: '',
+      facet: null,
+      selected: 'pid_efluentes',
+    };
+  }
+
+  raw(){
+    return [
+      {id:'pid_instrumentacion', name:'P&ID / Diagrama de instrumentación', tipo:'P&ID', empresa:null, disc:['instrumentación'], juris:null, proyecto:null, disciplinas:['instrumentación','procesos'], examples:9, maturity:'calibrado'},
+      {id:'pid_camuzzi', name:'P&ID Camuzzi (gas)', tipo:'P&ID', empresa:'Camuzzi', disc:['instrumentación'], juris:'AR', proyecto:null, disciplinas:['instrumentación','procesos','gas'], examples:0, inheritsFrom:'pid_instrumentacion', maturity:'solo_reglas'},
+      {id:'pid_efluentes', name:'P&ID Planta de efluentes', tipo:'P&ID', empresa:'EPA / Brown & Caldwell', disc:['instrumentación'], juris:null, proyecto:null, disciplinas:['instrumentación','procesos'], examples:11, maturity:'calibrado'},
+      {id:'memoria_electrica', name:'Memoria de cálculo eléctrica', tipo:'Memoria', empresa:null, disc:['eléctrica'], juris:null, proyecto:null, disciplinas:['eléctrica'], examples:0, maturity:'solo_reglas'},
+      {id:'memoria_estructural', name:'Memoria de cálculo estructural', tipo:'Memoria', empresa:null, disc:['estructural'], juris:null, proyecto:null, disciplinas:['estructural'], examples:0, maturity:'solo_reglas'},
+      {id:'plano_generico', name:'Plano genérico (dibujo técnico)', tipo:'Plano', empresa:null, disc:[], juris:null, proyecto:null, disciplinas:['civil','mecánica','eléctrica'], examples:0, maturity:'solo_reglas'},
+      {id:'plano_electrico_unifilar', name:'Plano eléctrico / unifilar', tipo:'Plano', empresa:null, disc:['eléctrica'], juris:null, proyecto:null, disciplinas:['eléctrica'], examples:0, maturity:'solo_reglas'},
+      {id:'hoja_datos_recipiente', name:'Hoja de datos de recipiente a presión (ASME VIII-1)', tipo:'Hoja de datos', empresa:null, disc:['mecánica'], juris:null, proyecto:null, disciplinas:['mecánica','procesos'], examples:0, maturity:'solo_reglas'},
+      {id:'hd_2', name:'Hojas de Datos · Proyecto AABBCC', tipo:'Hoja de datos', empresa:null, disc:['mecánica'], juris:null, proyecto:'AABBCC', disciplinas:['mecánica'], examples:4, maturity:'calibrando'},
+      {id:'esquematico_electronico', name:'Esquemático electrónico', tipo:'Esquemático', empresa:null, disc:['electrónica'], juris:null, proyecto:null, disciplinas:['eléctrica','electrónica'], examples:3, maturity:'calibrando'},
+      {id:'pandacarrierelectrico', name:'Panda Carrier Eléctrico', tipo:'Plano', empresa:null, disc:['eléctrica'], juris:null, proyecto:'PANDA', disciplinas:['eléctrica'], examples:0, maturity:'solo_reglas'},
+    ];
+  }
+
+  enrich(){
+    return this.raw().map(f=>{
+      const coordChips = ['tipo','empresa','juris','proyecto']
+        .map(k=>({axisKey:k, label:this.AXES[k].label, color:this.AXES[k].color, value:f[k], onClick:()=>this.setFacet(k,f[k])}))
+        .filter(c=>c.value);
+      return {...f, coordChips};
+    });
+  }
+
+  target(){ return (this.props && this.props.calibratedThreshold) || 5; }
+
+  matMeta(f){
+    const T = this.target();
+    const ex = f.examples;
+    const pct = Math.min(100, Math.round(ex/T*100));
+    if(f.maturity==='calibrado') return {key:'calibrado', label:'Calibrado', fg:'#0d6b53', bg:'#e4f4ee', border:'#c3e7da', dot:'#12a87f', pct, sub: ex+' ejemplos · decisivo'};
+    if(f.maturity==='calibrando') return {key:'calibrando', label:'Calibrando', fg:'#946312', bg:'#fdf4e3', border:'#f0ddb6', dot:'#e0a32e', pct, sub: ex+'/'+T+' · faltan '+(T-ex)+' para decidir'};
+    const showInh = (this.props ? (this.props.showInheritance !== false) : true) && f.inheritsFrom;
+    const sub = showInh ? ('sin ejemplos · hereda de '+f.inheritsFrom) : (ex+'/'+T+' · sumá '+Math.max(2-ex,1)+' para calibrar');
+    return {key:'solo_reglas', label:'Solo reglas', fg:'#5b6b78', bg:'#eef1f4', border:'#dce3e8', dot:'#94a3b8', pct, sub};
+  }
+
+  withMeta(f){
+    const mat = this.matMeta(f);
+    const showInherit = (this.props ? (this.props.showInheritance !== false) : true) && !!f.inheritsFrom;
+    const coordsAll = ['tipo','empresa','disc','juris','proyecto'].map(k=>{
+      let display, has;
+      if(k==='disc'){ has = f.disc && f.disc.length; display = has ? f.disc.join(', ') : 'sin valor'; }
+      else { has = !!f[k]; display = has ? f[k] : 'sin valor'; }
+      return {axisKey:k, label:this.AXES[k].label, color: has?this.AXES[k].color:'#cfd6db', display,
+        valueColor: has?'#2b3a45':'#aab4bb', valueStyle: has?'normal':'italic', rowBg: has?'#fff':'#fbfcfc'};
+    });
+    return {...f, mat, showInherit,
+      refColor: f.examples>0 ? '#2b3a45' : '#b6c0c7',
+      needsCalib: f.examples < this.target() && mat.key!=='calibrado',
+      calibrated: mat.key==='calibrado',
+      coordsAll};
+  }
+
+  valuesFor(f,k){ if(k==='disc') return (f.disc&&f.disc.length)?f.disc:['—']; return [f[k]||'—']; }
+
+  baseList(applyMaturity){
+    const fam = this.families.map(f=>this.withMeta(f));
+    const s = this.state.search.trim().toLowerCase();
+    const facet = this.state.facet;
+    return fam.filter(f=>{
+      if(s && !(f.name.toLowerCase().includes(s) || f.id.toLowerCase().includes(s))) return false;
+      if(facet && !this.valuesFor(f,facet.axisKey).includes(facet.value)) return false;
+      if(applyMaturity && this.state.maturity.size && !this.state.maturity.has(f.maturity)) return false;
+      return true;
+    });
+  }
+
+  flat(families, order, collapsed){
+    const rows=[];
+    const rec=(items, depth, pathKey)=>{
+      if(depth>=order.length){
+        items.forEach(f=> rows.push({type:'leaf', isGroup:false, isLeaf:true, leafIndent: 4+order.length*20, family:f,
+          selBg: this.state.selected===f.id?'#eef7f8':'#fff', selBar: this.state.selected===f.id?'#0e7c86':'transparent',
+          onSelect:()=>this.setState({selected:f.id})}));
+        return;
+      }
+      const ak=order[depth];
+      const groups=new Map();
+      items.forEach(f=> this.valuesFor(f,ak).forEach(v=>{ if(!groups.has(v)) groups.set(v,[]); groups.get(v).push(f); }));
+      const entries=[...groups.entries()].sort((a,b)=>{ if(a[0]==='—')return 1; if(b[0]==='—')return -1; return String(a[0]).localeCompare(String(b[0])); });
+      entries.forEach(([val,list])=>{
+        const gKey=pathKey+'>'+ak+':'+val;
+        const col=collapsed.has(gKey);
+        const empty = val==='—';
+        rows.push({type:'group', isGroup:true, isLeaf:false, depth, indent:18+depth*20,
+          axisKey:ak, axisLabel:this.AXES[ak].label, axisColor:this.AXES[ak].color,
+          value: empty?'sin valor':val, valueColor: empty?'#aab4bb':'#1c2c36', valueStyle: empty?'italic':'normal',
+          count:list.length, collapsed:col, caret: col?'rotate(-90deg)':'rotate(0deg)',
+          groupBg: depth===0?'#f4f7f8':'#fafbfc', onToggle:()=>this.toggleGroup(gKey)});
+        if(!col) rec(list, depth+1, gKey);
+      });
+    };
+    rec(families,0,'');
+    return rows;
+  }
+
+  allKeys(){
+    const keys=[]; const order=this.state.order;
+    const rec=(items,depth,pathKey)=>{
+      if(depth>=order.length) return;
+      const ak=order[depth]; const groups=new Map();
+      items.forEach(f=>this.valuesFor(f,ak).forEach(v=>{ if(!groups.has(v))groups.set(v,[]); groups.get(v).push(f); }));
+      for(const [val,list] of groups){ const g=pathKey+'>'+ak+':'+val; keys.push(g); rec(list,depth+1,g); }
+    };
+    rec(this.baseList(true),0,'');
+    return keys;
+  }
+
+  toggleGroup(g){ const c=new Set(this.state.collapsed); c.has(g)?c.delete(g):c.add(g); this.setState({collapsed:c}); }
+  collapseAll(){ this.setState({collapsed:new Set(this.allKeys())}); }
+  expandAll(){ this.setState({collapsed:new Set()}); }
+  moveAxis(i,dir){ const o=[...this.state.order]; const j=i+dir; if(j<0||j>=o.length)return; const t=o[i];o[i]=o[j];o[j]=t; this.setState({order:o, collapsed:new Set()}); }
+  removeAxis(k){ this.setState({order:this.state.order.filter(x=>x!==k), collapsed:new Set()}); }
+  addAxis(k){ if(this.state.order.includes(k))return; this.setState({order:[...this.state.order,k], collapsed:new Set()}); }
+  setFacet(ak,v){ if(!v||v==='—')return; this.setState({facet:{axisKey:ak,value:v}}); }
+  clearFacet(){ this.setState({facet:null}); }
+  toggleMaturity(m){ const s=new Set(this.state.maturity); s.has(m)?s.delete(m):s.add(m); this.setState({maturity:s}); }
+  clearFilters(){ this.setState({search:'', facet:null, maturity:new Set()}); }
+  setView(v){ this.setState({view:v}); }
+
+  renderVals(){
+    const filtered = this.baseList(true);
+    const matBase = this.baseList(false);
+    const order = this.state.order;
+    const rows = this.flat(filtered, order, this.state.collapsed);
+
+    const viewDefs=[{k:'A',tag:'A',label:'Tabla pivot'},{k:'B',tag:'B',label:'Pivot + panel'},{k:'C',tag:'C',label:'Tarjetas'}];
+    const viewTabs = viewDefs.map(v=>({
+      tag:v.tag, label:v.label,
+      bg: this.state.view===v.k?'#fff':'transparent',
+      fg: this.state.view===v.k?'#0e7c86':'#6b7d89',
+      shadow: this.state.view===v.k?'0 1px 3px rgba(20,40,55,.12)':'none',
+      onClick:()=>this.setView(v.k),
+    }));
+
+    const pivotChips = order.map((k,i)=>({
+      axisKey:k, label:this.AXES[k].label, color:this.AXES[k].color, num:(i+1),
+      onLeft:()=>this.moveAxis(i,-1), onRight:()=>this.moveAxis(i,1), onRemove:()=>this.removeAxis(k),
+    }));
+    const availableAxes = this.AXIS_ORDER.filter(k=>!order.includes(k)).map(k=>({label:this.AXES[k].label, onAdd:()=>this.addAxis(k)}));
+
+    const matDefs=[{k:'solo_reglas',label:'Solo reglas',fg:'#5b6b78',bg:'#f4f6f8',border:'#dce3e8',dot:'#94a3b8'},
+                  {k:'calibrando',label:'Calibrando',fg:'#946312',bg:'#fdf6ea',border:'#f0ddb6',dot:'#e0a32e'},
+                  {k:'calibrado',label:'Calibrado',fg:'#0d6b53',bg:'#e9f5f0',border:'#c3e7da',dot:'#12a87f'}];
+    const maturityChips = matDefs.map(m=>({
+      label:m.label, fg:m.fg, bg:m.bg, border:m.border, dot:m.dot,
+      count: matBase.filter(f=>f.maturity===m.k).length,
+      opacity: (this.state.maturity.size===0 || this.state.maturity.has(m.k))?1:.4,
+      onClick:()=>this.toggleMaturity(m.k),
+    }));
+
+    const facetActive = !!this.state.facet;
+    const facetActiveLabel = this.state.facet ? (this.AXES[this.state.facet.axisKey].label+': '+this.state.facet.value) : '';
+
+    const selRaw = this.families.find(f=>f.id===this.state.selected);
+    const sel = (this.state.view==='B' && selRaw) ? this.withMeta(selRaw) : null;
+    const target = this.target();
+    const calibratingMarkPct = Math.min(100, Math.round(2/target*100));
+
+    // sections for C (group by first axis only)
+    let sections;
+    if(order.length===0){
+      sections = filtered.length ? [{axisLabel:'Todas', axisColor:'#0e7c86', value:'', valueColor:'#1c2c36', valueStyle:'normal', count:filtered.length, families:filtered}] : [];
+    } else {
+      const ak=order[0]; const groups=new Map();
+      filtered.forEach(f=> this.valuesFor(f,ak).forEach(v=>{ if(!groups.has(v))groups.set(v,[]); groups.get(v).push(f); }));
+      const entries=[...groups.entries()].sort((a,b)=>{ if(a[0]==='—')return 1; if(b[0]==='—')return -1; return String(a[0]).localeCompare(String(b[0])); });
+      sections = entries.map(([val,list])=>{ const empty=val==='—'; return {
+        axisLabel:this.AXES[ak].label, axisColor:this.AXES[ak].color,
+        value: empty?'sin valor':val, valueColor: empty?'#aab4bb':'#1c2c36', valueStyle: empty?'italic':'normal',
+        count:list.length, families:list }; });
+    }
+
+    return {
+      viewTabs, pivotChips, availableAxes, maturityChips,
+      facetActive, facetActiveLabel, onClearFacet:()=>this.clearFacet(),
+      search:this.state.search, onSearch:(e)=>this.setState({search:e.target.value}),
+      onCollapseAll:()=>this.collapseAll(), onExpandAll:()=>this.expandAll(),
+      onClearFilters:()=>this.clearFilters(),
+      shownCount: filtered.length, totalCount: this.families.length,
+      isEmpty: filtered.length===0,
+      isA: this.state.view==='A', isB: this.state.view==='B', isC: this.state.view==='C',
+      rows, sel, target, calibratingMarkPct, sections,
+    };
+  }
+}
+</script>
+</body>
+</html>
