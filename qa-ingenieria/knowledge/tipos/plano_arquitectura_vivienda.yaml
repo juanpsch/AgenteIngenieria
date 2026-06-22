@@ -1,0 +1,31 @@
+tipo_doc: plano_arquitectura_vivienda
+nombre: Plano de obra de vivienda (arquitectura)
+disciplinas:
+- arquitectura
+- civil
+formatos_archivo:
+- pdf
+cajetin:
+  requerido: false
+  campos_requeridos: []
+  reglas: []
+secciones_requeridas: []
+columnas_requeridas: []
+caracteristicas:
+- Juego de plano municipal de vivienda (plantas, cortes, vistas, planta de techos)
+- Carátula municipal, cuadro de superficies y balance FOT/FOS; sigue las normas IRAM de dibujo técnico
+nomenclatura: ''
+bloqueante:
+- archivo fuera de formatos_archivo
+- no es un plano de arquitectura de vivienda
+senales_reconocimiento: 'Láminas con plantas acotadas, cortes (A-A / B-B), vistas/fachadas, cuadro de superficies y carátula municipal.'
+criterios_aceptacion: 'Documento que sea un plano de obra / arquitectura de vivienda.'
+no_corresponde: 'P&ID, planos eléctricos/mecánicos, memorias de texto, hojas de datos.'
+zonas: []
+revision:
+  # tipo:plano -> iram-dibujo (+ familia_generica plano_generico para heredar ejemplos);
+  # disciplina:arquitectura -> plano-obra-vivienda (contenidos del plano municipal).
+  facetas: { tipo: plano, disciplina: arquitectura, jurisdiccion: AR }
+  legibilidad:
+    blur_var_min: 80
+    ocr_conf_min: 0.6

@@ -38,6 +38,7 @@ valores:                    # por eje: valor -> {nombre, padre?, normas?, requis
     mecanica:        { nombre: "Mecánica" }
     civil:           { nombre: "Civil" }
     electronica:     { nombre: "Electrónica" }
+    arquitectura:    { nombre: "Arquitectura", normas: [plano-obra-vivienda] }
   jurisdiccion:
     AR: { nombre: "Argentina" }
     US: { nombre: "EE.UU." }

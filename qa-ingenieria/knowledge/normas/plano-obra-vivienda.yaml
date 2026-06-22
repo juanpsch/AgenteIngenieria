@@ -1,0 +1,98 @@
+id: plano-obra-vivienda
+nombre: Plano de obra de vivienda — contenidos mínimos (código de edificación / municipal AR)
+organismo: Municipal (códigos de edificación) — complementa IRAM dibujo técnico
+region: Argentina
+version: "guías municipales (Esteban Echeverría, Vicente López, Ezeiza, CABA, CAPBA) — ed. varias"
+
+# Requisitos del JUEGO de plano municipal para registrar una vivienda. El dibujo técnico (rótulo, escala,
+# acotación) lo cubre iram-dibujo (transversal); acá van los contenidos propios del plano de obra.
+aplica_a:
+  disciplinas: [arquitectura, civil]
+  jurisdiccion: [AR]
+
+deteccion:
+  anclas:
+    - 'plano de obra|plano municipal|registro de plano|obras particulares'
+    - 'cuadro de superficies'
+    - 'F\.?\s*O\.?\s*[TS]\b|factor de ocupaci[oó]n'
+  canales: [cajetin, notas, seccion_normas]
+  severidad: menor              # el plano rara vez "cita" el código; el cumplimiento está en su contenido
+
+# Reglas DETERMINISTAS sobre la capa de texto (la geometría/prolijidad va al VLM).
+reglas:
+  - id: plano_caratula
+    tipo: patron
+    descripcion: "Carátula/rótulo municipal con propietario, profesional y ubicación — obras particulares"
+    patron: 'propietari\w*|comitente|profesional|matr[ií]cula|ubicaci[oó]n|nomenclatura catastral'
+    min: 2
+    severidad: mayor
+  - id: plano_plantas
+    tipo: patron
+    descripcion: "Plantas del proyecto (baja / alta / techos / única) acotadas con designación de locales"
+    patron: 'planta\s+(baja|alta|de\s+techos|de\s+cubiertas|tipo|[uú]nica|de\s+conjunto|general)'
+    min: 1
+    severidad: mayor
+  - id: plano_cortes
+    tipo: patron
+    descripcion: "Cortes — mínimo 2, indicados con letras (Corte A-A, B-B), a escala — código municipal"
+    patron: 'corte\s+[a-d]\s*[-–]\s*[a-d]|corte\s+[a-d]{1,2}\b'
+    min: 2
+    severidad: mayor
+  - id: plano_vistas
+    tipo: patron
+    descripcion: "Vistas/fachadas — frente y contrafrente (mínimo 2)"
+    patron: 'vista\s+\w+|fachada|frente|contrafrente|elevaci[oó]n'
+    min: 1
+    severidad: mayor
+  - id: plano_planta_techos
+    tipo: presencia
+    descripcion: "Planta de techos / cubiertas"
+    patron: 'planta de techos|planta de cubiertas|planta de azotea'
+    severidad: menor
+  - id: plano_cuadro_superficies
+    tipo: presencia
+    descripcion: "Cuadro de superficies (cubierta / semicubierta / libre)"
+    patron: 'cuadro de superficies|superficie\s+cubierta|sup\.?\s*cubierta|superficie\s+semicubierta'
+    severidad: mayor
+  - id: plano_balance_fot_fos
+    tipo: presencia
+    descripcion: "Balance de superficies / FOT / FOS (factor de ocupación del suelo / total)"
+    patron: 'F\.?\s*O\.?\s*T\b|F\.?\s*O\.?\s*S\b|factor de ocupaci[oó]n|balance de superficies'
+    severidad: menor
+  - id: plano_niveles
+    tipo: presencia
+    descripcion: "Niveles de piso / cotas de nivel (± 0,00 / N.P.T.)"
+    patron: '±\s*0[.,]00|N\.?\s*P\.?\s*T\.?|nivel de piso terminado|cota de nivel'
+    severidad: menor
+  - id: plano_ilum_vent
+    tipo: presencia
+    descripcion: "Cuadro de iluminación y ventilación de locales"
+    patron: 'iluminaci[oó]n y ventilaci[oó]n|cuadro de iluminaci[oó]n'
+    severidad: menor
+  - id: plano_memoria_descriptiva
+    tipo: presencia
+    descripcion: "Memoria descriptiva del proyecto"
+    patron: 'memoria descriptiva'
+    severidad: observacion
+  # --- Interpretativas: las juzga la observación visual (IA) ---
+  - id: plano_norte
+    tipo: vlm
+    descripcion: "Orientación: símbolo de Norte en las plantas — IRAM/código municipal"
+    severidad: menor
+  - id: plano_cortes_indicados
+    tipo: vlm
+    descripcion: "Líneas de corte indicadas en planta (coherentes con los cortes dibujados)"
+    severidad: observacion
+  - id: plano_acotacion_plantas
+    tipo: vlm
+    descripcion: "Plantas acotadas: cotas parciales y totales, espesores de muro, designación de locales"
+    severidad: observacion
+
+vlm:
+  norma_ref: Código de edificación (plano de obra de vivienda)
+  criterios: >
+    Juego de plano municipal de vivienda: plantas acotadas con designación de locales y espesores de muro;
+    al menos dos cortes (A-A, B-B) con sus líneas de corte indicadas en planta; vistas/fachadas de frente y
+    contrafrente; planta de techos; símbolo de Norte; cuadro de superficies y balance FOT/FOS; carátula
+    municipal completa (propietario, profesional, ubicación). Representación a escala (1:100 / 1:50), tipos
+    de línea diferenciados, textos legibles.

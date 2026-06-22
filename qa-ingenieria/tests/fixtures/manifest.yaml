@@ -31,6 +31,28 @@ docs:
   - { id: plano_arq_oliva, archivo: civil/plano_arq_oliva.pdf, tipo: plano_arquitectura, disciplina: civil, norma_esperada: iram-dibujo, caso: parcial,
       url: "https://ciudaddeoliva.gov.ar/sys/file/decretos/2021102918912.pdf" }   # escala "1 EN 100" no normalizada -> con notas
 
+  # --- ARQUITECTURA — planos de obra de vivienda (familia plano_arquitectura_vivienda; norma plano-obra-vivienda) ---
+  # Planos sueltos / modelo (uso directo, calibran la familia)
+  - { id: arq_vlopez_modelo, archivo: civil/arq_vivienda_src/arq_vlopez_modelo.pdf, tipo: plano_arquitectura_vivienda, disciplina: arquitectura, norma_esperada: plano-obra-vivienda, caso: valido,
+      url: "https://www.vicentelopez.gov.ar/contenido/archivos/2024-07-01-367-archivo.pdf" }   # modelo de plano municipal (Vicente López)
+  - { id: arq_ipv_oasis, archivo: civil/arq_vivienda_src/arq_ipv_oasis.pdf, tipo: plano_arquitectura_vivienda, disciplina: arquitectura, norma_esperada: plano-obra-vivienda, caso: valido,
+      url: "https://www.ipvmendoza.gov.ar/wp-content/uploads/2021/01/01-prot_OASIS-5.pdf" }   # prototipo OASIS (IPV Mendoza)
+  # Cuadernillos / juegos de planos -> se DIVIDEN por página con scripts/extraer_planos_arq.py
+  - { id: arq_ipv_oasis_det, archivo: civil/arq_vivienda_src/arq_ipv_oasis_det.pdf, tipo: plano_arquitectura_vivienda, disciplina: arquitectura, norma_esperada: plano-obra-vivienda, caso: fuente,
+      url: "https://www.ipvmendoza.gov.ar/wp-content/uploads/2022/08/PLANOS-OASIS-DETALLES-CONSTR.pdf" }   # >10MB, juego de láminas
+  - { id: arq_ipv_cpropia, archivo: civil/arq_vivienda_src/arq_ipv_cpropia.pdf, tipo: plano_arquitectura_vivienda, disciplina: arquitectura, norma_esperada: plano-obra-vivienda, caso: fuente,
+      url: "https://www.ipvmendoza.gov.ar/wp-content/uploads/2023/10/01-PLANOS-IPV-C.PROPIA-DETALLES.pdf" }   # >10MB, juego de láminas (Casa Propia)
+  - { id: arq_ipv_solar, archivo: civil/arq_vivienda_src/arq_ipv_solar.pdf, tipo: plano_arquitectura_vivienda, disciplina: arquitectura, norma_esperada: plano-obra-vivienda, caso: fuente,
+      url: "https://www.ipvmendoza.gov.ar/wp-content/uploads/2021/11/03-PETPC-Prototipo-Vivienda-SOLAR.pdf" }   # 44 pág (pliego + planos prototipo SOLAR)
+  - { id: arq_oliva_sur, archivo: civil/arq_vivienda_src/arq_oliva_sur.pdf, tipo: plano_arquitectura_vivienda, disciplina: arquitectura, norma_esperada: plano-obra-vivienda, caso: fuente,
+      url: "https://ciudaddeoliva.gov.ar/sys/file/decretos/2021102918912.pdf" }   # "Viviendas del Sur" — planos generales 1 EN 100
+  - { id: arq_ruv_casa3, archivo: civil/arq_vivienda_src/arq_ruv_casa3.pdf, tipo: plano_arquitectura_vivienda, disciplina: arquitectura, norma_esperada: plano-obra-vivienda, caso: fuente,
+      url: "https://decide-construye-autodiagnostico.ruv.org.mx/assets/docs/Casa3-Planos.pdf" }   # >10MB, juego de planos "La Casa 3" (RUV, MX)
+  - { id: arq_mx_prototipos, archivo: civil/arq_vivienda_src/arq_mx_prototipos.pdf, tipo: plano_arquitectura_vivienda, disciplina: arquitectura, norma_esperada: plano-obra-vivienda, caso: fuente,
+      url: "https://www.gob.mx/cms/uploads/attachment/file/600379/R-3_PROT._ARQUITECTONICOS.pdf" }   # portfolio de prototipos arquitectónicos (gob.mx)
+  - { id: arq_ull_candelaria, archivo: civil/arq_vivienda_src/arq_ull_candelaria.pdf, tipo: plano_arquitectura_vivienda, disciplina: arquitectura, norma_esperada: plano-obra-vivienda, caso: fuente,
+      url: "https://riull.ull.es/xmlui/bitstream/handle/915/33850/Proyecto%20de%20ejecucion%20de%20una%20vivienda%20unifamiliar%20en%20Candelaria.pdf?sequence=1&isAllowed=y" }   # proyecto de ejecución completo (ULL, ES)
+
   # ===== ESTRUCTURAL =====
   - { id: cirsoc_memoria_unrn, archivo: estructural/cirsoc_memoria_unrn.pdf, tipo: memoria_calculo_estructural, disciplina: estructural, norma_esperada: cirsoc-201, caso: valido,
       url: "https://www.unrn.edu.ar/downloads/licitaciones-vigentes/3.3._Memoria_Calc.Estructural.pdf" }
