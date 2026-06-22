@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { api, type EstadoRevision, type Hallazgo, type Juicio, type RevisionBlock, type ZonaResultado, type CheckState } from "../api/client";
+import { api, type Alcance, type EstadoRevision, type Hallazgo, type Juicio, type RevisionBlock, type ZonaResultado, type CheckState } from "../api/client";
 import { PaginasViewer } from "./PaginasViewer";
 import { GrillaRequisitos } from "./GrillaRequisitos";
 import { useActivity } from "./Activity";
@@ -19,7 +19,7 @@ const SEV_CLS: Record<string, string> = { bloqueante: "mat-red", mayor: "mat-amb
  *  (con juicio humano por regla) + "Observación visual (IA)" a pedido + overlay "ver en plano". */
 export function RevisionSection({ rev, threadId, nPaginas, imagenes, feedback }: {
   rev: RevisionBlock; threadId?: string; nPaginas?: number; imagenes?: string[];
-  feedback?: Record<string, { juicio: Juicio; nota: string | null }>;
+  feedback?: Record<string, { juicio: Juicio; nota: string | null; alcance?: Alcance }>;
 }) {
   const { run } = useActivity();
   const [r, setR] = useState<RevisionBlock>(rev);

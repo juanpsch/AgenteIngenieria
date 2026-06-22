@@ -86,7 +86,7 @@ export function GrillaRequisitos({ hallazgos, threadId, feedbackInicial }: {
         const colN = colapsado.has(nk);
         return (
           <div key={norma} style={{ borderTop: "1px solid var(--line)", paddingTop: 8, marginTop: 8 }}>
-            <div role="button" onClick={() => toggle(nk)} style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontWeight: 600 }}>
+            <div role="button" tabIndex={0} onClick={() => toggle(nk)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(nk); } }} style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontWeight: 600 }}>
               {colN ? <ChevronRight size={15} /> : <ChevronDown size={15} />}
               <span>{norma}</span>
               <span className={`chip ${r.fail ? "mat-red" : "mat-ok"}`} style={{ marginLeft: "auto", fontSize: 10 }}>{r.ok}/{r.tot} ✓</span>
@@ -96,7 +96,7 @@ export function GrillaRequisitos({ hallazgos, threadId, feedbackInicial }: {
               const hs = dims[dim]; const dr = roll(hs); const dk = `d:${norma}:${dim}`; const colD = colapsado.has(dk);
               return (
                 <div key={dim} style={{ marginLeft: 14, marginTop: 6 }}>
-                  <div role="button" onClick={() => toggle(dk)} style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
+                  <div role="button" tabIndex={0} onClick={() => toggle(dk)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(dk); } }} style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
                     {colD ? <ChevronRight size={13} /> : <ChevronDown size={13} />}
                     <span className="eyebrow" style={{ margin: 0 }}>{DIM_LABEL[dim] || dim}</span>
                     <span className="faint" style={{ fontSize: 10.5, marginLeft: "auto" }}>{dr.ok}/{dr.tot}</span>

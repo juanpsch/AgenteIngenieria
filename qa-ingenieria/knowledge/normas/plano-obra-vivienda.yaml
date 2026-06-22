@@ -34,14 +34,14 @@ reglas:
     severidad: mayor
   - id: plano_cortes
     tipo: patron
-    descripcion: "Cortes — mínimo 2, indicados con letras (Corte A-A, B-B), a escala — código municipal"
-    patron: 'corte\s+[a-d]\s*[-–]\s*[a-d]|corte\s+[a-d]{1,2}\b'
+    descripcion: "Cortes — mínimo 2, indicados con letras/números (Corte A-A, B-B, 1-1) — código municipal"
+    patron: 'corte\s+[a-d]\s*[-–]\s*[a-d]\b|corte\s+[a-d]{2}\b|corte\s+\d\s*[-–]\s*\d'
     min: 2
     severidad: mayor
   - id: plano_vistas
     tipo: patron
-    descripcion: "Vistas/fachadas — frente y contrafrente (mínimo 2)"
-    patron: 'vista\s+\w+|fachada|frente|contrafrente|elevaci[oó]n'
+    descripcion: "Vistas/fachadas — frente y contrafrente (mínimo 1; se busca ≥2)"
+    patron: 'fachada|vista\s+\w+|contrafrente|elevaci[oó]n'
     min: 1
     severidad: mayor
   - id: plano_planta_techos
@@ -61,8 +61,8 @@ reglas:
     severidad: menor
   - id: plano_niveles
     tipo: presencia
-    descripcion: "Niveles de piso / cotas de nivel (± 0,00 / N.P.T.)"
-    patron: '±\s*0[.,]00|N\.?\s*P\.?\s*T\.?|nivel de piso terminado|cota de nivel'
+    descripcion: "Niveles de piso / cotas de nivel (± 0,00 / +/- 0.00 / N.P.T.)"
+    patron: '[±∓]\s*0[.,]00|\+\s*/?\s*-\s*0[.,]00|N\.?\s*P\.?\s*T\.?|nivel de piso terminado|cota de nivel'
     severidad: menor
   - id: plano_ilum_vent
     tipo: presencia

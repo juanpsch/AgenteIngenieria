@@ -122,6 +122,11 @@ def vlm_de_normas(ids: list[str]) -> list[dict[str, Any]]:
 _SEV_RANK = {"bloqueante": 3, "mayor": 2, "menor": 1, "observacion": 0}
 
 
+def _como_lista(v):
+    """Normaliza el valor de una faceta a lista (un eje puede declararse multivaluado: `disciplina: [a, b]`)."""
+    return v if isinstance(v, list) else ([] if v is None else [v])
+
+
 def _aplicar_bundle(out: dict, excl: set, bundle: dict, origen: str, pol: str) -> None:
     """Suma las reglas de un bundle a `out` (id local -> regla), pisando lo previo (más específico gana).
     Cada regla queda anotada con `origen` (qué faceta/template la trajo) para explicabilidad."""
@@ -158,12 +163,17 @@ def resolver_requisitos(revision: dict | None) -> list[dict[str, Any]]:
     if facetas:
         try:
             from tools import facetas as F  # import perezoso
+        except Exception:
+            F = None
+        if F:
             pol = (F.politica() or {}).get("conflicto_severidad", pol)
             for eje in sorted(facetas, key=F.precedencia, reverse=True):   # menos específico primero
-                for v in F.cadena(eje, facetas[eje]):                      # ancestros primero
-                    _aplicar_bundle(out, excl, F.bundle(eje, v), f"{eje}={v}", pol)
-        except Exception:
-            pass
+                for val in _como_lista(facetas[eje]):                      # un eje puede ser multivaluado (lista)
+                    try:
+                        for v in F.cadena(eje, val):                       # ancestros primero
+                            _aplicar_bundle(out, excl, F.bundle(eje, v), f"{eje}={v}", pol)
+                    except Exception:
+                        continue   # config de un valor inválida: seguí con el resto (no abortes todo el loop)
 
     # Template propio = lo MÁS específico (último, pisa a las facetas).
     propio = {k: revision.get(k) for k in ("normas", "requisitos", "reglas", "excluir")}
@@ -197,10 +207,15 @@ def severidad_overrides(revision: dict | None) -> dict[str, str]:
     facetas = revision.get("facetas") or {}
     try:
         from tools import facetas as F  # import perezoso
-        for eje in sorted(facetas, key=F.precedencia, reverse=True):   # menos específico primero
-            for v in F.cadena(eje, facetas[eje]):                      # ancestros primero
-                ov.update(F.severidad(eje, v))
     except Exception:
-        pass
+        F = None
+    if F:
+        for eje in sorted(facetas, key=F.precedencia, reverse=True):   # menos específico primero
+            for val in _como_lista(facetas[eje]):                     # eje multivaluado
+                try:
+                    for v in F.cadena(eje, val):                      # ancestros primero
+                        ov.update(F.severidad(eje, v))
+                except Exception:
+                    continue
     ov.update(revision.get("severidad") or {})   # template = lo más específico
     return ov

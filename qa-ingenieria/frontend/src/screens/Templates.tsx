@@ -300,7 +300,7 @@ export function Templates() {
                 <button className="tpl-primary" onClick={() => open(sel.id)} style={{ flex: 1, border: "none", background: "#0e7c86", color: "#fff", fontSize: 13, fontWeight: 600, padding: 10, borderRadius: 9, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
                   <Pencil size={14} /> Editar reglas y ejemplos
                 </button>
-                <button className="tpl-secondary" title="Duplicar (próximamente)" style={{ border: "1px solid #e1e8ec", background: "#fff", color: "#5d7180", fontSize: 13, fontWeight: 600, padding: "10px 14px", borderRadius: 9, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}><Copy size={14} /> Duplicar</button>
+                <button disabled title="Duplicar (próximamente)" style={{ border: "1px solid #e1e8ec", background: "#fff", color: "#9aa7b0", fontSize: 13, fontWeight: 600, padding: "10px 14px", borderRadius: 9, cursor: "not-allowed", opacity: .55, display: "flex", alignItems: "center", gap: 6 }}><Copy size={14} /> Duplicar</button>
               </div>
             </div>
           </div>

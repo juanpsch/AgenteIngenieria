@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 import { X } from "lucide-react";
 import { FACET_AXIS, FACET_ORDER } from "../design/facets";
 
@@ -15,9 +15,14 @@ const Pill = ({ children, bg, fg, border }: { children: ReactNode; bg: string; f
 );
 
 export function Help({ onClose }: { onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(12,32,48,.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 24 }}>
-      <div onClick={(e) => e.stopPropagation()} className="cz-scroll" style={{ background: "#fff", borderRadius: 14, maxWidth: 780, width: "100%", maxHeight: "88vh", overflow: "auto", boxShadow: "0 20px 60px rgba(12,32,48,.3)" }}>
+      <div onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Ayuda de Cotejar" className="cz-scroll" style={{ background: "#fff", borderRadius: 14, maxWidth: 780, width: "100%", maxHeight: "88vh", overflow: "auto", boxShadow: "0 20px 60px rgba(12,32,48,.3)" }}>
         <div style={{ position: "sticky", top: 0, background: "linear-gradient(180deg,#f8fafb,#fff)", borderBottom: "1px solid #eef2f4", padding: "16px 22px", display: "flex", alignItems: "center", gap: 12, zIndex: 1 }}>
           <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: "#13252f" }}>Ayuda — Cotejar</h2>
           <div style={{ flex: 1 }} />
